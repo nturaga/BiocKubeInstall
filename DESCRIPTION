@@ -1,0 +1,29 @@
+Package: BiocKubeInstall
+Title: Build R / Bioconductor package binaries using Kubernetes on the Google Cloud.
+Version: 0.99.0
+Authors@R: 
+    person(given = "Nitesh",
+           family = "Turaga",
+           role = c("cre"),
+           email = "nitesh.turaga@roswellpark.org")
+Description: Build binaries for packages in R / Bioconductor using a
+	     Google Kubernetes Cluster. The package is internal to
+	     Bioconductor, and is used to create binaries for Docker
+	     images produced by Bioconductor. The package has potential
+	     to be extended to be used on Clusters created on other
+	     cloud services like azure / aws. This package goes together with
+	     the `Bioconductor/k8sredis` kubernetes application. It does not work
+	     stand alone.
+License: Artistic-2.0
+Encoding: UTF-8
+Depends: R (>= 4.0)
+Imports: 
+    BiocManager,
+    AnVIL,
+    RedisParam,
+    redux
+Remotes: mtmorgan/RedisParam
+LazyData: true
+VignetteBuilder: knitr
+biocViews: Infrastructure
+RoxygenNote: 7.1.1
