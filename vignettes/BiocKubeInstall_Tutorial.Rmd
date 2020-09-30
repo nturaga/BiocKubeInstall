@@ -1,0 +1,30 @@
+---
+title: "BiocKubeInstall Tutorial"
+author:
+- name: Nitesh Turaga
+  affiliation: Roswell Park Comprehensive Cancer Center
+package: BiocKubeInstall
+output:
+  BiocStyle::html_document
+abstract: |
+  The BiocKubeInstall package is a cloud computing resource meant to be
+  used with Kubernetes. The package is used to create binaries for
+  R and Bioconductor packages on specific docker images created by
+  Bioconductor. It works in concert with k8sredis - the Kubernetes
+  application and RedisParam package that parallelizes over a
+  Kubernetes cluster. The package requires knowledge of the google
+  cloud, kubernetes, and binary package creation. It is an internal
+  package to Bioconductor used to make creation and  maintainence
+  of package binaries easier and faster.
+vignette: |
+  %\VignetteIndexEntry{BiocKubeInstall Tutorial}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+Coming soon.
+
+
+```{r}
+sessionInfo()
+```
