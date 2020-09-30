@@ -14,7 +14,7 @@
     ## return deps
     deps <- package_dependencies(
         union(names(deps0), unlist(deps0, use.names = FALSE)),
-        db, recursive=TRUE
+        db, recursive=FALSE
     )
 
     ## save deps_rds for fast reload
@@ -51,4 +51,47 @@
 
     if (!file.exists(binary_path))
         dir.create(binary_path, recursive = TRUE)
+}
+
+
+#' @keywords internal
+#'
+#' @title Read a PACKAGES file from url
+#'
+#' @return `.read_PACAKGES(path)` returns the packages and version
+#'     number seperated by an '_'.
+#'
+.read_PACKAGES <-
+    function(path)
+{
+    con <- url(path)
+    pkgs <- read.dcf(file = con, all = TRUE)
+
+    ## Return package and version
+    paste(pkgs[,1], pkgs[,2], sep = "_")
+}
+
+
+#' @keywords internal
+#'
+#' @title Compare remote PACKAGES file to current Bioconductor
+#'     PACKAGES file to return list to be updated.
+#'
+#' @return `.diff_PACAKGES(bucket_url)` returns character vector of
+#'     packages to be updated.
+#'
+.diff_PACKAGES <-
+    function(bucket_url)
+{
+    ## Read bioc and bucket PACKAGES
+    bioc_pkgs <- .read_PACKAGES(
+        file.path(contrib.url(BiocManager::repositories()), "PACKAGES")[[1]]
+    )
+    bucket_pkgs <- .read_PACKAGES(bucket_url)
+
+    ## Compare package and version
+    to_update <- bioc_pkgs[! bioc_pkgs %in% bucket_pkgs]
+
+    ## Return packages to be updated
+    gsub("_.*", "", to_update)
 }
