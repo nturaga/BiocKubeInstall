@@ -39,8 +39,8 @@
 #' @param bucket character(1) bucket name for the google storage
 #'     bucket.
 #'
-#' @param production_version characater(1) version number for the
-#'     bucket with the binaries.
+#' @param image_version characater(1) version number for the
+#'     docker image on which binaries are being created.
 #'
 #' @param bioc_version character(1) version number for Bioconductor,
 #'     defaults to `BiocManager::version()`.
@@ -68,13 +68,48 @@
 #' @export
 gcloud_create_cran_bucket <-
     function(bucket,
-             production_version,
+             image_version,
              bioc_version = as.character(BiocManager::version()),
              secret,
              public = TRUE)
 {
-    return(NA)
+    gsbucket <- paste0("gs://", bucket)
+
+    ## -c standard: >99.99% in multi-regions and dual-regions
+    ## -l bucket is created in the location US, which is multi-region
+    ## --retention <number>d (should usually be 1 year, provide only for release and devel)
+    ## create bucket
+    cmd_mb <- c(
+        "mb",
+        "-b", "on",
+        "-c", "standard",
+        "-l", "us",
+        gsbucket
+    )
+    system2("gsutil", args = cmd_mb)
+
+    ## create CRAN style directory structure
+    res <- file.create("PACKAGES")
+    if (res) {
+        cmd_cp <- c(
+            "cp", "PACKAGES",
+            paste(gsbucket,
+                  image_version,
+                  bioc_version,
+                  "src/contrib/PACKAGES",
+                  sep = "/")
+        )
+        system2('gstuil', args = cmd_cp)
+    }
+    ## Make bucket public
+    if (public) {
+        cmd_iam <- c("iam", "-r", "ch", "allUsers:objectViewer", gsbucket)
+        system2('gsutil', args = cmd_iam)
+    }
+
+    return(TRUE)
 }
+
 
 
 #' Sync binaries with Google bucket.

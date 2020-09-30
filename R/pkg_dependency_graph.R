@@ -16,12 +16,10 @@
         union(names(deps0), unlist(deps0, use.names = FALSE)),
         db, recursive=FALSE
     )
-
     ## save deps_rds for fast reload
     if (!file.exists(deps_rds)) {
         saveRDS(deps, deps_rds)
     }
-
     deps
 }
 

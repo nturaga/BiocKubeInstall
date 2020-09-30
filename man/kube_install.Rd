@@ -31,7 +31,12 @@ stored.}
 `installed.packages()`.}
 }
 \description{
-
+Install packages and create binaries using a
+    kubernetes cluster for a specific bioconductor docker
+    image. The kube_install function can be scaled to a large
+    cluster to reduce times even further (in theory). Please note
+    that this command will charge your google billing account,
+    beware of the charges.
 }
 \examples{
 \donttest{

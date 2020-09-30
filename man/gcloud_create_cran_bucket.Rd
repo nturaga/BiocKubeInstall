@@ -6,7 +6,7 @@
 \usage{
 gcloud_create_cran_bucket(
   bucket,
-  production_version,
+  image_version,
   bioc_version = as.character(BiocManager::version()),
   secret,
   public = TRUE
@@ -16,8 +16,8 @@ gcloud_create_cran_bucket(
 \item{bucket}{character(1) bucket name for the google storage
 bucket.}
 
-\item{production_version}{characater(1) version number for the
-bucket with the binaries.}
+\item{image_version}{characater(1) version number for the
+docker image on which binaries are being created.}
 
 \item{bioc_version}{character(1) version number for Bioconductor,
 defaults to `BiocManager::version()`.}
