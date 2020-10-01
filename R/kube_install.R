@@ -89,6 +89,7 @@ binary_install <-
 #'     `installed.packages()`.
 #'
 #' @importFrom RedisParam RedisParam
+#' @importFrom BiocParallel bplapply
 #'
 #' @examples
 #' \donttest{
@@ -121,11 +122,11 @@ kube_install <-
                         progressbar = TRUE)
 
         ## do the work here
-        res <- bplapply(
-            do, binary_install, BPPARAM = p,
-            lib_path = lib_path,
-            bin_path = bin_path
-        )
+        res <- BiocParallel::bplapply(
+                                 do, binary_install, BPPARAM = p,
+                                 lib_path = lib_path,
+                                 bin_path = bin_path
+                             )
         message(length(deps), " " , length(do))
         deps <- deps[!names(deps) %in% do]
     }

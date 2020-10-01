@@ -1,4 +1,6 @@
 ## Step 0: Define important variables
+library(BiocKubeInstall)
+
 
 workers <- 6L
 lib_path <- "/host/library"
@@ -7,37 +9,35 @@ deps_rds <- "pkg_dependencies.rds"
 bucket_PACAKGES <- "https://storage.googleapis.com/anvil-rstudio-bioconductor-test/0.99/3.11/src/contrib/PACKAGES"
 
 ## Step 0.1:  Wait till all the worker pods are up and running
-.kube_wait(workers)
+BiocKubeInstall:::.kube_wait(workers)
 
 ## Step. 1 : Create lib_path and bin_path
-.create_library_paths(
-    library_path = lib_path,
-    binary_path = bin_path
-)
+BiocKubeInstall:::.create_library_paths(
+                      library_path = lib_path,
+                      binary_path = bin_path
+                  )
 
 ## Step. 2 : Load deps and installed packages
 if (!file.exists(deps_rds)) {
-    deps <- .pkg_dependencies()
+    deps <- BiocKubeInstall:::.pkg_dependencies()
 } else {
     deps <- readRDS(deps_rds)
 }
 
 inst <- installed.packages()
 
+res <- BiocKubeInstall::kube_install(
+                            workers = workers,
+                            lib_path = lib_path,
+                            bin_path = bin_path,
+                            deps = deps,
+                            inst = inst
+                        )
+## Print jobs each work performed
+table(unlist(res))
 
-## TODO is encode workers through docker image or kubernetes
-kube_install(
-    workers = workers,
-    lib_path = lib_path,
-    bin_path = bin_path,
-    deps = deps,
-    inst = inst
-)
-
-##.libPaths(c(lib_path, .libPaths()))
-
-gcloud_binary_sync(
-    secret = "/home/rstudio/key.json",
-    bin_path = "/host/binaries",
-    bucket = "gs://anvil-rstudio-bioconductor-test/0.99/3.11/src/contrib/"
-)
+BiocKubeInstall::gcloud_binary_sync(
+                     secret = "/home/rstudio/key.json",
+                     bin_path = "/host/binaries",
+                     bucket = "gs://anvil-rstudio-bioconductor-test/0.99/3.11/src/contrib/"
+                 )
