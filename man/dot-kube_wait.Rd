@@ -4,12 +4,22 @@
 \alias{.kube_wait}
 \title{Wait for worker pods to become active.}
 \usage{
-.kube_wait(workers)
+.kube_wait(workers = as.integer(1))
 }
 \arguments{
 \item{workers}{integer() number of workers in the kubernetes cluster.}
 }
 \description{
 Wait for worker pods to become active.
+}
+\details{
+Wait for the workers to start up. More details on redis
+    flags here https://redis.io/commands/client-list.
+}
+\examples{
+\donttest{
+.kube_wait(workers = 6L)
+}
+
 }
 \keyword{internal}

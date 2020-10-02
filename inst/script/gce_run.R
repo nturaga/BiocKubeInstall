@@ -1,7 +1,6 @@
 ## Step 0: Define important variables
 library(BiocKubeInstall)
 
-
 workers <- 6L
 lib_path <- "/host/library"
 bin_path <- "/host/binaries"

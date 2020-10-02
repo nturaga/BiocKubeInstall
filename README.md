@@ -12,3 +12,22 @@ application.
 
 Coming soon....
 
+
+## TODO
+
+1. Validity checks in package
+
+2. Errors in write_PACKAGES()
+
+```
+> tools::write_PACKAGES(bin_path, addFiles=TRUE)
+
+
+gzip: stdin: unexpected end of file
+/usr/bin/tar: Unexpected EOF in archive
+/usr/bin/tar: Error is not recoverable: exiting now
+/usr/bin/tar: Unexpected EOF in archive
+/usr/bin/tar: Error is not recoverable: exiting now
+```
+
+3. More automation

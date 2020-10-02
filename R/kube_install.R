@@ -36,25 +36,38 @@ binary_install <-
         Sys.info()[["nodename"]]
     }, error = function(e) {
         conditionMessage(e)
+        next
     })
 }
 
 #' @keywords internal
 #'
+#' @details Wait for the workers to start up. More details on redis
+#'     flags here https://redis.io/commands/client-list.
+#'
 #' @title Wait for worker pods to become active.
 #'
 #' @param workers integer() number of workers in the kubernetes cluster.
 #'
+#' @examples
+#' \donttest{
+#' .kube_wait(workers = 6L)
+#' }
+#'
 #' @importFrom redux hiredis
 .kube_wait <-
-    function(workers)
+    function(workers = as.integer(1))
 {
     redis <- redux::hiredis()
     ## Wait for workers to be ready
     repeat{
-        n <- length(strsplit(redis$CLIENT_LIST(), "\n")[[1]])
-        if (n == workers)
+        len_workers <- length(
+            grep("flags=b", strsplit(redis$CLIENT_LIST(), "\n")[[1]])
+        )
+        ## Break if the workers number matches.
+        if (len_workers == workers)
             break
+        ## Sleep till workers come up
         Sys.sleep(1)
     }
     rm(redis)
