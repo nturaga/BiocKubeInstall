@@ -40,7 +40,8 @@ binary_install <-
     })
 }
 
-#' @keywords internal
+
+#' Wait for kubernetes workers
 #'
 #' @details Wait for the workers to start up. More details on redis
 #'     flags here https://redis.io/commands/client-list.
@@ -55,7 +56,8 @@ binary_install <-
 #' }
 #'
 #' @importFrom redux hiredis
-.kube_wait <-
+#' @export
+kube_wait <-
     function(workers = as.integer(1))
 {
     redis <- redux::hiredis()
