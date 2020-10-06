@@ -13,13 +13,70 @@
 #' @return `.gcloud_auth()` shows a message on successful
 #'     authentication.
 #'
-.gcloud_auth <-
+#' @importFrom AnVIL gcloud_cmd
+.gcloud_service_account_auth <-
     function(secret)
 {
     cmd_args <- c('auth', 'activate-service-account',
                   '--key-file', secret)
-    system2('gcloud', args = cmd_args)
+    ## use gcloud_cmd in AnVIL
+    gcloud_cmd(cmd_args)
 }
+
+
+#' @keywords internal
+#'
+#' @title Validate gsutil URI.
+.gsutil_is_uri <-
+    function(source)
+{
+    .is_character(source) & grepl("gs://[^/]+", source)
+}
+
+
+#' @keywords internal
+#'
+#' @title Make a bucket on the google cloud
+#'
+#' @param bucket character(1) bucket name for the google storage
+#'     bucket.
+#'
+#' @param uniform_bucket_level_access "-b" Specifies the uniform
+#'     bucket-level access setting. Default is "off"
+#'
+#' @param storage_class "-c" standard: >99.99% in multi-regions and
+#'     dual-regions
+#'
+#' @param location "-l" bucket is created in the location US, which is
+#'     multi-region
+#'
+#' @return `.gcloud_make_bucket()` returns invisibly
+#'
+.gcloud_make_bucket <-
+    function(bucket, uniform_bucket_level_access = FALSE,
+             storage_class = "standard", location = "us")
+{
+    ## Validity checks
+    stopifnot(
+        .gsutil_is_uri(bucket),
+        .is_scalar_logical(uniform_bucket_level_access),
+        .is_scalar_character(storage_class),
+        .is_scalar_character(location)
+    )
+
+    ## create bucket
+    args <- c(
+        "mb",
+        "-b", ifelse(uniform_bucket_level_access, "on", "off"),
+        "-c", storage_class,
+        "-l", location,
+        gsbucket
+    )
+
+    ## use .gsutil_do from AnVIL
+    system2("gsutil", args = args)
+}
+
 
 #' Create a CRAN style google bucket with appropriate ACL
 #'
@@ -56,58 +113,59 @@
 #'     the path of the workspace bucket.
 #'
 #' @examples
-#' \donttest{
+#' \dontrun{
 #' gcloud_create_cran_bucket(
-#'     bucket = "bioconductor-docker-test",
-#'     production_version = "0.99",
+#'     bucket = "gs://bioconductor-docker-test",
+#'     image_version = "0.99",
 #'     bioc_version = "3.11",
 #'     secret = "/home/mysecret.json",
 #'     public = TRUE
 #' )
 #' }
+#'
+#' @importFrom AnVIL gsutil_cp
+#' @importFrom AnVIL gsutil_exists
 #' @export
 gcloud_create_cran_bucket <-
-    function(bucket,
-             image_version,
+    function(bucket, image_version,
              bioc_version = as.character(BiocManager::version()),
-             secret,
-             public = TRUE)
+             secret, public = TRUE)
 {
-    gsbucket <- paste0("gs://", bucket)
-
-    ## -c standard: >99.99% in multi-regions and dual-regions
-    ## -l bucket is created in the location US, which is multi-region
-    ## --retention <number>d (should usually be 1 year, provide only for release and devel)
-    ## create bucket
-    cmd_mb <- c(
-        "mb",
-        "-b", "on",
-        "-c", "standard",
-        "-l", "us",
-        gsbucket
+    ## Validity checks
+    stopifnot(
+        .gsutil_is_uri(bucket), .is_scalar_logical(public),
+        missing(image_version), .is_scalar_character(secret),
+        file.exists(secret)
     )
-    system2("gsutil", args = cmd_mb)
+
+    ## Create a bucket on gcloud
+    .gsutil_make_bucket(bucket, TRUE, "standard", "us")
 
     ## create CRAN style directory structure
     res <- file.create("PACKAGES")
     if (res) {
-        cmd_cp <- c(
-            "cp", "PACKAGES",
-            paste(gsbucket,
-                  image_version,
-                  bioc_version,
-                  "src/contrib/PACKAGES",
-                  sep = "/")
+        source <- "PACKAGES"
+        ## destination is CRAN style
+        destination <- paste(
+            bucket, image_version, bioc_version,
+            "src/contrib/PACKAGES",
+            sep = "/"
         )
-        system2('gstuil', args = cmd_cp)
+        ## Copy PACKAGES folder into CRAN style repo
+        gsutil_cp(
+            source = source, destination = destination,
+            recursive = FALSE, parallel = FALSE
+        )
     }
+
     ## Make bucket public
     if (public) {
-        cmd_iam <- c("iam", "-r", "ch", "allUsers:objectViewer", gsbucket)
+        cmd_iam <- c("iam", "-r", "ch", "allUsers:objectViewer", bucket)
         system2('gsutil', args = cmd_iam)
     }
 
-    return(TRUE)
+    ## Return TRUE if bucket exists on the cloud
+    return(gsutil_exists(bucket))
 }
 
 
@@ -134,7 +192,7 @@ gcloud_create_cran_bucket <-
 #'     shown on screen on successfully tranferred files.
 #'
 #' @examples
-#' \donttest{
+#' \dontrun{
 #' gcloud_binary_sync(
 #'     bin_path = "/host/binaries",
 #'     bucket = "gs://bucket-name/0.99/3.11/src/contrib/"
@@ -147,13 +205,14 @@ gcloud_create_cran_bucket <-
 gcloud_binary_sync <-
     function(bin_path, bucket, secret = "/home/rstudio/key.json")
 {
+    ## Validity checks
+    stopifnot(
+        .is_scalar_character(bin_path), .gsutil_is_uri(bucket),
+        .is_scalar_character(secret), file.exists(secret)
+    )
+
     ## authenticate with secret
     .gcloud_auth(secret = secret)
-
     ## Transfer to gcloud
-    AnVIL::gsutil_rsync(
-               source = bin_path,
-               destination = bucket,
-               dry=FALSE
-           )
+    gsutil_rsync(source = bin_path, destination = bucket, dry=FALSE)
 }

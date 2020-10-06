@@ -52,44 +52,41 @@
 }
 
 
-#' @keywords internal
-#'
-#' @title Read a PACKAGES file from url
-#'
-#' @return `.read_PACAKGES(path)` returns the packages and version
-#'     number seperated by an '_'.
-#'
-.read_PACKAGES <-
-    function(path)
-{
-    con <- url(path)
-    pkgs <- read.dcf(file = con, all = TRUE)
-
-    ## Return package and version
-    paste(pkgs[,1], pkgs[,2], sep = "_")
-}
-
 
 #' @keywords internal
 #'
-#' @title Compare remote PACKAGES file to current Bioconductor
+#' @title Compare binary PACKAGES file to current Bioconductor
 #'     PACKAGES file to return list to be updated.
 #'
-#' @return `.diff_PACAKGES(bucket_url)` returns character vector of
+#' @param binary_repo character() vector pointing to binary
+#'     repository which has PACKAGES file.
+#'
+#' @examples
+#' \dontrun{
+#' repo <- "https://storage.googleapis.com/anvil-rstudio-bioconductor-test/0.99/3.11/"
+#' .packages_to_update(binary_repo = repo)
+#' }
+#'
+#' @return `.packages_to_update()` returns character vector of
 #'     packages to be updated.
 #'
-.diff_PACKAGES <-
-    function(bucket_url)
+.packages_to_update <-
+    function(binary_repo = character())
 {
     ## Read bioc and bucket PACKAGES
-    bioc_pkgs <- .read_PACKAGES(
-        file.path(contrib.url(BiocManager::repositories()), "PACKAGES")[[1]]
-    )
-    bucket_pkgs <- .read_PACKAGES(bucket_url)
+    bioc_pkgs <- as.data.frame(available.packages(
+        repos = BiocManager::repositories()['BioCsoft']
+    )[,c('Package', 'Version')])
+
+    binary_pkgs <- as.data.frame(available.packages(
+        repos = binary_repo
+    )[,c('Package', 'Version')])
+
+    bioc <- paste(bioc_pkgs$Package, bioc_pkgs$Version, sep = "_")
+    binary <- paste(binary_pkgs$Package, binary_pkgs$Version, sep = "_")
 
     ## Compare package and version
-    to_update <- bioc_pkgs[! bioc_pkgs %in% bucket_pkgs]
-
+    pkg_w_version <- setdiff(bioc, binary)
     ## Return packages to be updated
-    gsub("_.*", "", to_update)
+    gsub("_.*", "", pkg_w_version)
 }

@@ -51,13 +51,14 @@ Create a CRAN style bucket used to store the package
     https://storage.googleapis.com/bucket-name/0.99/3.11/src/contrib/ABAData_1.19.0_R_x86_64-pc-linux-gnu.tar.gz
 }
 \examples{
-\donttest{
+\dontrun{
 gcloud_create_cran_bucket(
-    bucket = "bioconductor-docker-test",
-    production_version = "0.99",
+    bucket = "gs://bioconductor-docker-test",
+    image_version = "0.99",
     bioc_version = "3.11",
     secret = "/home/mysecret.json",
     public = TRUE
 )
 }
+
 }

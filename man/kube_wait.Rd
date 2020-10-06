@@ -17,8 +17,8 @@ Wait for the workers to start up. More details on redis
     flags here https://redis.io/commands/client-list.
 }
 \examples{
-\donttest{
-.kube_wait(workers = 6L)
+\dontrun{
+kube_wait(workers = 6L)
 }
 
 }

@@ -30,7 +30,7 @@ Sync binaries created by the `kube_install()` function
     correct public permissions.
 }
 \examples{
-\donttest{
+\dontrun{
 gcloud_binary_sync(
     bin_path = "/host/binaries",
     bucket = "gs://bucket-name/0.99/3.11/src/contrib/"

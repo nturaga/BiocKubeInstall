@@ -46,8 +46,7 @@ kube_install(
     lib_path = "/host/library",
     bin_path = "/host/binaries",
     deps = deps_rds,
-    inst = installed.packages()
-)
+    inst = installed.packages())
 }
 
 }
