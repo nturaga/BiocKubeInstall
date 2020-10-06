@@ -8,7 +8,7 @@
 .packages_to_update(binary_repo = character())
 }
 \arguments{
-\item{binary_repo}{character() vector pointing to binary 
+\item{binary_repo}{character() vector pointing to binary
 repository which has PACKAGES file.}
 }
 \value{

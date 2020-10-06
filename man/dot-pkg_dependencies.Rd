@@ -4,7 +4,7 @@
 \alias{.pkg_dependencies}
 \title{Calculate the package dependency graph}
 \usage{
-.pkg_dependencies(deps_rds = "pkg_dependencies.rds")
+.pkg_dependencies(binary_repo = character())
 }
 \description{
 Calculate the package dependency graph

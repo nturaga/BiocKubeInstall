@@ -105,7 +105,7 @@ kube_wait <-
 #'     `installed.packages()`.
 #'
 #' @importFrom RedisParam RedisParam
-#' @importFrom BiocParallel bplapply bptry
+#' @importFrom BiocParallel bplapply bptry bpok
 #' @importFrom futile.logger flog.error flog.info flog.appender appender.file
 #'
 #' @examples
@@ -126,7 +126,7 @@ kube_install <-
              inst = installed.packages())
 {
     stopifnot(is.integer(workers), .is_scalar_character(lib_path),
-              .is_scalar_character(bin_path),)
+              .is_scalar_character(bin_path))
 
     ## Logging
     flog.appender(appender.file('kube_install.log'), 'kube_install')
