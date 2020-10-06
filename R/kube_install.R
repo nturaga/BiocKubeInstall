@@ -129,8 +129,8 @@ kube_install <-
               .is_scalar_character(bin_path))
 
     ## Logging
-    flog.appender(appender.file('kube_install.log'), 'kube_install')
-
+    flog.appender(appender.file('kube_install.log'), name = 'kube_install')
+    
     ## drop "base" packages these on the first iteration
     do <- inst[,"Package"][inst[,"Priority"] %in% "base"]
     deps <- deps[!names(deps) %in% do]
@@ -162,14 +162,14 @@ kube_install <-
 
         n_old <- length(deps)
 
-        successes <- names(res)[bpok(res)]
-        deps <- deps[!names(deps) %in% successes]
-        ## TODO : Does this try to reinstall packages which don't work???
+        deps <- deps[!names(deps) %in% do]
+        ## TODO : Trim out packages that depend on XPS and packages that don't install
         if (length(deps) == n_old)
             break
     }
 
-    flog.info(paste("failed to build:", length(deps), "packages"))
+    flog.info(paste("failed to build:", length(deps), "packages"),
+              name = "kube_install")
 
     ## Create PACKAGES, PACKAGES.gz, PACAKGES.rds
     tools::write_PACKAGES(bin_path, addFiles=TRUE, verbose = TRUE)

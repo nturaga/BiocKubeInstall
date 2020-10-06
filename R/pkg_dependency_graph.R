@@ -26,7 +26,11 @@
     ## else: Create deps set to be updated
     } else {
         to_update <- .packages_to_update(binary_repo = binary_repo_url)
-        deps <- tools::package_dependencies(to_update, db, recursive=FALSE)
+        deps <- package_dependencies(to_update, db, recursive=FALSE)
+        ## Remove dependencies that do not need to be built
+        pkgs <- unique(unlist(deps, use.names=FALSE))
+        done <- pkgs[!pkgs %in% names(deps)]
+        deps <- .trim(deps, done)
     }
     deps
 }
