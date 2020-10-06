@@ -52,7 +52,7 @@
 #'
 #' @return `.gcloud_make_bucket()` returns invisibly
 #'
-.gcloud_make_bucket <-
+.gsutil_make_bucket <-
     function(bucket, uniform_bucket_level_access = FALSE,
              storage_class = "standard", location = "us")
 {
@@ -70,7 +70,7 @@
         "-b", ifelse(uniform_bucket_level_access, "on", "off"),
         "-c", storage_class,
         "-l", location,
-        gsbucket
+        bucket
     )
 
     ## use .gsutil_do from AnVIL
@@ -134,9 +134,12 @@ gcloud_create_cran_bucket <-
     ## Validity checks
     stopifnot(
         .gsutil_is_uri(bucket), .is_scalar_logical(public),
-        missing(image_version), .is_scalar_character(secret),
+        !missing(image_version), .is_scalar_character(secret),
         file.exists(secret)
     )
+
+    ## Authenticate
+    .gcloud_service_account_auth(secret)
 
     ## Create a bucket on gcloud
     .gsutil_make_bucket(bucket, TRUE, "standard", "us")
@@ -212,7 +215,7 @@ gcloud_binary_sync <-
     )
 
     ## authenticate with secret
-    .gcloud_auth(secret = secret)
+    .gcloud_service_account_auth(secret = secret)
     ## Transfer to gcloud
     gsutil_rsync(source = bin_path, destination = bucket, dry=FALSE)
 }

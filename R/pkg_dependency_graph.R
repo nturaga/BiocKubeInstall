@@ -4,21 +4,29 @@
 #'
 #' @importFrom tools package_dependencies
 .pkg_dependencies <-
-    function(deps_rds = "pkg_dependencies.rds")
+    function(binary_repo = character())
 {
+    binary_repo_url <- paste0("https://storage.googleapis.com/", binary_repo)
+
+    binary_pkgs <- as.data.frame(available.packages(
+        repos = binary_repo_url
+    )[,c('Package', 'Version')])
+
     db <- available.packages(repos = BiocManager::repositories())
-    soft <- available.packages(
-        repos = BiocManager::repositories()["BioCsoft"]
-    )
-    deps0 <- package_dependencies(rownames(soft), db, recursive=TRUE)
-    ## return deps
-    deps <- package_dependencies(
-        union(names(deps0), unlist(deps0, use.names = FALSE)),
-        db, recursive=FALSE
-    )
-    ## save deps_rds for fast reload
-    if (!file.exists(deps_rds)) {
-        saveRDS(deps, deps_rds)
+
+    ## if: Create full set of binaries
+    if (nrow(binary_pkgs) == 0) {
+        soft <- available.packages(repos = BiocManager::repositories()["BioCsoft"])
+        deps0 <- package_dependencies(rownames(soft), db, recursive=TRUE)
+        ## return deps
+        deps <- package_dependencies(
+            union(names(deps0), unlist(deps0, use.names = FALSE)),
+            db, recursive=FALSE
+        )
+    ## else: Create deps set to be updated
+    } else {
+        to_update <- .packages_to_update(binary_repo = binary_repo_url)
+        deps <- tools::package_dependencies(to_update, db, recursive=FALSE)
     }
     deps
 }

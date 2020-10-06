@@ -17,7 +17,7 @@ lib_path <- "/host/library"
 bin_path <- "/host/binaries"
 deps_rds <- "pkg_dependencies.rds"
 ## the 'binary_repository' is where the existing binaries are located.
-binary_repo_path <- "anvil-rstudio-bioconductor-test/0.99/3.11/"
+binary_repo <- "anvil-rstudio-bioconductor-test/0.99/3.11/"
 
 
 ##########
@@ -35,19 +35,10 @@ BiocKubeInstall:::.create_library_paths(
 
 ## Step. 2 : Load deps and installed packages
 ## if FULL_INSTALL
-if (!file.exists(deps_rds)) {
-    deps <- BiocKubeInstall:::.pkg_dependencies()
-} else {
-    deps <- readRDS(deps_rds)
-}
-## ELSE find deps for packages which need to be updated
-binary_repo_url <- paste0("https://storage.googleapis.com/", binary_repo_path)
-to_update <- .packages_to_update(binary_repo = binary_repo_url)
-updated_deps <- tools::package_dependencies(to_update, db, recursive=FALSE)
-
+deps <- BiocKubeInstall:::.pkg_dependencies(binary_repo = binary_repo)
+inst <- installed.packages(lib.loc = lib_path)
 
 ## Step 3: Run kube_install so package binaries are built
-inst <- installed.packages(lib.loc = lib_path)
 res <- BiocKubeInstall::kube_install(
                             workers = workers,
                             lib_path = lib_path,
