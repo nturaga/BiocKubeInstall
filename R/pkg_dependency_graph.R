@@ -148,9 +148,6 @@ pkg_dependencies <-
 .packages_to_update <-
     function(binary_repo = character())
 {
-    stopifnot(.is_scalar_character(binary_repo))
-    binary_repo <- paste0("https://storage.googleapis.com/", binary_repo)
-
     ## Read bioc and bucket PACKAGES
     bioc_pkgs <- as.data.frame(available.packages(
         repos = BiocManager::repositories()['BioCsoft']
