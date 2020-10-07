@@ -115,7 +115,7 @@
 #' @examples
 #' \dontrun{
 #' gcloud_create_cran_bucket(
-#'     bucket = "gs://bioconductor-docker-test",
+#'     bucket = "bioconductor-docker-test",
 #'     image_version = "0.99",
 #'     bioc_version = "3.11",
 #'     secret = "/home/mysecret.json",
@@ -131,6 +131,10 @@ gcloud_create_cran_bucket <-
              bioc_version = as.character(BiocManager::version()),
              secret, public = TRUE)
 {
+    if(!grepl("^gs://", bucket)) {
+        bucket <- paste0("gs://", bucket)
+    }
+
     ## Validity checks
     stopifnot(
         .gsutil_is_uri(bucket), .is_scalar_logical(public),
@@ -186,7 +190,7 @@ gcloud_create_cran_bucket <-
 #'     are stored.
 #'
 #' @param bucket character(1) bucket name for the google storage
-#'     bucket.
+#'     bucket, it must include the FULL path of the CRAN style repo.
 #'
 #' @param secret character(1) path to the location of the secret key
 #'     for the service account.
@@ -198,20 +202,25 @@ gcloud_create_cran_bucket <-
 #' \dontrun{
 #' gcloud_binary_sync(
 #'     bin_path = "/host/binaries",
-#'     bucket = "gs://bucket-name/0.99/3.11/src/contrib/"
+#'     bucket = "anvil-rstudio-bioconductor/0.99/3.11/src/contrib/"
 #'     secret = "/home/rstudio/key.json"
 #' )
 #' }
-#' @importFrom AnVIL gsutil_rsync
+#' @importFrom AnVIL gsutil_rsync gsutil_exists
 #'
 #' @export
 gcloud_binary_sync <-
     function(bin_path, bucket, secret = "/home/rstudio/key.json")
 {
+    if(!grepl("^gs://", bucket)) {
+        bucket <- paste0("gs://", bucket)
+    }
+
     ## Validity checks
     stopifnot(
         .is_scalar_character(bin_path), .gsutil_is_uri(bucket),
-        .is_scalar_character(secret), file.exists(secret)
+        .is_scalar_character(secret), file.exists(secret),
+        gsutil_exists(bucket)
     )
 
     ## authenticate with secret

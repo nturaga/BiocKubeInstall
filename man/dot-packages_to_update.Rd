@@ -21,8 +21,8 @@ Compare binary PACKAGES file to current Bioconductor
 }
 \examples{
 \dontrun{
-repo <- "https://storage.googleapis.com/anvil-rstudio-bioconductor-test/0.99/3.11/"
-.packages_to_update(binary_repo = repo)
+binary_repo <- "anvil-rstudio-bioconductor-test/0.99/3.11/"
+.packages_to_update(binary_repo = binary_repo)
 }
 
 }

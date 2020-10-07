@@ -1,11 +1,54 @@
-#' @keywords internal
+#' Create a dependency graph for all Bioconductor packages.
 #'
-#' @title Calculate the package dependency graph
+#' @description The function takes in a 'binary_repo' which is a CRAN
+#'     style google bucket. It creates a package dependency graph in
+#'     the form of a 'list()' while excluding R 'base' packages. The
+#'     'binary_repo' needs to be a public google bucket. If you need
+#'     to create a new google bucket in a CRAN style structure, see
+#'     'gcloud_create_cran_bucket()'. If a newly created bucket is
+#'     passed into the function, it will create a full package
+#'     dependency structure for all Biconductor packages.
+#'
+#' @seealso 'gcloud_create_cran_bucket'
+#'
+#' @param binary_repo character() vector of the binary repository in
+#'     the form eg. "anvil-rstudio-bioconductor/0.99/3.11"
+#'
+#' @return 'pkg_dependencies()' returns a list of Bioconductor
+#'     packages with the dependencies of the package. If the
+#'     'binary_repo' given has a pre-populated set of packages then
+#'     only the packages that need to updated are in the list.
+#'
+#' @examples
+#' \dontrun{
+#' ## First way, give it a pre-existing binary repository
+#' ## hosted as a google bucket.
+#' deps <- pkg_dependencies(
+#'     binary_repo = "anvil-rstudio-bioconductor/0.99/3.11"
+#' )
+#'
+#' ## Second way, create a new bucket with no packages in it.
+#' gcloud_create_cran_bucket(
+#'     "gs://my-new-binary-bucket", "1.0",
+#'     "3.11", secret = "/home/mysecret.json",
+#'      public = TRUE
+#' )
+#' deps_new <- pkg_dependencies(
+#'     binary_repo = "my-new-binary-bucket/1.0/3.11"
+#' )
+#' }
 #'
 #' @importFrom tools package_dependencies
-.pkg_dependencies <-
+#'
+#' @export
+pkg_dependencies <-
     function(binary_repo = character())
 {
+    flog.appender(appender.file('kube_install.log'), name = 'kube_install')
+
+    stopifnot(.is_scalar_character(binary_repo))
+    ## TODO: make sure function is usable for other clouds
+    ## pass argument 'cloud = "gcp"'
     binary_repo_url <- paste0("https://storage.googleapis.com/", binary_repo)
 
     binary_pkgs <- as.data.frame(available.packages(
@@ -16,13 +59,17 @@
 
     ## if: Create full set of binaries
     if (nrow(binary_pkgs) == 0) {
-        soft <- available.packages(repos = BiocManager::repositories()["BioCsoft"])
+        soft <- available.packages(
+            repos = BiocManager::repositories()["BioCsoft"]
+        )
         deps0 <- package_dependencies(rownames(soft), db, recursive=TRUE)
         ## return deps
         deps <- package_dependencies(
             union(names(deps0), unlist(deps0, use.names = FALSE)),
             db, recursive=FALSE
         )
+        flog.info('all Bioconductor packages need to be built.',
+                  name = "kube_install")
     ## else: Create deps set to be updated
     } else {
         to_update <- .packages_to_update(binary_repo = binary_repo_url)
@@ -31,7 +78,11 @@
         pkgs <- unique(unlist(deps, use.names=FALSE))
         done <- pkgs[!pkgs %in% names(deps)]
         deps <- .trim(deps, done)
+        flog.info('some Bioconductor packages need to be built.',
+                  name = "kube_install")
     }
+    flog.info('dependency graph resulted in %d packages to build.',
+              length(names(deps)), name = "kube_install")
     deps
 }
 
@@ -56,11 +107,23 @@
 .create_library_paths <-
     function(library_path, binary_path)
 {
-    if (!file.exists(library_path))
-        dir.create(library_path, recursive = TRUE)
+    flog.appender(appender.file('kube_install.log'), name = 'kube_install')
 
-    if (!file.exists(binary_path))
+    if (!file.exists(library_path)) {
+        dir.create(library_path, recursive = TRUE)
+        flog.info(
+            'created library_path: %s', library_path,
+            name = "kube_install"
+        )
+    }
+
+    if (!file.exists(binary_path)) {
         dir.create(binary_path, recursive = TRUE)
+        flog.info(
+            'created binary_path: %s', binary_path,
+            name = "kube_install"
+        )
+    }
 }
 
 
@@ -75,8 +138,8 @@
 #'
 #' @examples
 #' \dontrun{
-#' repo <- "https://storage.googleapis.com/anvil-rstudio-bioconductor-test/0.99/3.11/"
-#' .packages_to_update(binary_repo = repo)
+#' binary_repo <- "anvil-rstudio-bioconductor-test/0.99/3.11/"
+#' .packages_to_update(binary_repo = binary_repo)
 #' }
 #'
 #' @return `.packages_to_update()` returns character vector of
@@ -85,6 +148,9 @@
 .packages_to_update <-
     function(binary_repo = character())
 {
+    stopifnot(.is_scalar_character(binary_repo))
+    binary_repo <- paste0("https://storage.googleapis.com/", binary_repo)
+
     ## Read bioc and bucket PACKAGES
     bioc_pkgs <- as.data.frame(available.packages(
         repos = BiocManager::repositories()['BioCsoft']

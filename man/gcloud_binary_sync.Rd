@@ -11,7 +11,7 @@ gcloud_binary_sync(bin_path, bucket, secret = "/home/rstudio/key.json")
 are stored.}
 
 \item{bucket}{character(1) bucket name for the google storage
-bucket.}
+bucket, it must include the FULL path of the CRAN style repo.}
 
 \item{secret}{character(1) path to the location of the secret key
 for the service account.}
@@ -33,7 +33,7 @@ Sync binaries created by the `kube_install()` function
 \dontrun{
 gcloud_binary_sync(
     bin_path = "/host/binaries",
-    bucket = "gs://bucket-name/0.99/3.11/src/contrib/"
+    bucket = "anvil-rstudio-bioconductor/0.99/3.11/src/contrib/"
     secret = "/home/rstudio/key.json"
 )
 }

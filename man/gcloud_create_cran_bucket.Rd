@@ -53,7 +53,7 @@ Create a CRAN style bucket used to store the package
 \examples{
 \dontrun{
 gcloud_create_cran_bucket(
-    bucket = "gs://bioconductor-docker-test",
+    bucket = "bioconductor-docker-test",
     image_version = "0.99",
     bioc_version = "3.11",
     secret = "/home/mysecret.json",

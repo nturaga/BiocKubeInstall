@@ -5,13 +5,7 @@
 \title{Install and create binaries for packages parallely using a
 kubernetes cluster.}
 \usage{
-kube_install(
-  workers,
-  lib_path,
-  bin_path,
-  deps = .pkg_dependecies(),
-  inst = installed.packages()
-)
+kube_install(workers, lib_path, bin_path, deps)
 }
 \arguments{
 \item{workers}{numeric() number of workers in the kubernetes
@@ -26,9 +20,6 @@ stored.}
 
 \item{deps}{package dependecy graph as computed by
 `.pkg_dependecies()`.}
-
-\item{inst}{installed packages as computed by
-`installed.packages()`.}
 }
 \description{
 Install packages and create binaries using a
@@ -39,14 +30,33 @@ Install packages and create binaries using a
     beware of the charges.
 }
 \examples{
-\donttest{
-deps_rds <- readRDS(system.file("extdata", "pkg_dependencies.rds"))
+\dontrun{
+
+## First method:
+## Run with a pre-existing bucket with some packages.
+## This will update only the new packages
+binary_repo <- "anvil-rstudio-bioconductor/0.99/3.11/"
+deps <- pkg_dependecies(binary_repo = binary_repo)
 kube_install(
     workers = 6L,
     lib_path = "/host/library",
     bin_path = "/host/binaries",
-    deps = deps_rds,
-    inst = installed.packages())
+    deps = deps
+)
+
+## Second method:
+## Create a new google CRAN style bucket and populate with binaries.
+gcloud_create_cran_bucket("gs://my-new-binary-bucket",
+    "1.0", "3.11", secret = "/home/mysecret.json", public = TRUE)
+
+deps_new <- pkg_dependencies(binary_repo = "my-new-binary-bucket/1.0/3.11")
+
+kube_install(
+    workers = 6L,
+    lib_path = "/host/library",
+    bin_path = "/host/binaries",
+    deps = deps_new
+)
 }
 
 }
