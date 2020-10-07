@@ -18,6 +18,7 @@ bin_path <- "/host/binaries"
 ## the 'binary_repository' is where the existing binaries are located.
 secret_path <- "/home/rstudio/key.json"
 binary_repo <- "anvil-rstudio-bioconductor-test/0.99/3.11/"
+cran_bucket <- "anvil-rstudio-bioconductor/0.99/3.11/src/contrib/"
 
 ##########
 ## RUN
@@ -38,7 +39,7 @@ res <- BiocKubeInstall::kube_install(workers = parallelism,
 ## Step 4: Run sync to google bucket
 BiocKubeInstall::gcloud_binary_sync(secret = secret_path,
                                     bin_path = bin_path,
-                                    bucket = binary_repo)
+                                    bucket = cran_bucket)
 
 ## Step 5: check if all workers were used
 check <- table(unlist(res))
