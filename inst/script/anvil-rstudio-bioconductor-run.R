@@ -10,14 +10,12 @@ library(BiocKubeInstall)
 Sys.setenv(REDIS_HOST = Sys.getenv("REDIS_SERVICE_HOST"))
 Sys.setenv(REDIS_PORT = Sys.getenv("REDIS_SERVICE_PORT"))
 
-## the parameter parallelism has to match what is on the
-## worker-jobs.yaml file.
 parallelism <- 6L
 lib_path <- "/host/library"
 bin_path <- "/host/binaries"
 ## the 'binary_repository' is where the existing binaries are located.
 secret_path <- "/home/rstudio/key.json"
-binary_repo <- "anvil-rstudio-bioconductor-test/0.99/3.11/"
+binary_repo <- "anvil-rstudio-bioconductor/0.99/3.11/"
 cran_bucket <- "anvil-rstudio-bioconductor/0.99/3.11/src/contrib/"
 
 ##########
