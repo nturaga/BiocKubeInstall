@@ -18,9 +18,20 @@ secret_path <- "/home/rstudio/key.json"
 binary_repo <- "bioconductor_docker/0.99/3.12/"
 cran_bucket <- "bioconductor_docker/0.99/3.12/src/contrib/"
 
+
+
 ##########
 ## RUN
 ##########
+
+## Step 0: Create a bucket if you need to
+## gcloud_create_cran_bucket(
+##     bucket = "bioconductor_docker",
+##     image_version = "0.99",
+##     bioc_version = "3.12",
+##     secret = "/home/rstudio/key.json",
+##     public = TRUE
+## )
 
 ## Step 1:  Wait till all the worker pods are up and running
 BiocKubeInstall::kube_wait(workers = parallelism)

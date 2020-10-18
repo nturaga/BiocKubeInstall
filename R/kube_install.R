@@ -28,6 +28,9 @@ kube_install_single_package <-
     function(pkg, lib_path, bin_path)
 {
     .libPaths(c(lib_path, .libPaths()))
+
+    flog.appender(appender.file('kube_install.log'), name = 'kube_install')
+    flog.info("building binary for package: %s", pkg, name = 'kube_install')
     cwd <- setwd(bin_path)
     on.exit(setwd(cwd))
     BiocManager::install(
@@ -152,7 +155,6 @@ kube_install <-
     inst <- installed.packages()
     do <- inst[,"Package"][inst[,"Priority"] %in% "base"]
     deps <- deps[!names(deps) %in% do]
-
     repeat {
         deps <- .trim(deps, do)
         do <- names(deps)[lengths(deps) == 0L]
@@ -162,6 +164,10 @@ kube_install <-
                                     progressbar = TRUE, stop.on.error = FALSE)
 
         ## do the work here
+        flog.info(
+            "RedisParam is going install %d packages in DFS level",
+            length(do), name = "kube_install"
+        )
         res <-  bptry(bplapply(
             do, kube_install_single_package,
             BPPARAM = p,
@@ -172,8 +178,11 @@ kube_install <-
         errs <- res[!bpok(res)]
         err_packages <- names(res)[!bpok(res)]
         for (err in seq_along(errs)) {
-            flog.error(err_packages[err], name = "kube_install")
-            flog.error(conditionMessage(errs[err]), name = "kube_install")
+            flog.error("Package: %s", err_packages[err],
+                       name = "kube_install")
+            flog.error("Error message: %s",
+                       conditionMessage(errs[[err]]),
+                       name = "kube_install")
         }
 
         n_old <- length(deps)
