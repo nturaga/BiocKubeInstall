@@ -6,10 +6,6 @@ library(BiocKubeInstall)
 ## GLOBALS
 ##########
 
-## Ports needed for Redis to work
-Sys.setenv(REDIS_HOST = Sys.getenv("REDIS_SERVICE_HOST"))
-Sys.setenv(REDIS_PORT = Sys.getenv("REDIS_SERVICE_PORT"))
-
 parallelism <- 6L
 lib_path <- "/host/library"
 bin_path <- "/host/binaries"
