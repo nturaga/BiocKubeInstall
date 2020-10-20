@@ -9,12 +9,13 @@ Authors@R:
 Description: Build binaries for packages in R / Bioconductor using a
 	     Kubernetes Cluster. The package is internal to
 	     Bioconductor, and is used to create binaries for Docker
-	     images produced by Bioconductor. The package has potential
-	     to be extended to be used on Clusters created on other
-	     cloud services like azure / aws, but right now a lot of
-		 the functionality is specific to the Google Cloud. This
-		 package goes together with the `Bioconductor/k8sredis`
-		 kubernetes application. It does not work stand alone.
+	     images produced by Bioconductor. The package has
+	     potential to be extended to be used on Clusters created
+	     on other cloud services like azure / aws, but right now a
+	     lot of the functionality is specific to the Google
+	     Cloud. This package goes together with the
+	     `Bioconductor/k8sredis` kubernetes application. It does
+	     not work stand alone.
 License: Artistic-2.0
 Encoding: UTF-8
 Depends: R (>= 4.0)
