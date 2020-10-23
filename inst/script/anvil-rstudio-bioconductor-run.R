@@ -6,11 +6,13 @@ library(BiocKubeInstall)
 ## GLOBALS
 ##########
 
-parallelism <- 6L
-lib_path <- "/host/library"
-bin_path <- "/host/binaries"
+workers <- 2L
+lib_path <- "/root/library"
+bin_path <- "/root/binaries"
 ## the 'binary_repository' is where the existing binaries are located.
-secret_path <- "/home/rstudio/key.json"
+
+## No secret is needed for the test env
+## secret_path <- "/home/rstudio/key.json"
 binary_repo <- "anvil-rstudio-bioconductor/0.99/3.11/"
 cran_bucket <- "anvil-rstudio-bioconductor/0.99/3.11/src/contrib/"
 
@@ -25,7 +27,7 @@ BiocKubeInstall::kube_wait(workers = parallelism)
 deps <- BiocKubeInstall::pkg_dependencies(binary_repo = binary_repo)
 
 ## Step 3: Run kube_install so package binaries are built
-res <- BiocKubeInstall::kube_install(workers = parallelism,
+res <- BiocKubeInstall::kube_install(workers = workers,
                                      lib_path = lib_path,
                                      bin_path = bin_path,
                                      deps = deps)

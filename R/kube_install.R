@@ -39,7 +39,10 @@ kube_install_single_package <-
                      update=FALSE,
                      quiet=TRUE
                  )
-    Sys.info()[["nodename"]]
+    ## list(
+    ##     "nodename" = Sys.info()[["nodename"]],
+    ##     "package" = pkg
+    ## )
 }
 
 
@@ -151,13 +154,23 @@ kube_install <-
     ## Create library_path and binary_path
     .create_library_paths(lib_path, bin_path)
 
-    ## drop "base" packages these on the first iteration
+    ## Filter 1: drop "base" packages these on the first iteration
     inst <- installed.packages()
     do <- inst[,"Package"][inst[,"Priority"] %in% "base"]
     deps <- deps[!names(deps) %in% do]
+
+    ## Filter 2: Repeated filter of failed packages
+    failed_packages <- c()
     repeat {
+
         deps <- .trim(deps, do)
         do <- names(deps)[lengths(deps) == 0L]
+        ## Filter 2: Removing failed packages
+        do <- do[!do %in% failed_packages]
+
+        ## Convert do into a named list called "to_install"
+        to_install <- as.list(do)
+        names(to_install) <- do
 
         p <- RedisParam::RedisParam(workers = workers, jobname = "demo",
                                     is.worker = FALSE, tasks=length(do),
@@ -169,7 +182,7 @@ kube_install <-
             length(do), name = "kube_install"
         )
         res <-  bptry(bplapply(
-            do, kube_install_single_package,
+            to_install, kube_install_single_package,
             BPPARAM = p,
             lib_path = lib_path,
             bin_path = bin_path
@@ -177,6 +190,7 @@ kube_install <-
         ## LOG ERROR
         errs <- res[!bpok(res)]
         err_packages <- names(res)[!bpok(res)]
+        failed_packages <- c(failed_packages, err_packages)
         for (err in seq_along(errs)) {
             flog.error("Package: %s", err_packages[err],
                        name = "kube_install")
@@ -190,6 +204,8 @@ kube_install <-
         deps <- deps[!names(deps) %in% do]
         ## TODO : Trim out packages that depend on XPS
         ## and packages that don't install
+        failed_packages <- c(failed_packages, err_packages)
+
         if (length(deps) == n_old)
             break
     }
