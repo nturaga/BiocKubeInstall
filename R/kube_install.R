@@ -29,7 +29,7 @@ kube_install_single_package <-
 {
     .libPaths(c(lib_path, .libPaths()))
 
-    flog.appender(appender.file('kube_install.log'), name = 'kube_install')
+    flog.appender(appender.tee('kube_install.log'), name = 'kube_install')
     flog.info("building binary for package: %s", pkg, name = 'kube_install')
     cwd <- setwd(bin_path)
     on.exit(setwd(cwd))
@@ -142,11 +142,14 @@ kube_wait <-
 kube_install <-
     function(workers, lib_path, bin_path, deps)
 {
-    stopifnot(is.integer(workers), .is_scalar_character(lib_path),
-              .is_scalar_character(bin_path))
+    stopifnot(
+        is.integer(workers),
+        .is_scalar_character(lib_path),
+        .is_scalar_character(bin_path)
+    )
 
     ## Logging
-    flog.appender(appender.file('kube_install.log'), name = 'kube_install')
+    flog.appender(appender.tee('kube_install.log'), name = 'kube_install')
 
     ## Create library_path and binary_path
     .create_library_paths(lib_path, bin_path)

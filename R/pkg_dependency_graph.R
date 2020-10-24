@@ -78,7 +78,7 @@ pkg_dependencies <-
         idx <- db[, "Repository"] == contrib_url
         soft <- rownames(db)[idx]
         flog.info(
-            'building %d Bioconductor software packages.',
+            '%d Bioconductor software packages available',
             length(soft),
             name = "kube_install"
         )
@@ -97,10 +97,10 @@ pkg_dependencies <-
         pkgs <- unique(unlist(deps, use.names=FALSE))
         done <- pkgs[!pkgs %in% names(deps)]
         deps <- .trim(deps, done, character())
-        flog.info('some Bioconductor packages need to be built.',
+        flog.info('some Bioconductor packages need to be built',
                   name = "kube_install")
     }
-    flog.info('dependency graph resulted in %d packages to build.',
+    flog.info('%d packages in the dependency graph',
               length(deps), name = "kube_install")
     deps
 }
@@ -145,8 +145,6 @@ pkg_dependencies <-
 .create_library_paths <-
     function(library_path, binary_path)
 {
-    flog.appender(appender.file('kube_install.log'), name = 'kube_install')
-
     if (!file.exists(library_path)) {
         dir.create(library_path, recursive = TRUE)
         flog.info(
