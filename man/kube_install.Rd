@@ -5,7 +5,7 @@
 \title{Install and create binaries for packages parallely using a
 kubernetes cluster.}
 \usage{
-kube_install(workers, lib_path, bin_path, deps)
+kube_install(workers, lib_path, bin_path, deps, BPPARAM = NULL)
 }
 \arguments{
 \item{workers}{numeric() number of workers in the kubernetes
@@ -20,6 +20,11 @@ stored.}
 
 \item{deps}{package dependecy graph as computed by
 `.pkg_dependecies()`.}
+
+\item{BPPARAM}{A `BiocParallelParam` object specifying how each
+level of the dependency graph will be parallelized. Use
+`SerialParam()` for debugging; `RedisParam()` for use in
+kubernetes.}
 }
 \description{
 Install packages and create binaries using a

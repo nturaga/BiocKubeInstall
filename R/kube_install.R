@@ -106,6 +106,11 @@ kube_wait <-
 #' @param deps package dependecy graph as computed by
 #'     `.pkg_dependecies()`.
 #'
+#' @param BPPARAM A `BiocParallelParam` object specifying how each
+#'     level of the dependency graph will be parallelized. Use
+#'     `SerialParam()` for debugging; `RedisParam()` for use in
+#'     kubernetes.
+#'
 #' @importFrom RedisParam RedisParam
 #' @importFrom BiocParallel bplapply bptry bpok
 #' @importFrom futile.logger flog.error flog.info flog.appender
@@ -143,7 +148,7 @@ kube_wait <-
 #'
 #' @export
 kube_install <-
-    function(workers, lib_path, bin_path, deps)
+    function(workers, lib_path, bin_path, deps, BPPARAM = NULL)
 {
     stopifnot(
         is.integer(workers),
@@ -151,17 +156,20 @@ kube_install <-
         .is_scalar_character(bin_path)
     )
 
+    if (is.null(BPPARAM)) {
+        BPPARAM <- RedisParam(
+            workers = workers, jobname = "demo",
+            is.worker = FALSE,
+            progressbar = TRUE, stop.on.error = FALSE
+        )
+    }
+
+
     ## Logging
     flog.appender(appender.tee('kube_install.log'), name = 'kube_install')
 
     ## Create library_path and binary_path
     .create_library_paths(lib_path, bin_path)
-
-    BPPARAM <- RedisParam(
-        workers = workers, jobname = "demo",
-        is.worker = FALSE,
-        progressbar = TRUE, stop.on.error = FALSE
-    )
 
     result <- .depends_apply(
         deps,

@@ -1,10 +1,11 @@
 .exclude <-
-    function(deps, exclude)
+    function(X, exclude)
 {
+    exclude <- intersect(exclude, c(names(X), unlist(X, use.names = FALSE)))
     ## remove from deps
-    deps <- deps[!names(deps) %in% exclude]
+    X <- X[!names(X) %in% exclude]
     ## remove satisfied dependencies
-    deps <- Map(setdiff, deps, MoreArgs = list(y = exclude))
+    X <- Map(setdiff, X, MoreArgs = list(y = exclude))
 
     flog.info(
         "%d packages explicitly excluded [.exclude()]",
@@ -12,7 +13,7 @@
         name = "kube_install"
     )
 
-    deps
+    X
 }
 
 #' @importFrom methods is
