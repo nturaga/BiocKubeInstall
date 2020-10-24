@@ -77,7 +77,7 @@ pkg_dependencies <-
         ## Remove dependencies that do not need to be built
         pkgs <- unique(unlist(deps, use.names=FALSE))
         done <- pkgs[!pkgs %in% names(deps)]
-        deps <- .trim(deps, done)
+        deps <- .trim(deps, done, character())
         flog.info('some Bioconductor packages need to be built.',
                   name = "kube_install")
     }
@@ -86,18 +86,36 @@ pkg_dependencies <-
     deps
 }
 
+.base_packages <- function() {
+    inst <- installed.packages()
+    inst[inst[,"Priority"] %in% "base", "Package"]
+}
 
 #' @keywords internal
 #'
 #' @title Trim dependency graph
-.trim <- function(deps, drop) {
-    lvls <- names(deps)
-    df <- data.frame(
-        pkg = factor(rep(names(deps), lengths(deps)), levels = lvls),
-        dep = unlist(deps, use.names = FALSE)
+.trim <- function(deps, drop, fail) {
+
+    ## remove 'drop' (implicitly, and 'failed') from deps
+    deps <- deps[!names(deps) %in% drop]
+
+    ## remove packages with failed dependencies
+    n0 <- length(deps)
+    deps <- Filter(function(pkg_dep) {
+        !any(pkg_dep %in% fail)
+    }, deps)
+    n_fail_deps <- n0 - length(deps)
+
+    ## remove satisfied dependencies
+    deps <- Map(setdiff, deps, MoreArgs = list(y = drop))
+
+    flog.info(
+        ".trim() %d done; %d fail; %d failed dependencies",
+        length(drop), length(fail), n_fail_deps,
+        name = "kube_install"
     )
-    df <- df[!df$dep %in% drop,, drop = FALSE]
-    split(df$dep, df$pkg)
+
+    deps
 }
 
 

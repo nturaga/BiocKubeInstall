@@ -151,13 +151,16 @@ kube_install <-
     ## Create library_path and binary_path
     .create_library_paths(lib_path, bin_path)
 
-    ## drop "base" packages these on the first iteration
-    inst <- installed.packages()
-    do <- inst[,"Package"][inst[,"Priority"] %in% "base"]
-    deps <- deps[!names(deps) %in% do]
+    done <- .base_packages()
+    failed <- character()
     repeat {
-        deps <- .trim(deps, do)
+        n <- length(deps)
+        deps <- .trim(deps, done, failed)
+        if (length(deps) == n)
+            break
+
         do <- names(deps)[lengths(deps) == 0L]
+        names(do) <- do
 
         p <- RedisParam::RedisParam(workers = workers, jobname = "demo",
                                     is.worker = FALSE, tasks=length(do),
@@ -174,6 +177,8 @@ kube_install <-
             lib_path = lib_path,
             bin_path = bin_path
         ))
+        done <- do
+
         ## LOG ERROR
         errs <- res[!bpok(res)]
         err_packages <- names(res)[!bpok(res)]
