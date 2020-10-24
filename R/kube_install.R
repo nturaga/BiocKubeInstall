@@ -13,11 +13,13 @@
 #'     stored.
 #'
 #' @examples
+#' \dontrun{
 #' kube_install_single_package(
 #'     pkg = 'AnVIL',
 #'     lib_path = "/host/library",
 #'     bin_path = "/host/binaries"
 #' )
+#' }
 #'
 #' @return `kube_install_single_package()` returns invisibly.
 #'
@@ -106,7 +108,8 @@ kube_wait <-
 #'
 #' @importFrom RedisParam RedisParam
 #' @importFrom BiocParallel bplapply bptry bpok
-#' @importFrom futile.logger flog.error flog.info flog.appender appender.file
+#' @importFrom futile.logger flog.error flog.info flog.appender
+#'     appender.file appender.tee
 #'
 #' @examples
 #' \dontrun{
@@ -140,7 +143,7 @@ kube_wait <-
 #'
 #' @export
 kube_install <-
-    function(workers, lib_path, bin_path, deps, BPPARAM = NULL)
+    function(workers, lib_path, bin_path, deps)
 {
     stopifnot(
         is.integer(workers),

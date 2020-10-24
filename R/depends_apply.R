@@ -15,6 +15,9 @@
     deps
 }
 
+#' @importFrom methods is
+#'
+#' @importFrom BiocParallel `bpstopOnError<-` `bptasks<-`
 .depends_apply <-
     function(X, FUN, ..., exclude = .base_packages(), BPPARAM = NULL)
 {

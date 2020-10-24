@@ -4,7 +4,7 @@
 \alias{.trim}
 \title{Trim dependency graph}
 \usage{
-.trim(deps, drop)
+.trim(deps, drop, fail)
 }
 \description{
 Trim dependency graph

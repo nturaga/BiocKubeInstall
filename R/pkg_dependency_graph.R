@@ -40,6 +40,8 @@
 #'
 #' @importFrom tools package_dependencies
 #'
+#' @importFrom utils contrib.url
+#'
 #' @export
 pkg_dependencies <-
     function(binary_repo = character())
@@ -105,6 +107,7 @@ pkg_dependencies <-
     deps
 }
 
+#' @importFrom utils installed.packages
 .base_packages <- function() {
     inst <- installed.packages()
     inst[inst[,"Priority"] %in% "base", "Package"]
@@ -181,6 +184,7 @@ pkg_dependencies <-
 #' @return `.packages_to_update()` returns character vector of
 #'     packages to be updated.
 #'
+#' @importFrom utils available.packages
 .packages_to_update <-
     function(binary_repo = character())
 {
