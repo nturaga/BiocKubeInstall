@@ -140,7 +140,7 @@ kube_wait <-
 #'
 #' @export
 kube_install <-
-    function(workers, lib_path, bin_path, deps)
+    function(workers, lib_path, bin_path, deps, BPPARAM = NULL)
 {
     stopifnot(
         is.integer(workers),
@@ -154,47 +154,30 @@ kube_install <-
     ## Create library_path and binary_path
     .create_library_paths(lib_path, bin_path)
 
-    done <- .base_packages()
-    failed <- character()
-    repeat {
-        n <- length(deps)
-        deps <- .trim(deps, done, failed)
-        if (length(deps) == n)
-            break
+    BPPARAM <- RedisParam(
+        workers = workers, jobname = "demo",
+        is.worker = FALSE,
+        progressbar = TRUE, stop.on.error = FALSE
+    )
 
-        do <- names(deps)[lengths(deps) == 0L]
-        names(do) <- do
+    result <- .depends_apply(
+        deps,
+        kube_install_single_package,
+        lib_path = lib_path,
+        bin_path = bin_path,
+        BPPARAM = BPPARAM
+    )
 
-        p <- RedisParam::RedisParam(workers = workers, jobname = "demo",
-                                    is.worker = FALSE, tasks=length(do),
-                                    progressbar = TRUE, stop.on.error = FALSE)
-
-        ## do the work here
-        flog.info(
-            "RedisParam is going install %d packages in DFS level",
-            length(do), name = "kube_install"
-        )
-        res <-  bptry(bplapply(
-            do, kube_install_single_package,
-            BPPARAM = p,
-            lib_path = lib_path,
-            bin_path = bin_path
-        ))
-        done <- do
-
-        ## LOG ERROR
-        errs <- res[!bpok(res)]
-        err_packages <- names(res)[!bpok(res)]
-        err_messages <- vapply(errs, conditionMessage, character(1))
-        err_text <- sprintf("Package: %s; error: %s", err_packages, err_messages)
-        flog.error(err_text, name = "kube_install")
-    }
-
-    flog.info("failed to build %d packages", length(deps),
-              name = "kube_install")
+    flog.info(
+        "%d built, %d failed, %d excluded [kube_install()]",
+        sum(result, na.rm = TRUE),
+        sum(!result, na.rm = TRUE),
+        sum(is.na(result)),
+        name = "kube_install"
+    )
 
     ## Create PACKAGES, PACKAGES.gz, PACAKGES.rds
     tools::write_PACKAGES(bin_path, addFiles=TRUE, verbose = TRUE)
 
-    res
+    result
 }
