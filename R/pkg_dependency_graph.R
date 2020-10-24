@@ -44,32 +44,51 @@
 pkg_dependencies <-
     function(binary_repo = character())
 {
-    flog.appender(appender.file('kube_install.log'), name = 'kube_install')
-
-    stopifnot(.is_scalar_character(binary_repo))
+    stopifnot(.is_character(binary_repo))
     ## TODO: make sure function is usable for other clouds
     ## pass argument 'cloud = "gcp"'
-    binary_repo_url <- paste0("https://storage.googleapis.com/", binary_repo)
+    cloud <- "https://storage.googleapis.com/"
 
-    binary_pkgs <- as.data.frame(available.packages(
-        repos = binary_repo_url
-    )[,c('Package', 'Version')])
+    ## use `sprintf()` to produce a zero-length vector if binary_repo
+    ## == character()
+    binary_repo_url <- sprintf("%s/%s", cloud, binary_repo)
 
-    db <- available.packages(repos = BiocManager::repositories())
+    repos <- c(binary_repo_url, BiocManager::repositories())
+    db <- available.packages(repos = repos)
+    flog.info(
+        "%d packages available from %d repositories",
+        nrow(db), length(repos),
+        name = "kube_install"
+    )
+
+    contrib_url <-
+        if (length(binary_repo_url)) {
+            contrib.url(binary_repo_url)
+        } else {
+            character()
+        }
+    idx <- db[, "Repository"] == contrib_url
+    binary_pkgs <- db[idx, , drop = FALSE]
 
     ## if: Create full set of binaries
     if (nrow(binary_pkgs) == 0) {
-        soft <- available.packages(
-            repos = BiocManager::repositories()["BioCsoft"]
+
+        ## software package dependencies
+        contrib_url <- contrib.url(BiocManager::repositories()[["BioCsoft"]])
+        idx <- db[, "Repository"] == contrib_url
+        soft <- rownames(db)[idx]
+        flog.info(
+            'building %d Bioconductor software packages.',
+            length(soft),
+            name = "kube_install"
         )
-        deps0 <- package_dependencies(rownames(soft), db, recursive=TRUE)
-        ## return deps
-        deps <- package_dependencies(
-            union(names(deps0), unlist(deps0, use.names = FALSE)),
-            db, recursive=FALSE
-        )
-        flog.info('all Bioconductor packages need to be built.',
-                  name = "kube_install")
+        deps0 <- package_dependencies(soft, db, recursive=TRUE)
+
+        ## FULL dependency graph of non-software dependencies
+        other <- setdiff(unlist(deps0, use.names = FALSE), names(deps0))
+        deps1 <- package_dependencies(other, db, recursive = TRUE)
+
+        deps <- c(deps0, deps1)
     ## else: Create deps set to be updated
     } else {
         to_update <- .packages_to_update(binary_repo = binary_repo_url)
@@ -82,7 +101,7 @@ pkg_dependencies <-
                   name = "kube_install")
     }
     flog.info('dependency graph resulted in %d packages to build.',
-              length(names(deps)), name = "kube_install")
+              length(deps), name = "kube_install")
     deps
 }
 
