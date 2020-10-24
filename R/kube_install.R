@@ -182,21 +182,9 @@ kube_install <-
         ## LOG ERROR
         errs <- res[!bpok(res)]
         err_packages <- names(res)[!bpok(res)]
-        for (err in seq_along(errs)) {
-            flog.error("Package: %s", err_packages[err],
-                       name = "kube_install")
-            flog.error("Error message: %s",
-                       conditionMessage(errs[[err]]),
-                       name = "kube_install")
-        }
-
-        n_old <- length(deps)
-
-        deps <- deps[!names(deps) %in% do]
-        ## TODO : Trim out packages that depend on XPS
-        ## and packages that don't install
-        if (length(deps) == n_old)
-            break
+        err_messages <- vapply(errs, conditionMessage, character(1))
+        err_text <- sprintf("Package: %s; error: %s", err_packages, err_messages)
+        flog.error(err_text, name = "kube_install")
     }
 
     flog.info("failed to build %d packages", length(deps),
