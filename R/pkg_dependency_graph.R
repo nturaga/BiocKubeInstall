@@ -128,11 +128,12 @@ pkg_dependencies <-
     ## remove satisfied dependencies
     deps <- Map(setdiff, deps, MoreArgs = list(y = drop))
 
-    flog.info(
-        ".trim() %d done; %d fail; %d failed dependencies",
-        length(drop), length(fail), n_fail_deps,
-        name = "kube_install"
-    )
+    if (length(fail))
+        flog.info(
+            "%d failed; %d reverse dependencies excluded [.trim()]",
+            length(fail), n_fail_deps,
+            name = "kube_install"
+        )
 
     deps
 }
