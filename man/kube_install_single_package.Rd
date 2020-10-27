@@ -27,10 +27,12 @@ The package given by `pkg` is installed in the given
     `bin_path`.
 }
 \examples{
+\dontrun{
 kube_install_single_package(
     pkg = 'AnVIL',
     lib_path = "/host/library",
     bin_path = "/host/binaries"
 )
+}
 
 }

@@ -13,11 +13,13 @@
 #'     stored.
 #'
 #' @examples
+#' \dontrun{
 #' kube_install_single_package(
 #'     pkg = 'AnVIL',
 #'     lib_path = "/host/library",
 #'     bin_path = "/host/binaries"
 #' )
+#' }
 #'
 #' @return `kube_install_single_package()` returns invisibly.
 #'
@@ -29,7 +31,7 @@ kube_install_single_package <-
 {
     .libPaths(c(lib_path, .libPaths()))
 
-    flog.appender(appender.file('kube_install.log'), name = 'kube_install')
+    flog.appender(appender.tee('kube_install.log'), name = 'kube_install')
     flog.info("building binary for package: %s", pkg, name = 'kube_install')
     cwd <- setwd(bin_path)
     on.exit(setwd(cwd))
@@ -104,9 +106,15 @@ kube_wait <-
 #' @param deps package dependecy graph as computed by
 #'     `.pkg_dependecies()`.
 #'
+#' @param BPPARAM A `BiocParallelParam` object specifying how each
+#'     level of the dependency graph will be parallelized. Use
+#'     `SerialParam()` for debugging; `RedisParam()` for use in
+#'     kubernetes.
+#'
 #' @importFrom RedisParam RedisParam
 #' @importFrom BiocParallel bplapply bptry bpok
-#' @importFrom futile.logger flog.error flog.info flog.appender appender.file
+#' @importFrom futile.logger flog.error flog.info flog.appender
+#'     appender.file appender.tee
 #'
 #' @examples
 #' \dontrun{
@@ -140,65 +148,47 @@ kube_wait <-
 #'
 #' @export
 kube_install <-
-    function(workers, lib_path, bin_path, deps)
+    function(workers, lib_path, bin_path, deps, BPPARAM = NULL)
 {
-    stopifnot(is.integer(workers), .is_scalar_character(lib_path),
-              .is_scalar_character(bin_path))
+    stopifnot(
+        is.integer(workers),
+        .is_scalar_character(lib_path),
+        .is_scalar_character(bin_path)
+    )
+
+    if (is.null(BPPARAM)) {
+        BPPARAM <- RedisParam(
+            workers = workers, jobname = "demo",
+            is.worker = FALSE,
+            progressbar = TRUE, stop.on.error = FALSE
+        )
+    }
+
 
     ## Logging
-    flog.appender(appender.file('kube_install.log'), name = 'kube_install')
+    flog.appender(appender.tee('kube_install.log'), name = 'kube_install')
 
     ## Create library_path and binary_path
     .create_library_paths(lib_path, bin_path)
 
-    ## drop "base" packages these on the first iteration
-    inst <- installed.packages()
-    do <- inst[,"Package"][inst[,"Priority"] %in% "base"]
-    deps <- deps[!names(deps) %in% do]
-    repeat {
-        deps <- .trim(deps, do)
-        do <- names(deps)[lengths(deps) == 0L]
+    result <- .depends_apply(
+        deps,
+        kube_install_single_package,
+        lib_path = lib_path,
+        bin_path = bin_path,
+        BPPARAM = BPPARAM
+    )
 
-        p <- RedisParam::RedisParam(workers = workers, jobname = "demo",
-                                    is.worker = FALSE, tasks=length(do),
-                                    progressbar = TRUE, stop.on.error = FALSE)
-
-        ## do the work here
-        flog.info(
-            "RedisParam is going install %d packages in DFS level",
-            length(do), name = "kube_install"
-        )
-        res <-  bptry(bplapply(
-            do, kube_install_single_package,
-            BPPARAM = p,
-            lib_path = lib_path,
-            bin_path = bin_path
-        ))
-        ## LOG ERROR
-        errs <- res[!bpok(res)]
-        err_packages <- names(res)[!bpok(res)]
-        for (err in seq_along(errs)) {
-            flog.error("Package: %s", err_packages[err],
-                       name = "kube_install")
-            flog.error("Error message: %s",
-                       conditionMessage(errs[[err]]),
-                       name = "kube_install")
-        }
-
-        n_old <- length(deps)
-
-        deps <- deps[!names(deps) %in% do]
-        ## TODO : Trim out packages that depend on XPS
-        ## and packages that don't install
-        if (length(deps) == n_old)
-            break
-    }
-
-    flog.info("failed to build %d packages", length(deps),
-              name = "kube_install")
+    flog.info(
+        "%d built, %d failed, %d excluded [kube_install()]",
+        sum(result, na.rm = TRUE),
+        sum(!result, na.rm = TRUE),
+        sum(is.na(result)),
+        name = "kube_install"
+    )
 
     ## Create PACKAGES, PACKAGES.gz, PACAKGES.rds
     tools::write_PACKAGES(bin_path, addFiles=TRUE, verbose = TRUE)
 
-    res
+    result
 }
