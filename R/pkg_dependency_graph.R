@@ -49,7 +49,7 @@ pkg_dependencies <-
     stopifnot(.is_character(binary_repo))
     ## TODO: make sure function is usable for other clouds
     ## pass argument 'cloud = "gcp"'
-    cloud <- "https://storage.googleapis.com/"
+    cloud <- "https://storage.googleapis.com"
 
     ## use `sprintf()` to produce a zero-length vector if binary_repo
     ## == character()
