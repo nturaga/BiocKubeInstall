@@ -3,11 +3,11 @@ futile.logger::flog.threshold("FATAL", name = "kube_install")
 test_that("'.depends_apply()' works", {
 
     deps <- list(
-        A = list(),
-        B = list(),
-        C = list("A"),
-        D = list("B"),
-        E = list("A", "B")
+        A = character(),
+        B = character(),
+        C = "A",
+        D = "B",
+        E = c("A", "B")
     )
     param <- BiocParallel::SerialParam()
 
@@ -18,24 +18,24 @@ test_that("'.depends_apply()' works", {
     result <- .depends_apply(deps, identity, BPPARAM = param)
     expect_true(all(result))
 
-    result <- .depends_apply(deps, identity, exclude = "A", BPPARAM = param)
+    result <- .depends_apply(.exclude(deps, "A"), identity, BPPARAM = param)
     expect_equal(
-        c(A = NA, B = TRUE, C = TRUE, D = TRUE, E = TRUE),
-        result
+        result,
+        c(B = TRUE, C = TRUE, D = TRUE, E = TRUE)
     )
 
     FUN <- function(x, ...)
         if (x == "A") stop("oops")
     result <- .depends_apply(deps, FUN, BPPARAM = param)
     expect_equal(
-        c(A = FALSE, B = TRUE, C = NA, D = TRUE, E = NA),
-        result
+        result,
+        c(A = FALSE, B = TRUE, C = NA, D = TRUE, E = NA)
     )
 
-    result <- .depends_apply(deps, FUN, exclude = "B", BPPARAM = param)
+    result <- .depends_apply(.exclude(deps, "B"), FUN, BPPARAM = param)
     expect_equal(
-        c(A = FALSE, B = NA, C = NA, D = TRUE, E = NA),
-        result
+        result,
+        c(A = FALSE, C = NA, D = TRUE, E = NA)
     )
 
 })
