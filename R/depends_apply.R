@@ -1,3 +1,30 @@
+.include <-
+    function(X, include)
+{
+    all <- unique(c(names(X), unlist(X, use.names = FALSE)))
+    n0 <- length(all)
+
+    implicit <- intersect(include, all)
+    ## X[i] depends on include...
+    idx <- unlist(Map(
+        function(x, table) any(x %in% table),
+        X,
+        MoreArgs = list(table = implicit)
+    ))
+
+    ## or X _is_ include
+    X0 <- X[idx]
+    X <- X[idx | names(X) %in% c(names(X0), unlist(X0, use.names = FALSE))]
+
+    flog.info(
+        "%d of %d packages included",
+        length(implicit), n0,
+        name = "kube_install"
+    )
+
+    X
+}
+
 .exclude <-
     function(X, exclude)
 {
