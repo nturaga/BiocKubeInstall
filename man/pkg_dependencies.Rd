@@ -4,9 +4,15 @@
 \alias{pkg_dependencies}
 \title{Create a dependency graph for all Bioconductor packages.}
 \usage{
-pkg_dependencies(binary_repo = character())
+pkg_dependencies(build = c("_software", "_update"), binary_repo = character())
 }
 \arguments{
+\item{build}{character() One of '_software' (rebuild all packages
+in the 'BioCsoft' repository) or '_update' (existing binary
+packages in `binary_repo` for which newer versions are
+available in 'BioCsoft', and packages in 'BioCsoft' that are
+not available in `binary_repo`).}
+
 \item{binary_repo}{character() vector of the binary repository in
 the form eg. "anvil-rstudio-bioconductor/0.99/3.11"}
 }
@@ -41,6 +47,7 @@ gcloud_create_cran_bucket(
      public = TRUE
 )
 deps_new <- pkg_dependencies(
+    "_software",
     binary_repo = "my-new-binary-bucket/1.0/3.11"
 )
 }
