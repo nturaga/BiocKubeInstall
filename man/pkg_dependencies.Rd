@@ -4,7 +4,11 @@
 \alias{pkg_dependencies}
 \title{Create a dependency graph for all Bioconductor packages.}
 \usage{
-pkg_dependencies(build = c("_software", "_update"), binary_repo = character())
+pkg_dependencies(
+  version,
+  build = c("_software", "_update"),
+  binary_repo = character()
+)
 }
 \arguments{
 \item{build}{character() One of '_software' (rebuild all packages

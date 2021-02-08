@@ -5,7 +5,7 @@ Authors@R:
     person(given = "Nitesh",
 	   family = "Turaga",
 	   role = c("cre"),
-	   email = "nitesh.turaga@roswellpark.org")
+	   email = "nturaga.bioc@gmail.com")
 Description: Build binaries for packages in R / Bioconductor using a
 	     Kubernetes Cluster. The package is internal to
 	     Bioconductor, and is used to create binaries for Docker

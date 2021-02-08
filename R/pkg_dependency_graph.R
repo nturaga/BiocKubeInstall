@@ -155,7 +155,7 @@ NULL
 #'
 #' @export
 pkg_dependencies <-
-    function(build = c("_software", "_update"), binary_repo = character())
+    function(version, build = c("_software", "_update"), binary_repo = character())
 {
     build <- match.arg(build)
     stopifnot(
@@ -252,4 +252,10 @@ pkg_dependencies <-
             name = "kube_install"
         )
     }
+}
+
+
+.worker_repositories <- function(version) {
+    repos <- BiocManager::repositories(version = version)
+    sub("/[[:digit:]\\.]+/", paste0("/",version,"/"), repos)
 }

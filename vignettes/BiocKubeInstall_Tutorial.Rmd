@@ -1,8 +1,8 @@
 ---
-title: "BiocKubeInstall Tutorial"
+title: "BiocKubeInstall Usage"
 author:
 - name: Nitesh Turaga
-  affiliation: Roswell Park Comprehensive Cancer Center
+  affiliation: Dana Farber Cancer Institute
 package: BiocKubeInstall
 output:
   BiocStyle::html_document
@@ -22,7 +22,131 @@ vignette: |
   %\VignetteEncoding{UTF-8}
 ---
 
-Coming soon.
+# Prerequesites
+
+The following steps assume you have a Google cloud account, kubernetes
+controller (`kubectl`) installed, and your Google account configured,
+and have the following APIs enabled on the project at a minimum.
+
+	- Kubernetes Engine Admin
+	- Storage Admin
+	- Service account Admin
+
+These services cost money, and are to be used at your expense.
+
+# Kubernetes setup
+
+The 'BiocKubeInstall' package uses the `k8sredis` kubernetes
+configuration files to apply the kuberenetes configurations on to the
+GKE cluster.
+
+Once you have `k8sredis` downloaded from
+https://github.com/Bioconductor/k8sredis, you can do the following.
+
+### Steps:
+
+Default settings used in the following commands are based on local
+preferences. Please change them according to your needs.
+
+**cluster name**: biock8scluster
+
+**zone**: us-east1-b
+
+**service account name**: bioc-binaries
+
+**project ID**: fancy-house-303821
+
+1. Start a kubernetes cluster,
+
+		gcloud container clusters create \
+			--zone us-east1-b \
+			--num-nodes=6 \
+			--machine-type=e2-standard-4 biock8scluster
+
+1. Get the cluster credentials on your local machine,
+
+		gcloud container clusters get-credentials --zone us-east1-b biock8scluster
+
+1. Create a service account key. The service account key has 'Storage
+   Admin' permissions, so it can upload the binaries to a google
+   bucket.
+
+		## Create service account
+		gcloud iam service-accounts create bioc-binaries \
+			--display-name "Storage Admin SA" \
+			--description "Bioc Binaries storage admin"
+
+		## List service account
+		gcloud iam service-accounts list \
+			--filter bioc-binaries@fancy-house-303821.iam.gserviceaccount.com
+
+		## Download service account key locally
+		gcloud iam service-accounts keys create \
+			bioc-binaries.json \
+			--iam-account bioc-binaries@fancy-house-303821.iam.gserviceaccount.com
+
+		## Add 'Storage Admin' role to service account.
+		gcloud projects add-iam-policy-binding fancy-house-303821 \
+			--member \
+			"serviceAccount:bioc-binaries@fancy-house-303821.iam.gserviceaccount.com" \
+			--role "roles/storage.admin"
+
+1. Start NFS volume which is going to be attached to your
+   k8s compute nodes. The NFS mount is where the binary packages will
+   be stored. The location of the NFS volume is under the directory
+   `/host` on your compute nodes.
+
+		kubectl apply -f k8s/nfs-volume/
+
+1. Create a kubernetes secret from the service account key which was
+   downloaded in the previous steps `bioc-binaries.json`.
+
+   The service account key is going to be transmitted to the
+   kubernetes cluster in an encrypted manner. This command below
+   assumes that `bioc-binaries.json` is located in the same path where
+   you are running the `kubectl` commands.
+
+		kubectl create secret generic \
+			bioc-binaries-service-account-auth \
+			--from-file=service_account_key=bioc-binaries.json
+
+1. Once the key is created, you can now launch the `bioc-redis`
+   configuration on your kubernetes cluster.
+
+		kubectl apply -f k8s/bioc-redis
+
+
+### Manage kubernetes cluster (if needed)
+
+
+A few commands which help with the management of the kubernetes cluster are:
+
+- Check if all the pods, services, and nodes are working as expected:
+
+		kubectl get all
+
+- Describe specific pods or nodes, to check for failures
+
+		kubectl describe pod/manager 
+	
+- Log into a specific pod,
+
+		kubectl exec pod/manager --stdin --tty /bin/bash
+
+To delete and destroy your kubernetes cluster safely,
+
+	## Stop redis, rstudio services
+	kubectl delete -f k8s/bioc-redis/
+	
+	## Delete NFS volume (this is not recommended)
+	kubectl delete -f k8s/nfs-volume/
+
+	## Delete the kubernetes cluster completely losing all data.
+	gcloud container clusters delete biock8scluster
+
+
+# BiocKubeInstall
+
 
 
 ```{r}

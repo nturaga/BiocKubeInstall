@@ -33,7 +33,7 @@ Sync binaries created by the `kube_install()` function
 \dontrun{
 gcloud_binary_sync(
     bin_path = "/host/binaries",
-    bucket = "anvil-rstudio-bioconductor/0.99/3.11/src/contrib/"
+    bucket = "bioconductor_docker/packages/3.11/bioc/src/contrib/"
     secret = "/home/rstudio/key.json"
 )
 }

@@ -6,7 +6,6 @@
 \usage{
 gcloud_create_cran_bucket(
   bucket,
-  image_version,
   bioc_version = as.character(BiocManager::version()),
   secret,
   public = TRUE
@@ -15,9 +14,6 @@ gcloud_create_cran_bucket(
 \arguments{
 \item{bucket}{character(1) bucket name for the google storage
 bucket.}
-
-\item{image_version}{characater(1) version number for the
-docker image on which binaries are being created.}
 
 \item{bioc_version}{character(1) version number for Bioconductor,
 defaults to `BiocManager::version()`.}
@@ -48,13 +44,12 @@ Create a CRAN style bucket used to store the package
     `https://storage.googleapis.com/`.
 
     An example location for a package would be,
-    https://storage.googleapis.com/bucket-name/0.99/3.11/src/contrib/ABAData_1.19.0_R_x86_64-pc-linux-gnu.tar.gz
+    https://storage.googleapis.com/bioconductor_docker/packages/3.11/bioc/src/contrib/ABAData_1.19.0_R_x86_64-pc-linux-gnu.tar.gz
 }
 \examples{
 \dontrun{
 gcloud_create_cran_bucket(
-    bucket = "bioconductor-docker-test",
-    image_version = "0.99",
+    bucket = "bioconductor_docker",
     bioc_version = "3.11",
     secret = "/home/mysecret.json",
     public = TRUE

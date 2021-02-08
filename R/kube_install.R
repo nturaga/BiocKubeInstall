@@ -34,7 +34,11 @@ kube_install_single_package <-
     flog.appender(appender.tee('kube_install.log'), name = 'kube_install')
     flog.info("building binary for package: %s", pkg, name = 'kube_install')
     cwd <- setwd(bin_path)
-    on.exit(setwd(cwd))
+    warn_opt <- options(warn = 2)
+    on.exit({
+        options(warn_opt)
+        setwd(cwd)
+    })
     BiocManager::install(
                      pkg,
                      INSTALL_opts = "--build",
@@ -191,4 +195,53 @@ kube_install <-
     tools::write_PACKAGES(bin_path, addFiles=TRUE, verbose = TRUE)
 
     result
+}
+
+
+
+#' @export
+kube_run <-
+    function(version,
+             image_name = "bioconductor_docker")
+{
+    Sys.setenv(REDIS_HOST = Sys.getenv("REDIS_SERVICE_HOST"))
+    Sys.setenv(REDIS_PORT = Sys.getenv("REDIS_SERVICE_PORT"))
+    parallelism <- 6L
+
+    ## NFS mount paths
+    lib_path <- "/host/library"
+    bin_path <- "/host/binaries"
+    
+    ## Secret key to access S3 bucket on google
+    secret_path <- "/home/rstudio/key.json"
+
+    ## 'binary_repo' is where the existing binaries are located.
+    ## 'cran_bucket' is where packages are uploaded on a google bucket
+    binary_repo <- paste0(image_name, "/packages/", version, "/bioc/")
+    cran_repo <- paste0(binary_repo, "/src/contrib/")
+
+    ## Step 0: Create a bucket if you need to
+    gcloud_create_cran_bucket(bucket = "bioconductor_docker",
+                              bioc_version = "3.12",
+                              secret = secret_path, public = TRUE)
+
+    ## Step 1:  Wait till all the worker pods are up and running
+    BiocKubeInstall::kube_wait(workers = parallelism)
+
+    ## Step. 2 : Load deps and installed packages
+    deps <- BiocKubeInstall::pkg_dependencies(binary_repo = binary_repo)
+
+    ## Step 3: Run kube_install so package binaries are built
+    res <- BiocKubeInstall::kube_install(workers = parallelism,
+                                         lib_path = lib_path,
+                                         bin_path = bin_path,
+                                         deps = deps)
+
+    ## Step 4: Run sync to google bucket
+    BiocKubeInstall::gcloud_binary_sync(bin_path = bin_path,
+                                        bucket = cran_repo,
+                                        secret = secret_path)
+
+    ## ## Step 5: check if all workers were used
+    ## check <- table(unlist(res))
 }
