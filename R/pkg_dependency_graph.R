@@ -169,7 +169,7 @@ pkg_dependencies <-
     ## == character()
     binary_repo_url <- sprintf("%s/%s", cloud, binary_repo)
 
-    repos <- BiocManager::repositories()
+    repos <- .worker_repositories(version)
     db <- available.packages(repos = repos)
 
     flog.info(
@@ -254,8 +254,7 @@ pkg_dependencies <-
     }
 }
 
-
 .worker_repositories <- function(version) {
-    repos <- BiocManager::repositories(version = version)
+    repos <- BiocManager::repositories()
     sub("/[[:digit:]\\.]+/", paste0("/",version,"/"), repos)
 }

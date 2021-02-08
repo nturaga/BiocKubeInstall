@@ -222,14 +222,15 @@ kube_run <-
 
     ## Step 0: Create a bucket if you need to
     gcloud_create_cran_bucket(bucket = "bioconductor_docker",
-                              bioc_version = "3.12",
+                              bioc_version = version,
                               secret = secret_path, public = TRUE)
 
     ## Step 1:  Wait till all the worker pods are up and running
     BiocKubeInstall::kube_wait(workers = parallelism)
 
     ## Step. 2 : Load deps and installed packages
-    deps <- BiocKubeInstall::pkg_dependencies(binary_repo = binary_repo)
+    deps <- BiocKubeInstall::pkg_dependencies(version,
+                                              binary_repo = binary_repo)
 
     ## Step 3: Run kube_install so package binaries are built
     res <- BiocKubeInstall::kube_install(workers = parallelism,
@@ -243,5 +244,7 @@ kube_run <-
                                         secret = secret_path)
 
     ## ## Step 5: check if all workers were used
-    ## check <- table(unlist(res))
+    check <- table(unlist(res))
+
+    check
 }
