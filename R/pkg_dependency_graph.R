@@ -23,10 +23,10 @@
 NULL
 
 .pkg_dependencies_software <-
-    function(db)
+    function(version, db)
 {
     ## software package dependencies
-    contrib_url <- contrib.url(BiocManager::repositories()[["BioCsoft"]])
+    contrib_url <- contrib.url(.worker_repositories(version)[["BioCsoft"]])
     idx <- db[, "Repository"] == contrib_url
     software_pkgs <- rownames(db)[idx]
     flog.info(
@@ -47,13 +47,13 @@ NULL
 }
 
 .pkg_dependencies_update <-
-    function(db, binary_repo_url)
+    function(version, db, binary_repo_url)
 {
     stopifnot(
         .is_scalar_character(binary_repo_url)
     )
 
-    contrib_url <- contrib.url(BiocManager::repositories()[["BioCsoft"]])
+    contrib_url <- contrib.url(.worker_repositories(version)[["BioCsoft"]])
     idx <- db[, "Repository"] == contrib_url
     db_soft <- db[idx, , drop = FALSE]
 
@@ -179,12 +179,12 @@ pkg_dependencies <-
     )
 
     if (identical(build, "_software")) {
-        deps <- .pkg_dependencies_software(db)
+        deps <- .pkg_dependencies_software(version, db)
     } else if (identical(build, "_update")) {
-        deps <- .pkg_dependencies_update(db, binary_repo_url)
+        deps <- .pkg_dependencies_update(version, db, binary_repo_url)
     } else {
         ## FIXME: support building arbitrary vector of packages?
-        deps <- .pkg_dependencies(db, binary_repo_url, build)
+        deps <- .pkg_dependencies(version, db, binary_repo_url, build)
     }
 
     flog.info(

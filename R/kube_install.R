@@ -218,7 +218,7 @@ kube_run <-
     ## 'binary_repo' is where the existing binaries are located.
     ## 'cran_bucket' is where packages are uploaded on a google bucket
     binary_repo <- paste0(image_name, "/packages/", version, "/bioc/")
-    cran_repo <- paste0(binary_repo, "/src/contrib/")
+    cran_repo <- paste0(binary_repo, "src/contrib/")
 
     ## Step 0: Create a bucket if you need to
     gcloud_create_cran_bucket(bucket = image_name,
@@ -229,7 +229,7 @@ kube_run <-
     BiocKubeInstall::kube_wait(workers = parallelism)
 
     ## Step. 2 : Load deps and installed packages
-    deps <- BiocKubeInstall::pkg_dependencies(version,
+    deps <- BiocKubeInstall::pkg_dependencies(version, build = "_software",
                                               binary_repo = binary_repo)
 
     ## Step 3: Run kube_install so package binaries are built
