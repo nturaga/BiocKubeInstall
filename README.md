@@ -8,26 +8,15 @@ moment) on a Kubernetes cluster using GKE.
 The package works in sync with the `Bioconductor/k8sredis` kubernetes
 application.
 
-## Quickstart 
+## Author
 
-Coming soon....
+Nitesh Turaga: nturaga.bioc at gmail dot com
 
+Martin Morgan
 
-## TODO
+## Links
 
-1. Validity checks in package
+**k8sredis**: www.github.com/Bioconductor/k8sredis
 
-2. Errors in write_PACKAGES()
+**Vignette**: [BiocKubeInstall_Tutorial](https://bioconductor.github.io/BiocKubeInstall/articles/BiocKubeInstall_Tutorial.html)
 
-```
-> tools::write_PACKAGES(bin_path, addFiles=TRUE)
-
-
-gzip: stdin: unexpected end of file
-/usr/bin/tar: Unexpected EOF in archive
-/usr/bin/tar: Error is not recoverable: exiting now
-/usr/bin/tar: Unexpected EOF in archive
-/usr/bin/tar: Error is not recoverable: exiting now
-```
-
-3. More automation

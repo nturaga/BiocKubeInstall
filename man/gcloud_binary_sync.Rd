@@ -31,12 +31,14 @@ Sync binaries created by the `kube_install()` function
 }
 \examples{
 \dontrun{
+
 gcloud_binary_sync(
     bin_path = "/host/binaries",
-    bucket = "bioconductor_docker/packages/3.11/bioc/src/contrib/"
+    bucket = "bioconductor_docker/packages/3.12/bioc/src/contrib/",
     secret = "/home/rstudio/key.json"
 )
 }
+
 }
 \seealso{
 `BiocKuberInstall::gcloud_create_cran_bucket()`

@@ -194,12 +194,14 @@ gcloud_create_cran_bucket <-
 #'
 #' @examples
 #' \dontrun{
+#'
 #' gcloud_binary_sync(
 #'     bin_path = "/host/binaries",
-#'     bucket = "bioconductor_docker/packages/3.11/bioc/src/contrib/"
+#'     bucket = "bioconductor_docker/packages/3.12/bioc/src/contrib/",
 #'     secret = "/home/rstudio/key.json"
 #' )
 #' }
+#'
 #' @importFrom AnVIL gsutil_rsync gsutil_exists
 #'
 #' @export

@@ -63,7 +63,7 @@
   </a>
   <ul class="dropdown-menu" role="menu">
 <li>
-      <a href="articles/BiocKubeInstall_Tutorial.html">BiocKubeInstall Tutorial</a>
+      <a href="articles/BiocKubeInstall_Tutorial.html">BiocKubeInstall Usage</a>
     </li>
   </ul>
 </li>
@@ -85,29 +85,17 @@
 <a href="#biockubeinstall" class="anchor"></a>BiocKubeInstall</h1></div>
 <p>Internal Bioconductor package used to create binaries for docker images produced by Bioconductor. The package installation and binary creation is parallelized on a Kubernetes cluster launched (at the moment) on a Kubernetes cluster using GKE.</p>
 <p>The package works in sync with the <code>Bioconductor/k8sredis</code> kubernetes application.</p>
-<div id="quickstart" class="section level2">
+<div id="author" class="section level2">
 <h2 class="hasAnchor">
-<a href="#quickstart" class="anchor"></a>Quickstart</h2>
-<p>Coming soon….</p>
+<a href="#author" class="anchor"></a>Author</h2>
+<p>Nitesh Turaga: nturaga.bioc at gmail dot com</p>
+<p>Martin Morgan</p>
 </div>
-<div id="todo" class="section level2">
+<div id="links" class="section level2">
 <h2 class="hasAnchor">
-<a href="#todo" class="anchor"></a>TODO</h2>
-<ol>
-<li><p>Validity checks in package</p></li>
-<li><p>Errors in write_PACKAGES()</p></li>
-</ol>
-<pre><code>&gt; tools::write_PACKAGES(bin_path, addFiles=TRUE)
-
-
-gzip: stdin: unexpected end of file
-/usr/bin/tar: Unexpected EOF in archive
-/usr/bin/tar: Error is not recoverable: exiting now
-/usr/bin/tar: Unexpected EOF in archive
-/usr/bin/tar: Error is not recoverable: exiting now</code></pre>
-<ol>
-<li>More automation</li>
-</ol>
+<a href="#links" class="anchor"></a>Links</h2>
+<p><strong>k8sredis</strong>: www.github.com/Bioconductor/k8sredis</p>
+<p><strong>Vignette</strong>: <a href="https://bioconductor.github.io/BiocKubeInstall/articles/BiocKubeInstall_Tutorial.html">BiocKubeInstall_Tutorial</a></p>
 </div>
 </div>
   </div>

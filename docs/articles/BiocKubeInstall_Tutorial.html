@@ -5,13 +5,13 @@
 <meta charset="utf-8">
 <meta http-equiv="X-UA-Compatible" content="IE=edge">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>BiocKubeInstall Tutorial • BiocKubeInstall</title>
+<title>BiocKubeInstall Usage • BiocKubeInstall</title>
 <!-- jquery --><script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.4.1/jquery.min.js" integrity="sha256-CSXorXvZcTkaix6Yvo6HppcZGetbYMGWSFlBw8HfCJo=" crossorigin="anonymous"></script><!-- Bootstrap --><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.4.1/css/bootstrap.min.css" integrity="sha256-bZLfwXAP04zRMK2BjiO8iu9pf4FbLqX6zitd+tIvLhE=" crossorigin="anonymous">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.4.1/js/bootstrap.min.js" integrity="sha256-nuL8/2cJ5NDSSwnKD8VqreErSWHtnEP9E7AySL+1ev4=" crossorigin="anonymous"></script><!-- bootstrap-toc --><link rel="stylesheet" href="../bootstrap-toc.css">
 <script src="../bootstrap-toc.js"></script><!-- Font Awesome icons --><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.12.1/css/all.min.css" integrity="sha256-mmgLkCYLUQbXn0B1SRqzHar6dCnv9oZFPEC1g1cwlkk=" crossorigin="anonymous">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.12.1/css/v4-shims.min.css" integrity="sha256-wZjR52fzng1pJHwx4aV2AO3yyTOXrcDW7jBpJtTwVxw=" crossorigin="anonymous">
 <!-- clipboard.js --><script src="https://cdnjs.cloudflare.com/ajax/libs/clipboard.js/2.0.6/clipboard.min.js" integrity="sha256-inc5kl9MA1hkeYUt+EC3BhlIgyp/2jDIyBLS6k3UxPI=" crossorigin="anonymous"></script><!-- headroom.js --><script src="https://cdnjs.cloudflare.com/ajax/libs/headroom/0.11.0/headroom.min.js" integrity="sha256-AsUX4SJE1+yuDu5+mAVzJbuYNPHj/WroHuZ8Ir/CkE0=" crossorigin="anonymous"></script><script src="https://cdnjs.cloudflare.com/ajax/libs/headroom/0.11.0/jQuery.headroom.min.js" integrity="sha256-ZX/yNShbjqsohH1k95liqY9Gd8uOiE1S4vZc+9KQ1K4=" crossorigin="anonymous"></script><!-- pkgdown --><link href="../pkgdown.css" rel="stylesheet">
-<script src="../pkgdown.js"></script><meta property="og:title" content="BiocKubeInstall Tutorial">
+<script src="../pkgdown.js"></script><meta property="og:title" content="BiocKubeInstall Usage">
 <meta property="og:description" content="BiocKubeInstall">
 <!-- mathjax --><script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/MathJax.js" integrity="sha256-nvJJv9wWKEm88qvoQl9ekL2J+k/RWIsaSScxxlsrv8k=" crossorigin="anonymous"></script><script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/config/TeX-AMS-MML_HTMLorMML.js" integrity="sha256-84DKXVJXs0/F8OTMzX4UR909+jtl4G7SPypPavF+GfA=" crossorigin="anonymous"></script><!--[if lt IE 9]>
 <script src="https://oss.maxcdn.com/html5shiv/3.7.3/html5shiv.min.js"></script>
@@ -54,7 +54,7 @@
   </a>
   <ul class="dropdown-menu" role="menu">
 <li>
-      <a href="../articles/BiocKubeInstall_Tutorial.html">BiocKubeInstall Tutorial</a>
+      <a href="../articles/BiocKubeInstall_Tutorial.html">BiocKubeInstall Usage</a>
     </li>
   </ul>
 </li>
@@ -69,13 +69,13 @@
 
       
 
-      </header><div class="row">
+      </header><script src="BiocKubeInstall_Tutorial_files/header-attrs-2.6/header-attrs.js"></script><div class="row">
   <div class="col-md-9 contents">
     <div class="page-header toc-ignore">
-      <h1 data-toc-skip>BiocKubeInstall Tutorial</h1>
+      <h1 data-toc-skip>BiocKubeInstall Usage</h1>
                         <h4 class="author">Nitesh Turaga</h4>
             <address class="author_afil">
-      Roswell Park Comprehensive Cancer Center<br><div class="hidden name"><code>BiocKubeInstall_Tutorial.Rmd</code></div>
+      Dana Farber Cancer Institute<br><div class="hidden name"><code>BiocKubeInstall_Tutorial.Rmd</code></div>
 
     </address>
 </div>
@@ -83,47 +83,152 @@
     
         <div class="abstract">
       <p class="abstract">Abstract</p>
-      The BiocKubeInstall package is a cloud computing resource meant to be used with Kubernetes. The package is used to create binaries for R and Bioconductor packages on specific docker images created by Bioconductor. It works in concert with k8sredis - the Kubernetes application and RedisParam package that parallelizes over a Kubernetes cluster. The package requires knowledge of the google cloud, kubernetes, and binary package creation. It is an internal package to Bioconductor used to make creation and maintainence of package binaries easier and faster.
+      <p>The BiocKubeInstall package is a cloud computing resource meant to be used with Kubernetes. The package is used to create binaries for R and Bioconductor packages on specific docker images created by Bioconductor. It works in concert with k8sredis - the Kubernetes application and RedisParam package that parallelizes over a Kubernetes cluster. The package requires knowledge of the google cloud, kubernetes, and binary package creation. It is an internal package to Bioconductor used to make creation and maintainence of package binaries easier and faster.</p>
     </div>
     
-<p>Coming soon.</p>
-<div class="sourceCode" id="cb1"><pre class="downlit sourceCode r">
+<div id="prerequesites" class="section level1">
+<h1 class="hasAnchor">
+<a href="#prerequesites" class="anchor"></a>Prerequesites</h1>
+<p>The following steps assume you have a Google cloud account, kubernetes controller (<code>kubectl</code>) installed, and your Google account configured, and have the following APIs enabled on the project at a minimum.</p>
+<pre><code>- Kubernetes Engine Admin
+- Storage Admin
+- Service account Admin</code></pre>
+<p>These services cost money, and are to be used at your expense.</p>
+</div>
+<div id="kubernetes-setup" class="section level1">
+<h1 class="hasAnchor">
+<a href="#kubernetes-setup" class="anchor"></a>Kubernetes setup</h1>
+<p>The ‘BiocKubeInstall’ package uses the <code>k8sredis</code> kubernetes configuration files to apply the kuberenetes configurations on to the GKE cluster.</p>
+<p>Once you have <code>k8sredis</code> downloaded from <a href="https://github.com/Bioconductor/k8sredis" class="uri">https://github.com/Bioconductor/k8sredis</a>, you can do the following.</p>
+<div id="steps" class="section level3">
+<h3 class="hasAnchor">
+<a href="#steps" class="anchor"></a>Steps:</h3>
+<p>Default settings used in the following commands are based on local preferences. Please change them according to your needs.</p>
+<p><strong>cluster name</strong>: biock8scluster</p>
+<p><strong>zone</strong>: us-east1-b</p>
+<p><strong>service account name</strong>: bioc-binaries</p>
+<p><strong>project ID</strong>: fancy-house-303821</p>
+<ol style="list-style-type: decimal">
+<li>
+<p>Start a kubernetes cluster,</p>
+<pre><code> gcloud container clusters create \
+     --zone us-east1-b \
+     --num-nodes=6 \
+     --machine-type=e2-standard-4 biock8scluster</code></pre>
+</li>
+<li>
+<p>Get the cluster credentials on your local machine,</p>
+<pre><code> gcloud container clusters get-credentials --zone us-east1-b biock8scluster</code></pre>
+</li>
+<li>
+<p>Create a service account key. The service account key has ‘Storage Admin’ permissions, so it can upload the binaries to a google bucket.</p>
+<pre><code> ## Create service account
+ gcloud iam service-accounts create bioc-binaries \
+     --display-name "Storage Admin SA" \
+     --description "Bioc Binaries storage admin"
+
+ ## List service account
+ gcloud iam service-accounts list \
+     --filter bioc-binaries@fancy-house-303821.iam.gserviceaccount.com
+
+ ## Download service account key locally
+ gcloud iam service-accounts keys create \
+     bioc-binaries.json \
+     --iam-account bioc-binaries@fancy-house-303821.iam.gserviceaccount.com
+
+ ## Add 'Storage Admin' role to service account.
+ gcloud projects add-iam-policy-binding fancy-house-303821 \
+     --member \
+     "serviceAccount:bioc-binaries@fancy-house-303821.iam.gserviceaccount.com" \
+     --role "roles/storage.admin"</code></pre>
+</li>
+<li>
+<p>Start NFS volume which is going to be attached to your k8s compute nodes. The NFS mount is where the binary packages will be stored. The location of the NFS volume is under the directory <code>/host</code> on your compute nodes.</p>
+<pre><code> kubectl apply -f k8s/nfs-volume/</code></pre>
+</li>
+<li>
+<p>Create a kubernetes secret from the service account key which was downloaded in the previous steps <code>bioc-binaries.json</code>.</p>
+<p>The service account key is going to be transmitted to the kubernetes cluster in an encrypted manner. This command below assumes that <code>bioc-binaries.json</code> is located in the same path where you are running the <code>kubectl</code> commands.</p>
+<pre><code> kubectl create secret generic \
+     bioc-binaries-service-account-auth \
+     --from-file=service_account_key=bioc-binaries.json</code></pre>
+</li>
+<li>
+<p>Once the key is created, you can now launch the <code>bioc-redis</code> configuration on your kubernetes cluster.</p>
+<pre><code> kubectl apply -f k8s/bioc-redis</code></pre>
+</li>
+</ol>
+</div>
+<div id="manage-kubernetes-cluster-if-needed" class="section level3">
+<h3 class="hasAnchor">
+<a href="#manage-kubernetes-cluster-if-needed" class="anchor"></a>Manage kubernetes cluster (if needed)</h3>
+<p>A few commands which help with the management of the kubernetes cluster are:</p>
+<ul>
+<li>
+<p>Check if all the pods, services, and nodes are working as expected:</p>
+<pre><code>  kubectl get all</code></pre>
+</li>
+<li>
+<p>Describe specific pods or nodes, to check for failures</p>
+<pre><code>  kubectl describe pod/manager </code></pre>
+</li>
+<li>
+<p>Log into a specific pod,</p>
+<pre><code>  kubectl exec pod/manager --stdin --tty /bin/bash</code></pre>
+</li>
+</ul>
+<p>To delete and destroy your kubernetes cluster safely,</p>
+<pre><code>## Stop redis, rstudio services
+kubectl delete -f k8s/bioc-redis/
+
+## Delete NFS volume (this is not recommended)
+kubectl delete -f k8s/nfs-volume/
+
+## Delete the kubernetes cluster completely losing all data.
+gcloud container clusters delete biock8scluster</code></pre>
+</div>
+</div>
+<div id="biockubeinstall" class="section level1">
+<h1 class="hasAnchor">
+<a href="#biockubeinstall" class="anchor"></a>BiocKubeInstall</h1>
+<div class="sourceCode" id="cb12"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="fu"><a href="https://rdrr.io/r/utils/sessionInfo.html">sessionInfo</a></span><span class="op">(</span><span class="op">)</span></code></pre></div>
-<pre><code>## R version 4.0.3 (2020-10-10)
-## Platform: x86_64-pc-linux-gnu (64-bit)
-## Running under: Ubuntu 20.04.1 LTS
+<pre><code>## R Under development (unstable) (2021-02-05 r79947)
+## Platform: x86_64-apple-darwin19.6.0 (64-bit)
+## Running under: macOS Catalina 10.15.7
 ## 
 ## Matrix products: default
-## BLAS:   /usr/lib/x86_64-linux-gnu/blas/libblas.so.3.9.0
-## LAPACK: /usr/lib/x86_64-linux-gnu/lapack/liblapack.so.3.9.0
+## BLAS:   /Users/nitesh/R-stuff/bin/R-devel/lib/libRblas.dylib
+## LAPACK: /Users/nitesh/R-stuff/bin/R-devel/lib/libRlapack.dylib
 ## 
 ## locale:
-##  [1] LC_CTYPE=C.UTF-8       LC_NUMERIC=C           LC_TIME=C.UTF-8       
-##  [4] LC_COLLATE=C.UTF-8     LC_MONETARY=C.UTF-8    LC_MESSAGES=C.UTF-8   
-##  [7] LC_PAPER=C.UTF-8       LC_NAME=C              LC_ADDRESS=C          
-## [10] LC_TELEPHONE=C         LC_MEASUREMENT=C.UTF-8 LC_IDENTIFICATION=C   
+## [1] en_US.UTF-8/en_US.UTF-8/en_US.UTF-8/C/en_US.UTF-8/en_US.UTF-8
 ## 
 ## attached base packages:
 ## [1] stats     graphics  grDevices utils     datasets  methods   base     
 ## 
 ## other attached packages:
-## [1] BiocStyle_2.18.1
+## [1] BiocStyle_2.19.1
 ## 
 ## loaded via a namespace (and not attached):
-##  [1] bookdown_0.21       digest_0.6.27       crayon_1.3.4       
-##  [4] rprojroot_2.0.2     assertthat_0.2.1    R6_2.5.0           
+##  [1] bookdown_0.21       rprojroot_2.0.2     crayon_1.4.1       
+##  [4] digest_0.6.27       assertthat_0.2.1    R6_2.5.0           
 ##  [7] magrittr_2.0.1      evaluate_0.14       stringi_1.5.3      
-## [10] rlang_0.4.10        fs_1.5.0            ragg_0.4.1         
-## [13] rmarkdown_2.6       pkgdown_1.6.1       textshaping_0.2.1  
-## [16] desc_1.2.0          tools_4.0.3         stringr_1.4.0      
-## [19] yaml_2.2.1          xfun_0.20           compiler_4.0.3     
-## [22] systemfonts_0.3.2   BiocManager_1.30.10 memoise_1.1.0      
-## [25] htmltools_0.5.1     knitr_1.30</code></pre>
+## [10] rlang_0.4.10        cachem_1.0.3        fs_1.5.0           
+## [13] ragg_0.4.1          rmarkdown_2.6       pkgdown_1.6.1      
+## [16] textshaping_0.2.1   desc_1.2.0          tools_4.1.0        
+## [19] stringr_1.4.0       yaml_2.2.1          xfun_0.20          
+## [22] fastmap_1.1.0       compiler_4.1.0      systemfonts_1.0.0  
+## [25] BiocManager_1.30.10 memoise_2.0.0       htmltools_0.5.1.1  
+## [28] knitr_1.31</code></pre>
+</div>
   </div>
 
   <div class="col-md-3 hidden-xs hidden-sm" id="pkgdown-sidebar">
 
-      </div>
+        <nav id="toc" data-toggle="toc"><h2 data-toc-skip>Contents</h2>
+    </nav>
+</div>
 
 </div>
 
