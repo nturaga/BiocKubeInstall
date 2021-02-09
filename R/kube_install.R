@@ -221,7 +221,7 @@ kube_run <-
     cran_repo <- paste0(binary_repo, "/src/contrib/")
 
     ## Step 0: Create a bucket if you need to
-    gcloud_create_cran_bucket(bucket = "bioconductor_docker",
+    gcloud_create_cran_bucket(bucket = image_name,
                               bioc_version = version,
                               secret = secret_path, public = TRUE)
 
