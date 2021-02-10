@@ -201,11 +201,11 @@ kube_install <-
 
 #' @export
 kube_run <-
-    function(version, image_name, lib_path = "/host/library", bin_path = "/host/binaries")
+    function(version, image_name, lib_path = "/host/library",
+             bin_path = "/host/binaries", parallelism = 10L)
 {
     Sys.setenv(REDIS_HOST = Sys.getenv("REDIS_SERVICE_HOST"))
     Sys.setenv(REDIS_PORT = Sys.getenv("REDIS_SERVICE_PORT"))
-    parallelism <- 6L
 
     ## Secret key to access S3 bucket on google
     secret_path <- "/home/rstudio/key.json"
