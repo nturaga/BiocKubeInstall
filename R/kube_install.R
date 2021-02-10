@@ -201,8 +201,7 @@ kube_install <-
 
 #' @export
 kube_run <-
-    function(version,
-             image_name = "bioconductor_docker")
+    function(version, image_name)
 {
     Sys.setenv(REDIS_HOST = Sys.getenv("REDIS_SERVICE_HOST"))
     Sys.setenv(REDIS_PORT = Sys.getenv("REDIS_SERVICE_PORT"))
@@ -211,7 +210,7 @@ kube_run <-
     ## NFS mount paths
     lib_path <- "/host/library"
     bin_path <- "/host/binaries"
-    
+
     ## Secret key to access S3 bucket on google
     secret_path <- "/home/rstudio/key.json"
 
