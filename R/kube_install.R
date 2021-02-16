@@ -199,6 +199,10 @@ kube_install <-
 
 
 
+#' Run builder on kubernetes
+#'
+#'
+#'
 #' @export
 kube_run <-
     function(version, image_name, lib_path = "/host/library",

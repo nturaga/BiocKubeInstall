@@ -119,8 +119,8 @@
 #' )
 #' }
 #'
-#' @importFrom AnVIL gsutil_cp
-#' @importFrom AnVIL gsutil_exists
+#' @importFrom AnVIL gsutil_cp gsutil_exists
+#'
 #' @export
 gcloud_create_cran_bucket <-
     function(bucket,
@@ -139,7 +139,9 @@ gcloud_create_cran_bucket <-
     .gcloud_service_account_auth(secret)
 
     ## Create a bucket on gcloud
-    .gsutil_make_bucket(bucket, TRUE, "standard", "us")
+    if (!gsutil_exists(bucket)) {
+        .gsutil_make_bucket(bucket, TRUE, "standard", "us")
+    }
 
     ## create CRAN style directory structure
     res <- file.create("PACKAGES")
