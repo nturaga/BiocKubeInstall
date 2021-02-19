@@ -9,8 +9,8 @@ kube_install(workers, lib_path, bin_path, deps, BPPARAM = NULL)
 }
 \arguments{
 \item{workers}{numeric() number of workers in the kubernetes
-cluster. It should match the `parallelism` argument in the
-k8sredis yaml file.}
+cluster. It should match the `replicas` argument in the
+k8sredis worker-replicaset.yaml file.}
 
 \item{lib_path}{character() path where R package libraries are
 stored.}

@@ -98,8 +98,8 @@ kube_wait <-
 #'     beware of the charges.
 #'
 #' @param workers numeric() number of workers in the kubernetes
-#'     cluster. It should match the `parallelism` argument in the
-#'     k8sredis yaml file.
+#'     cluster. It should match the `replicas` argument in the
+#'     k8sredis worker-replicaset.yaml file.
 #'
 #' @param lib_path character() path where R package libraries are
 #'     stored.
@@ -198,16 +198,24 @@ kube_install <-
 }
 
 
+## FIXME: 
 
+## paths don't need to be given.
 #' Run builder on kubernetes
 #'
 #'
 #'
 #' @export
 kube_run <-
-    function(version, image_name, lib_path = "/host/library",
-             bin_path = "/host/binaries", parallelism = 10L)
+    function(version, image_name, worker_pool_size)
 {
+
+    if(missing(lib_path) || missing(bin_path)) {
+        ver <- gsub(".", "_", version)
+        lib_path <- paste0('/host/library_', ver)
+        bin_path <- paste0('/host/binary_', ver)
+    }
+
     Sys.setenv(REDIS_HOST = Sys.getenv("REDIS_SERVICE_HOST"))
     Sys.setenv(REDIS_PORT = Sys.getenv("REDIS_SERVICE_PORT"))
 
@@ -225,14 +233,14 @@ kube_run <-
                               secret = secret_path, public = TRUE)
 
     ## Step 1:  Wait till all the worker pods are up and running
-    BiocKubeInstall::kube_wait(workers = parallelism)
+    BiocKubeInstall::kube_wait(workers = worker_pool_size)
 
     ## Step. 2 : Load deps and installed packages
     deps <- BiocKubeInstall::pkg_dependencies(version, build = "_software",
                                               binary_repo = binary_repo)
 
     ## Step 3: Run kube_install so package binaries are built
-    res <- BiocKubeInstall::kube_install(workers = parallelism,
+    res <- BiocKubeInstall::kube_install(workers = worker_pool_size,
                                          lib_path = lib_path,
                                          bin_path = bin_path,
                                          deps = deps)

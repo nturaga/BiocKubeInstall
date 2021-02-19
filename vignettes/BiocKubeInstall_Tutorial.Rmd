@@ -127,8 +127,8 @@ A few commands which help with the management of the kubernetes cluster are:
 
 - Describe specific pods or nodes, to check for failures
 
-		kubectl describe pod/manager 
-	
+		kubectl describe pod/manager
+
 - Log into a specific pod,
 
 		kubectl exec pod/manager --stdin --tty /bin/bash
@@ -137,7 +137,7 @@ To delete and destroy your kubernetes cluster safely,
 
 	## Stop redis, rstudio services
 	kubectl delete -f k8s/bioc-redis/
-	
+
 	## Delete NFS volume (this is not recommended)
 	kubectl delete -f k8s/nfs-volume/
 
@@ -147,6 +147,73 @@ To delete and destroy your kubernetes cluster safely,
 
 # BiocKubeInstall
 
+## Introduction
+
+
+## Cluster architecture and design
+
+The k8s application launches multiple pods on the nodes within the
+cluster. The pods are classified into two types, a single "manager"
+pod and multiple "worker" pods. The manager pod delegates
+reponsibility i.e the jobs are sent to the workers that actually
+perform the task. The worker pods are always listening to the manager
+and waiting for a job. Each worker performs a single job till it is
+done.
+
+The manager and the worker pass messages between each other using
+"redis", and the redis work is available inside the package
+"RedisParam".
+
+Storage is also built into the k8s application. The manager and the
+worker also share a volume mount on the k8s cluster in the form of an
+NFS volume. The volume is mounted on the path `/host/`.
+
+The "jobs" here refer to the building of binary R/Bioconductor
+packages. Each pod gets a single job, where the job is to build a
+single package binary.
+
+## Run
+
+To run an actual job, there is one relevant function, i.e
+`BiocKubeInstall::kube_run()`.
+
+The function needs to be used within the
+`k8sredis/k8s/bioc-redis/manager-pod.yaml` file in your `k8sredis` k8s
+application. Within the specification of the manager-pod.yaml,
+
+The function takes in the following arguments, the `version` of
+Bioconductor, the docker `image_name` for which the binaries are being
+built and the number of workers which need to run in parallel as
+`worker_pool_size`.
+
+```
+args: ["-e", "BiocKubeInstall::kube_run(version = '3.13',
+					image_name = 'bioconductor_docker',
+					worker_pool_size = 17)"]
+```
+
+The docker image of the manager node is always going to be
+`bioconductor/bioc-redis:devel`
+
+
+## Usage of Binaries on `bioconductor_docker` images
+
+```
+BiocManager::install('Bioconductor/AnVIL')
+
+AnVIL::install('BiocParallel')
+```
+
+
+## Usage of Binaries on the AnVIL
+
+```{r}
+library(AnVIL)
+
+BiocManager::install('Bioconductor/AnVIL')
+
+AnVIL::install('<package_name>')
+```
 
 
 ```{r}
