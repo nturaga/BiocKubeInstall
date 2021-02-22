@@ -168,7 +168,6 @@ kube_install <-
         )
     }
 
-
     ## Logging
     flog.appender(appender.tee('kube_install.log'), name = 'kube_install')
 
@@ -198,23 +197,38 @@ kube_install <-
 }
 
 
-## FIXME: 
-
-## paths don't need to be given.
-#' Run builder on kubernetes
+#' Run builder on k8s
 #'
+#' @description Run binary installation on k8s cluster
 #'
+#' @param version character(), bioconductor version number, e.g 3.12
+#'     or 3.13
+#'
+#' @param image_name character(), name of the image for which binaries
+#'     are being built
+#'
+#' @param worker_pool_size integer(), number of workers pods in the
+#'     k8s cluster
+#'
+#' @examples
+#' \dontrun{
+#'
+#' kube_run(version = '3.13',
+#'          image_name = 'bioconductor_docker',
+#'          worker_pool_size = '10')
+#'
+#' }
 #'
 #' @export
 kube_run <-
     function(version, image_name, worker_pool_size)
 {
 
-    if(missing(lib_path) || missing(bin_path)) {
-        ver <- gsub(".", "_", version)
-        lib_path <- paste0('/host/library_', ver)
-        bin_path <- paste0('/host/binary_', ver)
-    }
+    stopifnot(is.integer(worker_pool_size))
+
+    ver <- gsub(".", "_", version, fixed = TRUE)
+    lib_path <- paste0('/host/library_', ver)
+    bin_path <- paste0('/host/binary_', ver)
 
     Sys.setenv(REDIS_HOST = Sys.getenv("REDIS_SERVICE_HOST"))
     Sys.setenv(REDIS_PORT = Sys.getenv("REDIS_SERVICE_PORT"))
@@ -233,7 +247,7 @@ kube_run <-
                               secret = secret_path, public = TRUE)
 
     ## Step 1:  Wait till all the worker pods are up and running
-    BiocKubeInstall::kube_wait(workers = worker_pool_size)
+    BiocKubeInstall::kube_wait(workers = as.integer(worker_pool_size))
 
     ## Step. 2 : Load deps and installed packages
     deps <- BiocKubeInstall::pkg_dependencies(version, build = "_software",

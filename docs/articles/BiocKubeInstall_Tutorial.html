@@ -90,9 +90,9 @@
 <h1 class="hasAnchor">
 <a href="#prerequesites" class="anchor"></a>Prerequesites</h1>
 <p>The following steps assume you have a Google cloud account, kubernetes controller (<code>kubectl</code>) installed, and your Google account configured, and have the following APIs enabled on the project at a minimum.</p>
-<pre><code>    - Kubernetes Engine Admin
-    - Storage Admin
-    - Service account Admin</code></pre>
+<pre><code>- Kubernetes Engine Admin
+- Storage Admin
+- Service account Admin</code></pre>
 <p>These services cost money, and are to be used at your expense.</p>
 </div>
 <div id="kubernetes-setup" class="section level1">
@@ -111,51 +111,51 @@
 <ol style="list-style-type: decimal">
 <li>
 <p>Start a kubernetes cluster,</p>
-<pre><code>         gcloud container clusters create \
-                 --zone us-east1-b \
-                 --num-nodes=6 \
-                 --machine-type=e2-standard-4 biock8scluster</code></pre>
+<pre><code> gcloud container clusters create \
+     --zone us-east1-b \
+     --num-nodes=6 \
+     --machine-type=e2-standard-4 biock8scluster</code></pre>
 </li>
 <li>
 <p>Get the cluster credentials on your local machine,</p>
-<pre><code>         gcloud container clusters get-credentials --zone us-east1-b biock8scluster</code></pre>
+<pre><code> gcloud container clusters get-credentials --zone us-east1-b biock8scluster</code></pre>
 </li>
 <li>
 <p>Create a service account key. The service account key has ‘Storage Admin’ permissions, so it can upload the binaries to a google bucket.</p>
-<pre><code>         ## Create service account
-         gcloud iam service-accounts create bioc-binaries \
-                 --display-name "Storage Admin SA" \
-                 --description "Bioc Binaries storage admin"
+<pre><code> ## Create service account
+ gcloud iam service-accounts create bioc-binaries \
+     --display-name "Storage Admin SA" \
+     --description "Bioc Binaries storage admin"
 
-         ## List service account
-         gcloud iam service-accounts list \
-                 --filter bioc-binaries@fancy-house-303821.iam.gserviceaccount.com
+ ## List service account
+ gcloud iam service-accounts list \
+     --filter bioc-binaries@fancy-house-303821.iam.gserviceaccount.com
 
-         ## Download service account key locally
-         gcloud iam service-accounts keys create \
-                 bioc-binaries.json \
-                 --iam-account bioc-binaries@fancy-house-303821.iam.gserviceaccount.com
+ ## Download service account key locally
+ gcloud iam service-accounts keys create \
+     bioc-binaries.json \
+     --iam-account bioc-binaries@fancy-house-303821.iam.gserviceaccount.com
 
-         ## Add 'Storage Admin' role to service account.
-         gcloud projects add-iam-policy-binding fancy-house-303821 \
-                 --member \
-                 "serviceAccount:bioc-binaries@fancy-house-303821.iam.gserviceaccount.com" \
-                 --role "roles/storage.admin"</code></pre>
+ ## Add 'Storage Admin' role to service account.
+ gcloud projects add-iam-policy-binding fancy-house-303821 \
+     --member \
+     "serviceAccount:bioc-binaries@fancy-house-303821.iam.gserviceaccount.com" \
+     --role "roles/storage.admin"</code></pre>
 </li>
 <li>
 <p>Start NFS volume which is going to be attached to your k8s compute nodes. The NFS mount is where the binary packages will be stored. The location of the NFS volume is under the directory <code>/host</code> on your compute nodes.</p>
-<pre><code>         kubectl apply -f k8s/nfs-volume/</code></pre>
+<pre><code> kubectl apply -f k8s/nfs-volume/</code></pre>
 </li>
 <li>
 <p>Create a kubernetes secret from the service account key which was downloaded in the previous steps <code>bioc-binaries.json</code>.</p>
 <p>The service account key is going to be transmitted to the kubernetes cluster in an encrypted manner. This command below assumes that <code>bioc-binaries.json</code> is located in the same path where you are running the <code>kubectl</code> commands.</p>
-<pre><code>         kubectl create secret generic \
-                 bioc-binaries-service-account-auth \
-                 --from-file=service_account_key=bioc-binaries.json</code></pre>
+<pre><code> kubectl create secret generic \
+     bioc-binaries-service-account-auth \
+     --from-file=service_account_key=bioc-binaries.json</code></pre>
 </li>
 <li>
 <p>Once the key is created, you can now launch the <code>bioc-redis</code> configuration on your kubernetes cluster.</p>
-<pre><code>         kubectl apply -f k8s/bioc-redis</code></pre>
+<pre><code> kubectl apply -f k8s/bioc-redis</code></pre>
 </li>
 </ol>
 </div>
@@ -166,26 +166,26 @@
 <ul>
 <li>
 <p>Check if all the pods, services, and nodes are working as expected:</p>
-<pre><code>          kubectl get all</code></pre>
+<pre><code>  kubectl get all</code></pre>
 </li>
 <li>
 <p>Describe specific pods or nodes, to check for failures</p>
-<pre><code>          kubectl describe pod/manager </code></pre>
+<pre><code>  kubectl describe pod/manager</code></pre>
 </li>
 <li>
 <p>Log into a specific pod,</p>
-<pre><code>          kubectl exec pod/manager --stdin --tty /bin/bash</code></pre>
+<pre><code>  kubectl exec pod/manager --stdin --tty /bin/bash</code></pre>
 </li>
 </ul>
 <p>To delete and destroy your kubernetes cluster safely,</p>
-<pre><code>    ## Stop redis, rstudio services
-    kubectl delete -f k8s/bioc-redis/
-    
-    ## Delete NFS volume (this is not recommended)
-    kubectl delete -f k8s/nfs-volume/
+<pre><code>## Stop redis, rstudio services
+kubectl delete -f k8s/bioc-redis/
 
-    ## Delete the kubernetes cluster completely losing all data.
-    gcloud container clusters delete biock8scluster</code></pre>
+## Delete NFS volume (this is not recommended)
+kubectl delete -f k8s/nfs-volume/
+
+## Delete the kubernetes cluster completely losing all data.
+gcloud container clusters delete biock8scluster</code></pre>
 </div>
 </div>
 <div id="biockubeinstall" class="section level1">
@@ -209,9 +209,9 @@
 <p>To run an actual job, there is one relevant function, i.e <code><a href="../reference/kube_run.html">BiocKubeInstall::kube_run()</a></code>.</p>
 <p>The function needs to be used within the <code>k8sredis/k8s/bioc-redis/manager-pod.yaml</code> file in your <code>k8sredis</code> k8s application. Within the specification of the manager-pod.yaml,</p>
 <p>The function takes in the following arguments, the <code>version</code> of Bioconductor, the docker <code>image_name</code> for which the binaries are being built and the number of workers which need to run in parallel as <code>worker_pool_size</code>.</p>
-<pre><code>args: ["-e", "BiocKubeInstall::kube_run(version = '3.13', 
-                                        image_name = 'bioconductor_docker', 
-                                        worker_pool_size = 17)"]</code></pre>
+<pre><code>args: ["-e", "BiocKubeInstall::kube_run(version = '3.13',
+                    image_name = 'bioconductor_docker',
+                    worker_pool_size = 17)"]</code></pre>
 <p>The docker image of the manager node is always going to be <code>bioconductor/bioc-redis:devel</code></p>
 </div>
 <div id="usage-of-binaries-on-bioconductor_docker-images" class="section level2">
@@ -242,12 +242,13 @@ AnVIL::install('BiocParallel')</a></code></pre>
 <pre><code>## Installing github package(s) 'Bioconductor/AnVIL'</code></pre>
 <pre><code>## Downloading GitHub repo Bioconductor/AnVIL@HEAD</code></pre>
 <pre><code>## lifecycle (0.2.0 -&gt; 1.0.0) [CRAN]
-## mime      (0.9   -&gt; 0.10 ) [CRAN]</code></pre>
-<pre><code>## Installing 2 packages: lifecycle, mime</code></pre>
+## mime      (0.9   -&gt; 0.10 ) [CRAN]
+## pillar    (1.4.7 -&gt; 1.5.0) [CRAN]</code></pre>
+<pre><code>## Installing 3 packages: lifecycle, mime, pillar</code></pre>
 <pre><code>##   
-   checking for file ‘/private/var/folders/1w/xf7rrsr1483d4rg7vwbkdy780000gp/T/RtmpeXGa87/remotes11413325e281b/Bioconductor-AnVIL-a5f989c/DESCRIPTION’ ...
+   checking for file ‘/private/var/folders/1w/xf7rrsr1483d4rg7vwbkdy780000gp/T/RtmpQoADLC/remotesf9672d80ba2/Bioconductor-AnVIL-a5f989c/DESCRIPTION’ ...
   
-✔  checking for file ‘/private/var/folders/1w/xf7rrsr1483d4rg7vwbkdy780000gp/T/RtmpeXGa87/remotes11413325e281b/Bioconductor-AnVIL-a5f989c/DESCRIPTION’
+✔  checking for file ‘/private/var/folders/1w/xf7rrsr1483d4rg7vwbkdy780000gp/T/RtmpQoADLC/remotesf9672d80ba2/Bioconductor-AnVIL-a5f989c/DESCRIPTION’
 ## 
   
 ─  preparing ‘AnVIL’:
@@ -269,11 +270,12 @@ AnVIL::install('BiocParallel')</a></code></pre>
   
    
 ## </code></pre>
-<pre><code>## Old packages: 'AnVIL', 'boot', 'broom', 'cachem', 'cluster', 'deldir', 'edgeR',
-##   'gert', 'lifecycle', 'limma', 'MASS', 'MetaboCoreUtils', 'mgcv', 'mime',
-##   'promises', 'ProtGenerics', 'ragg', 'RcppArmadillo', 'rmarkdown', 'rstatix',
-##   'scater', 'scuttle', 'SingleCellExperiment', 'SparseM', 'spatstat.data',
-##   'systemfonts', 'testthat', 'textshaping', 'usethis', 'waldo', 'xfun'</code></pre>
+<pre><code>## Old packages: 'AnVIL', 'boot', 'broom', 'cachem', 'cluster', 'data.table',
+##   'DelayedArray', 'deldir', 'edgeR', 'gert', 'lifecycle', 'limma', 'MASS',
+##   'MetaboCoreUtils', 'mgcv', 'mime', 'pillar', 'promises', 'ProtGenerics',
+##   'ragg', 'RcppArmadillo', 'rmarkdown', 'rstatix', 'scater', 'scuttle',
+##   'SingleCellExperiment', 'SparseM', 'spatstat.data', 'systemfonts',
+##   'testthat', 'textshaping', 'usethis', 'waldo', 'xfun'</code></pre>
 <div class="sourceCode" id="cb27"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="fu">AnVIL</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/AnVIL/man/localize.html">install</a></span><span class="op">(</span><span class="st">'&lt;package_name&gt;'</span><span class="op">)</span></code></pre></div>
 <pre><code>## Warning: package '&lt;package_name&gt;' is not available for this version of R

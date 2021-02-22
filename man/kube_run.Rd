@@ -2,10 +2,30 @@
 % Please edit documentation in R/kube_install.R
 \name{kube_run}
 \alias{kube_run}
-\title{Run builder on kubernetes}
+\title{Run builder on k8s}
 \usage{
 kube_run(version, image_name, worker_pool_size)
 }
+\arguments{
+\item{version}{character(), bioconductor version number, e.g 3.12
+or 3.13}
+
+\item{image_name}{character(), name of the image for which binaries
+are being built}
+
+\item{worker_pool_size}{integer(), number of workers pods in the
+k8s cluster}
+}
 \description{
-Run builder on kubernetes
+Run binary installation on k8s cluster
+}
+\examples{
+\dontrun{
+
+kube_run(version = '3.13',
+         image_name = 'bioconductor_docker',
+         worker_pool_size = '10')
+
+}
+
 }
