@@ -224,8 +224,6 @@ kube_run <-
     function(version, image_name, worker_pool_size)
 {
 
-    stopifnot(is.integer(worker_pool_size))
-
     ver <- gsub(".", "_", version, fixed = TRUE)
     lib_path <- paste0('/host/library_', ver)
     bin_path <- paste0('/host/binary_', ver)
