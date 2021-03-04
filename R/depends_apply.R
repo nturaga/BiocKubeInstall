@@ -73,7 +73,9 @@
     done <- failed <- character()
     n <- 0L
     iter <- 0L
-    ## bpstart(BPPARAM)
+    ## Start RedisParam
+    bpstart(BPPARAM)
+    ## Do work
     repeat {
         result[done] <- !done %in% failed
         if (length(X) == 0L || length(X) == n)
@@ -92,7 +94,7 @@
 
         ## do the work here
 
-        res <-  bptry(bplapply(do, FUN, ..., BPPARAM = BPPARAM))
+        res <- bptry(bplapply(do, FUN, ..., BPPARAM = BPPARAM))
 
         failed_idx <- !bpok(res)
         done <- do
@@ -108,7 +110,8 @@
         X <- .trim(X, done, failed)
         iter <- iter + 1L
     }
-        #### bpstopall(BPPARAM)
+    ## Stop RedisParam - This should stop all work on workers
+    bpstopall(BPPARAM)
     if (length(X))
         flog.error("final dependency graph is is not empty [.depends_apply()]")
 
