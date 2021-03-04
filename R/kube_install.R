@@ -223,6 +223,7 @@ kube_install <-
 kube_run <-
     function(version, image_name, worker_pool_size)
 {
+    workers <- as.integer(worker_pool_size)
 
     ver <- gsub(".", "_", version, fixed = TRUE)
     lib_path <- paste0('/host/library_', ver)
@@ -245,14 +246,14 @@ kube_run <-
                               secret = secret_path, public = TRUE)
 
     ## Step 1:  Wait till all the worker pods are up and running
-    BiocKubeInstall::kube_wait(workers = as.integer(worker_pool_size))
+    BiocKubeInstall::kube_wait(workers = workers)
 
     ## Step. 2 : Load deps and installed packages
     deps <- BiocKubeInstall::pkg_dependencies(version, build = "_software",
                                               binary_repo = binary_repo)
 
     ## Step 3: Run kube_install so package binaries are built
-    res <- BiocKubeInstall::kube_install(workers = worker_pool_size,
+    res <- BiocKubeInstall::kube_install(workers = workers,
                                          lib_path = lib_path,
                                          bin_path = bin_path,
                                          deps = deps)

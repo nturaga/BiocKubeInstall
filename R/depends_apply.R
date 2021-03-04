@@ -48,7 +48,8 @@
 
 #' @importFrom methods is
 #'
-#' @importFrom BiocParallel `bpstopOnError<-` `bptasks<-`
+#' @importFrom BiocParallel `bpstopOnError<-` `bptasks<-` bpstart
+#' @importFrom RedisParam bpstopall
 .depends_apply <-
     function(X, FUN, ..., BPPARAM = NULL)
 {
