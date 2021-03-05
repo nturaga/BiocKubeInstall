@@ -1,0 +1,38 @@
+name: start cluster and deploy
+
+on:
+  schedule:
+    # * is a special character in YAML so you have to quote this string
+    - cron:  '*/5 * * * *'
+
+env:
+  GKE_CLUSTER: biock8sredis    # Add your cluster name here.
+  GKE_ZONE: us-east1-b   # Add your cluster zone here.
+  DEPLOYMENT_NAME: gke-test # Add your deployment name here.
+
+jobs:
+  setup-start-deploy:
+    name: Setup, start, Deploy
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v2
+
+    # Setup gcloud CLI
+    - uses: google-github-actions/setup-gcloud@master
+      with:
+        version: '290.0.1'
+        service_account_key: ${{ secrets.GKE_SA_KEY }}
+        project_id: ${{ secrets.GKE_PROJECT }}
+
+    # Start cluster
+    - run: |-
+        gcloud container clusters create \
+          --zone "$GKE_ZONE" \
+          --num-nodes 2 \
+          --machine-type=e2-stardard-4 "$GKE_CLUSTER"
+
+   # Get the GKE credentials so we can deploy to the cluster
+    - run: |-
+       gcloud container clusters get-credentials "$GKE_CLUSTER" --zone "$GKE_ZONE"
