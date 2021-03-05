@@ -38,7 +38,7 @@ jobs:
           --num-nodes 2 \
           --machine-type=e2-standard-4 "$GKE_CLUSTER"
 
-   # Get the GKE credentials so we can deploy to the cluster
+    # Get the GKE credentials so we can deploy to the cluster
     - run: |-
        gcloud container clusters get-credentials "$GKE_CLUSTER" --zone "$GKE_ZONE"
 
@@ -49,9 +49,10 @@ jobs:
 
     - name: create secret for cluster to use
       run: |-
+        echo ${{ secrets.GKE_SA_KEY }} > bioc-binaries.json && \
         kubectl create secret generic \
           bioc-binaries-service-account-auth \
-          --from-file=service_account_key=${{ secrets.GKE_SA_KEY }}
+          --from-file=service_account_key=bioc-binaries.json
 
     - name: Deploy local helm chart
       run: |
