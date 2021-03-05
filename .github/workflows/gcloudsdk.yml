@@ -36,7 +36,7 @@ jobs:
         gcloud container clusters create \
           --zone "$GKE_ZONE" \
           --num-nodes 2 \
-          --machine-type=e2-stardard-4 "$GKE_CLUSTER"
+          --machine-type=e2-standard-2 "$GKE_CLUSTER"
 
    # Get the GKE credentials so we can deploy to the cluster
     - run: |-
