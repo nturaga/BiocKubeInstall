@@ -35,7 +35,7 @@ jobs:
     - run: |-
         gcloud container clusters create \
           --zone "$GKE_ZONE" \
-          --num-nodes 2 \
+          --num-nodes 6 \
           --machine-type=e2-standard-4 "$GKE_CLUSTER"
 
     # Get the GKE credentials so we can deploy to the cluster
@@ -47,7 +47,7 @@ jobs:
       run: |
         curl https://raw.githubusercontent.com/helm/helm/master/scripts/get-helm-3 | bash
 
-    - name: create secret for cluster to use
+    - name: Create secret for cluster
       run: |-
         echo "$GKE_SA_KEY" > bioc-binaries.json && \
         kubectl create secret generic \
@@ -59,8 +59,9 @@ jobs:
 
     - name: Deploy local helm chart
       run: |
-        helm install test1 --set workerPoolSize=5 inst/helm-chart --wait
+        helm install biock8sredis --set workerPoolSize=30 inst/helm-chart --wait
 
     - name: check
       run: |
         kubectl get all
+
