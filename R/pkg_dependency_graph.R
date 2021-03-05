@@ -23,7 +23,7 @@
 NULL
 
 .pkg_dependencies_software <-
-    function(version, db)
+    function(version, db, exclude_pkgs)
 {
     ## software package dependencies
     contrib_url <- contrib.url(.worker_repositories(version)[["BioCsoft"]])
@@ -35,6 +35,16 @@ NULL
         name = "kube_install"
     )
 
+    ## The following exluded packages don't build on
+    ## bioconductor_docker set of images
+    names(exclude_pkgs) <- exclude_pkgs
+    if (length(exclude_pkgs)) {
+        flog.info(
+            '%s software packages manually excluded',
+            paste(exclude_pkgs, collapse = ", ")
+        )
+    }
+
     ## all software packages
     deps0 <- package_dependencies(software_pkgs, db, recursive=TRUE)
 
@@ -43,7 +53,11 @@ NULL
     deps1 <- package_dependencies(other, db, recursive = TRUE)
 
     deps <- c(deps0, deps1)
-    .exclude(deps, .base_packages())
+    ## exclude base
+    exclude_base <- .exclude(deps, .base_packages())
+
+    ## exclude manually from the argument 'exclude_pkgs'
+    .exclude(exclude_base, exclude_pkgs)
 }
 
 .pkg_dependencies_update <-
@@ -155,7 +169,9 @@ NULL
 #'
 #' @export
 pkg_dependencies <-
-    function(version, build = c("_software", "_update"), binary_repo = character())
+    function(version, build = c("_software", "_update"),
+             binary_repo = character(),
+             exclude = character())
 {
     build <- match.arg(build)
     stopifnot(
@@ -179,7 +195,7 @@ pkg_dependencies <-
     )
 
     if (identical(build, "_software")) {
-        deps <- .pkg_dependencies_software(version, db)
+        deps <- .pkg_dependencies_software(version, db, exclude)
     } else if (identical(build, "_update")) {
         deps <- .pkg_dependencies_update(version, db, binary_repo_url)
     } else {

@@ -7,7 +7,8 @@
 pkg_dependencies(
   version,
   build = c("_software", "_update"),
-  binary_repo = character()
+  binary_repo = character(),
+  exclude = character()
 )
 }
 \arguments{

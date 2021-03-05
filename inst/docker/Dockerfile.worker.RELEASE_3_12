@@ -1,0 +1,9 @@
+FROM bioconductor/bioconductor_docker:RELEASE_3_12
+
+RUN apt-get update && \
+	apt-get install -y --no-install-recommends libhiredis-dev && \
+	rm -rf /var/lib/apt/lists/*
+
+RUN R -e 'BiocManager::install(c("mtmorgan/RedisParam", "Bioconductor/BiocKubeInstall"))'
+
+COPY worker.R /home/docker/
