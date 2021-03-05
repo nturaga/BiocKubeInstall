@@ -11,7 +11,7 @@ on:
 #    - cron:  '*/5 * * * *'
 
 env:
-  GKE_CLUSTER: biock8sredis    # Add your cluster name here.
+  GKE_CLUSTER: biock8sredis1    # Add your cluster name here.
   GKE_ZONE: us-east1-b   # Add your cluster zone here.
   DEPLOYMENT_NAME: gke-test # Add your deployment name here.
 
