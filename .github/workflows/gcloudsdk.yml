@@ -36,8 +36,21 @@ jobs:
         gcloud container clusters create \
           --zone "$GKE_ZONE" \
           --num-nodes 2 \
-          --machine-type=e2-standard-2 "$GKE_CLUSTER"
+          --machine-type=e2-standard-4 "$GKE_CLUSTER"
 
    # Get the GKE credentials so we can deploy to the cluster
     - run: |-
        gcloud container clusters get-credentials "$GKE_CLUSTER" --zone "$GKE_ZONE"
+
+    # Install helm
+    - name: Install Helm
+      run: |
+        curl https://raw.githubusercontent.com/helm/helm/master/scripts/get-helm-3 | bash
+
+    - name: Deploy local helm chart
+      run: |
+        helm install test1 --set workerPoolSize=5 inst/helm-chart --wait
+
+    - name: check
+      run: |
+        kubectl get all
