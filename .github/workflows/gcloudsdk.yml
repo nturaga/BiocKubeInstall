@@ -49,7 +49,7 @@ jobs:
 
     - name: create secret for cluster to use
       run: |-
-        'echo "$GKE_SA_KEY" > bioc-binaries.json' && \
+        echo "$GKE_SA_KEY" > bioc-binaries.json && \
         kubectl create secret generic \
           bioc-binaries-service-account-auth \
           --from-file=service_account_key=bioc-binaries.json
