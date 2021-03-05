@@ -49,12 +49,13 @@ jobs:
 
     - name: create secret for cluster to use
       run: |-
-        cat <<EOF > bioc-binaries.json
-        ${{ secrets.GKE_SA_KEY }}
-        EOF
-        && kubectl create secret generic \
+        'echo "$GKE_SA_KEY" > bioc-binaries.json' && \
+        kubectl create secret generic \
           bioc-binaries-service-account-auth \
           --from-file=service_account_key=bioc-binaries.json
+      shell: bash
+      env:
+        GKE_SA_KEY: ${{secrets.GKE_SA_KEY}}
 
     - name: Deploy local helm chart
       run: |
