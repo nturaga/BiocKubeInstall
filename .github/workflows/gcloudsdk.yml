@@ -1,9 +1,14 @@
 name: start cluster and deploy
 
 on:
-  schedule:
+  push:
+    branches:
+      - master
+
+#on:
+#  schedule:
     # * is a special character in YAML so you have to quote this string
-    - cron:  '*/5 * * * *'
+#    - cron:  '*/5 * * * *'
 
 env:
   GKE_CLUSTER: biock8sredis    # Add your cluster name here.
