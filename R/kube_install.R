@@ -221,7 +221,10 @@ kube_install <-
 #'
 #' @export
 kube_run <-
-    function(version, image_name, worker_pool_size)
+    function(version, image_name, worker_pool_size,
+             exclude_pkgs = c('AllelicImbalance', 'canceR',
+                              'diffuStats', 'flowWorkspace',
+                              'gpuMagic', 'sf', 'ChemmineOB', 'DESeq'))
 {
     workers <- as.integer(worker_pool_size)
 
@@ -249,8 +252,10 @@ kube_run <-
     BiocKubeInstall::kube_wait(workers = workers)
 
     ## Step. 2 : Load deps and installed packages
-    deps <- BiocKubeInstall::pkg_dependencies(version, build = "_software",
-                                              binary_repo = binary_repo)
+    deps <- BiocKubeInstall::pkg_dependencies(version,
+                                              build = "_software",
+                                              binary_repo = binary_repo,
+                                              exclude = exclude_pkgs)
 
     ## Step 3: Run kube_install so package binaries are built
     res <- BiocKubeInstall::kube_install(workers = workers,
