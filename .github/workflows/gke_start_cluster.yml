@@ -3,7 +3,7 @@ name: start k8s cluster and deploy binary build
 ## Cluster starts at 12 (noon) on Tuesday, Thursday and Saturday
 on:
   schedule:
-    - cron:  '0 15 * * 2,4,6'
+    - cron:  '30 20 * * 2,4,6'
 
 env:
   GKE_CLUSTER: biock8sredis
