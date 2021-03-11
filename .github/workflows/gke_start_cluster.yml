@@ -54,7 +54,9 @@ jobs:
 
     - name: Deploy local helm chart
       run: |
-        helm install biock8sredis --set workerPoolSize=60 inst/helm-chart --wait
+        helm install biock8sredis --set workerPoolSize=60 \
+          --set biocVersion='3.12' \
+          --set workerImageTag='RELEASE_3_12' inst/helm-chart --wait
 
     - name: check
       run: |
