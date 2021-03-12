@@ -2,8 +2,8 @@ name: start k8s cluster and deploy binary build
 
 ## Cluster starts at 12 (noon) on Tuesday, Thursday and Saturday
 on:
-#  push:
-#    branches: [ master ]
+ push:
+   branches: [ master ]
   schedule:
     - cron:  '* 9 * * 1,3,5'
 
@@ -53,12 +53,16 @@ jobs:
       env:
         GKE_SA_KEY: ${{secrets.GKE_SA_KEY}}
 
-    # - name: Deploy local helm chart
-    #   run: |
-    #     helm install biock8sredis --set workerPoolSize=60 \
-    #       --set biocVersion='3.12' \
-    #       --set workerImageTag='RELEASE_3_12' inst/helm-chart --wait
+    - name: Check secret 
+      run: |-
+        kubectl describe secrets/bioc-binaries-service-account-auth
 
-    # - name: check
-    #   run: |
-    #     kubectl get all
+    - name: Deploy local helm chart
+      run: |
+        helm install biock8sredis --set workerPoolSize=2 \
+          --set biocVersion='3.12' \
+          --set workerImageTag='RELEASE_3_12' inst/helm-chart --wait
+
+    - name: check
+      run: |
+        kubectl get all
