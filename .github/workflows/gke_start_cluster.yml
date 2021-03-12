@@ -29,20 +29,20 @@ jobs:
         project_id: ${{ secrets.GKE_PROJECT }}
 
     # Start cluster
-    # - run: |-
-    #     gcloud container clusters create \
-    #       --zone "$GKE_ZONE" \
-    #       --num-nodes 10 \
-    #       --machine-type=e2-standard-4 "$GKE_CLUSTER"
+    - run: |-
+        gcloud container clusters create \
+          --zone "$GKE_ZONE" \
+          --num-nodes 1 \
+          --machine-type=e2-standard-4 "$GKE_CLUSTER"
 
-    # # Get the GKE credentials so we can deploy to the cluster
-    # - run: |-
-    #    gcloud container clusters get-credentials "$GKE_CLUSTER" --zone "$GKE_ZONE"
+    # Get the GKE credentials so we can deploy to the cluster
+    - run: |-
+       gcloud container clusters get-credentials "$GKE_CLUSTER" --zone "$GKE_ZONE"
 
-    # # Install helm
-    # - name: Install Helm
-    #   run: |
-    #     curl https://raw.githubusercontent.com/helm/helm/master/scripts/get-helm-3 | bash
+    # Install helm
+    - name: Install Helm
+      run: |
+        curl https://raw.githubusercontent.com/helm/helm/master/scripts/get-helm-3 | bash
 
     - name: Create secret for cluster
       run: |-
