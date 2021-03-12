@@ -31,5 +31,5 @@ jobs:
 
     # Delete cluster
     - run: |-
-        gcloud container clusters delete "$GKE_CLUSTER" --zone "$GKE_ZONE"
+        gcloud container clusters delete "$GKE_CLUSTER" --zone "$GKE_ZONE" --quiet
         
