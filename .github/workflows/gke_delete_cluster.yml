@@ -3,6 +3,8 @@ name: Delete k8s cluster
 ## Cluster is shut down at 1pm on Monday, Wed, Fri
 ## The k8s cluster has 3 hours to do the job
 on:
+  push:
+    branches: [ master ]
   schedule:
     - cron:  '* 13 * * 1,3,5'
  
