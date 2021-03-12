@@ -29,37 +29,36 @@ jobs:
         project_id: ${{ secrets.GKE_PROJECT }}
 
     # Start cluster
-    - run: |-
-        gcloud container clusters create \
-          --zone "$GKE_ZONE" \
-          --num-nodes 10 \
-          --machine-type=e2-standard-4 "$GKE_CLUSTER"
+    # - run: |-
+    #     gcloud container clusters create \
+    #       --zone "$GKE_ZONE" \
+    #       --num-nodes 10 \
+    #       --machine-type=e2-standard-4 "$GKE_CLUSTER"
 
-    # Get the GKE credentials so we can deploy to the cluster
-    - run: |-
-       gcloud container clusters get-credentials "$GKE_CLUSTER" --zone "$GKE_ZONE"
+    # # Get the GKE credentials so we can deploy to the cluster
+    # - run: |-
+    #    gcloud container clusters get-credentials "$GKE_CLUSTER" --zone "$GKE_ZONE"
 
-    # Install helm
-    - name: Install Helm
-      run: |
-        curl https://raw.githubusercontent.com/helm/helm/master/scripts/get-helm-3 | bash
+    # # Install helm
+    # - name: Install Helm
+    #   run: |
+    #     curl https://raw.githubusercontent.com/helm/helm/master/scripts/get-helm-3 | bash
 
     - name: Create secret for cluster
       run: |-
         echo "$GKE_SA_KEY" > bioc-binaries.json && \
-        kubectl create secret generic \
-          bioc-binaries-service-account-auth \
+        kubectl create secret generic bioc-binaries-service-account-auth \
           --from-file=service_account_key=bioc-binaries.json
       shell: bash
       env:
         GKE_SA_KEY: ${{secrets.GKE_SA_KEY}}
 
-    - name: Deploy local helm chart
-      run: |
-        helm install biock8sredis --set workerPoolSize=60 \
-          --set biocVersion='3.12' \
-          --set workerImageTag='RELEASE_3_12' inst/helm-chart --wait
+    # - name: Deploy local helm chart
+    #   run: |
+    #     helm install biock8sredis --set workerPoolSize=60 \
+    #       --set biocVersion='3.12' \
+    #       --set workerImageTag='RELEASE_3_12' inst/helm-chart --wait
 
-    - name: check
-      run: |
-        kubectl get all
+    # - name: check
+    #   run: |
+    #     kubectl get all
