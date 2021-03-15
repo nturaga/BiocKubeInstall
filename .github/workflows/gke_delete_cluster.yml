@@ -2,10 +2,16 @@ name: Delete k8s cluster
 
 ## Cluster is shut down at 6pm UTC on Monday, Wed, Fri
 ## The k8s cluster has 6 hours to do the job
-on:
+on: 
   schedule:
-    - cron:  '0 16 * * 1,3,5'
- 
+    - cron:  '30 16 * * 1,3,5'
+  workflow_dispatch:
+    inputs:
+      name: 
+        description: 'Stop cluster'
+        required: false
+        default: 'biock8sredis'
+        
 env:
   GKE_CLUSTER: biock8sredis
   GKE_ZONE: us-east1-b
