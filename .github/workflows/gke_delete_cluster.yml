@@ -4,7 +4,7 @@ name: Delete k8s cluster
 ## The k8s cluster has 6 hours to do the job
 on:
   schedule:
-    - cron:  '0 18 * * 1,3,5'
+    - cron:  '0 16 * * 1,3,5'
  
 env:
   GKE_CLUSTER: biock8sredis
