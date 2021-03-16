@@ -10,7 +10,7 @@ application.
 
 ## Author
 
-Nitesh Turaga: nturaga.bioc at gmail dot com
+Nitesh Turaga - nturaga.bioc@gmail.com
 
 Martin Morgan
 
@@ -20,3 +20,23 @@ Martin Morgan
 
 **Vignette**: [BiocKubeInstall_Tutorial](https://bioconductor.github.io/BiocKubeInstall/articles/BiocKubeInstall_Tutorial.html)
 
+## Components 
+
+1. inst/helm-chart : helm chart for k8s app
+
+2. inst/docker : docker images used inside the k8s application
+
+3. BiocKubeInstall R/ : Code which runs on the manager and worker replica sets. 
+
+4. Github Actions: Start cluster and deploy to cluster, delete cluster, and test binary package installs 3 times a week. 
+
+## Usage for AnVIL platform and all bioconductor_docker inherited images
+
+```
+BiocManager::install('Bioconductor/AnVIL')
+
+## Should show the Google storage api as the top result
+AnVIL::repositories()
+
+AnVIL::install('Rhtslib')
+``` 
