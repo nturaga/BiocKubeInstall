@@ -20,4 +20,5 @@ jobs:
           pkgs <- biocsoft[sample(length(biocsoft), 5)]
           BiocManager::install('Bioconductor/AnVIL')
           AnVIL::install(pkgs)
+          require(pkgs)
         shell: Rscript {0}
