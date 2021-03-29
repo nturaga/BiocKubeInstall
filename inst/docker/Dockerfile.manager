@@ -13,6 +13,8 @@ RUN echo "deb [signed-by=/usr/share/keyrings/cloud.google.gpg] http://packages.c
 	&& apt-get -y --no-install-recommends install google-cloud-sdk \
 	&& rm -rf /var/lib/apt/lists/*
 
+RUN curl -sL https://aka.ms/InstallAzureCLIDeb | sudo bash
+
 RUN R -e 'BiocManager::install(c("mtmorgan/RedisParam", "Bioconductor/BiocKubeInstall"))'
 
 COPY manager_demo.R /home/rstudio/manager_demo.R
