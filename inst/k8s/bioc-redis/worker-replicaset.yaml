@@ -1,0 +1,40 @@
+apiVersion: apps/v1
+kind: ReplicaSet
+metadata:
+  name: workcluster
+  labels:
+    tier: workcluster
+spec:
+  replicas: 3
+
+  selector:
+    matchLabels:
+      tier: workcluster
+
+  template:
+    metadata:
+      labels:
+        tier: workcluster
+    spec:
+      containers:
+      - name: worker
+        image: bioconductor/bioc-redis:RELEASE_3_13
+        imagePullPolicy: Always
+        resources:
+          requests:
+            memory: 1Gi
+            cpu: 200m
+          limits:
+            memory: 4Gi
+            cpu: 1.1
+        volumeMounts:
+         - name: azure
+           mountPath: /mnt/azure
+        command: ["R"]
+        args: ["-f", "/home/docker/worker.R"]
+      volumes:
+      - name: azure
+        azureFile:
+          secretName: azure-secret
+          shareName: biocbinaries
+          readOnly: false

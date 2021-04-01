@@ -1,0 +1,14 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: rstudio
+  labels:
+    app: rstudio
+spec:
+  type: NodePort
+  ports:
+    - port: 8787
+      nodePort: 30001
+      name: publish-rstudio
+  selector:
+    app: rstudio
