@@ -1,16 +1,14 @@
 apiVersion: apps/v1
-kind: ReplicaSet
+kind: Deployment
 metadata:
   name: workcluster
   labels:
     tier: workcluster
 spec:
-  replicas: 3
-
+  replicas: 10
   selector:
     matchLabels:
       tier: workcluster
-
   template:
     metadata:
       labels:
@@ -18,18 +16,18 @@ spec:
     spec:
       containers:
       - name: worker
-        image: bioconductor/bioc-redis:RELEASE_3_13
+        image: bioconductor/bioc-redis:RELEASE_3_12
         imagePullPolicy: Always
         resources:
           requests:
             memory: 1Gi
-            cpu: 200m
+            cpu: 700m
           limits:
             memory: 4Gi
-            cpu: 1.1
+            cpu: 1.2
         volumeMounts:
          - name: azure
-           mountPath: /mnt/azure
+           mountPath: /host/
         command: ["R"]
         args: ["-f", "/home/docker/worker.R"]
       volumes:
