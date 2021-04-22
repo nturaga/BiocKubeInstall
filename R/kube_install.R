@@ -235,38 +235,56 @@ kube_run <-
     Sys.setenv(REDIS_HOST = Sys.getenv("REDIS_SERVICE_HOST"))
     Sys.setenv(REDIS_PORT = Sys.getenv("REDIS_SERVICE_PORT"))
 
+    ## FIX: adapt to multiple clouds - this secret is limited to GKE
     ## Secret key to access S3 bucket on google
+    sas_token <- "/home/rstudio/az_sas.tok"
     secret_path <- "/home/rstudio/key.json"
+
+    bl <- storage_endpoint(
+        "https://bioconductordocker.blob.core.windows.net",
+        sas = sas_token)
+
+    ## Google
+    ## https://storage.googleapis.com/bioconductor_docker/packages/3.12/bioc/src/contrib/a4_1.38.0_R_x86_64-pc-linux-gnu.tar.gz
+
+    ## Azure
+    ## https://bioconductordocker.blob.core.windows.net/packages/3.12/bioc/src/contrib/ABAData_1.21.0_R_x86_64-pc-linux-gnu.tar.gz
+
+    list_storage_containers(bl)
 
     ## 'binary_repo' is where the existing binaries are located.
     ## 'cran_bucket' is where packages are uploaded on a google bucket
     binary_repo <- paste0(image_name, "/packages/", version, "/bioc/")
     cran_repo <- paste0(binary_repo, "src/contrib/")
 
+    ## FIX: Adapt to multiple clouds
     ## Step 0: Create a bucket if you need to
-    gcloud_create_cran_bucket(bucket = image_name,
-                              bioc_version = version,
-                              secret = secret_path, public = TRUE)
+    ## Fix: Remove blank PACKAGES file from the "/" directory -- clean up after yourself
+    cloud_create_cran_bucket(bucket = image_name,
+                             bioc_version = version,
+                             secret = secret_path, public = TRUE)
 
     ## Step 1:  Wait till all the worker pods are up and running
     BiocKubeInstall::kube_wait(workers = workers)
 
+    ## Fix: Needs to do "_update" as well
     ## Step. 2 : Load deps and installed packages
-    deps <- BiocKubeInstall::pkg_dependencies(version,
-                                              build = "_software",
-                                              binary_repo = binary_repo,
-                                              exclude = exclude_pkgs)
+    deps <- pkg_dependencies(version,
+                             build = "_software",
+                             binary_repo = binary_repo,
+                             exclude = exclude_pkgs)
 
     ## Step 3: Run kube_install so package binaries are built
-    res <- BiocKubeInstall::kube_install(workers = workers,
-                                         lib_path = lib_path,
-                                         bin_path = bin_path,
-                                         deps = deps)
+    res <- kube_install(workers = workers,
+                        lib_path = lib_path,
+                        bin_path = bin_path,
+                        deps = deps)
 
+    ## Fix: Adapt to multiple clouds
     ## Step 4: Run sync to google bucket
-    BiocKubeInstall::gcloud_binary_sync(bin_path = bin_path,
-                                        bucket = cran_repo,
-                                        secret = secret_path)
+    cloud_binary_sync(bin_path = bin_path,
+                      bucket = cran_repo,
+                      secret = secret_path)
 
     ## ## Step 5: check if all workers were used
     check <- table(unlist(res))
