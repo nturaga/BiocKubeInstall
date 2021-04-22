@@ -2,10 +2,11 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: workcluster
+  namespace: release
   labels:
     tier: workcluster
 spec:
-  replicas: 10
+  replicas: 19
   selector:
     matchLabels:
       tier: workcluster
