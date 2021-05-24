@@ -238,11 +238,6 @@ kube_run <-
     ## FIX: adapt to multiple clouds - this secret is limited to GKE
     ## Secret key to access S3 bucket on google
     sas_token <- "/home/rstudio/az_sas.tok"
-    secret_path <- "/home/rstudio/key.json"
-
-    bl <- storage_endpoint(
-        "https://bioconductordocker.blob.core.windows.net",
-        sas = sas_token)
 
     ## Google
     ## https://storage.googleapis.com/bioconductor_docker/packages/3.12/bioc/src/contrib/a4_1.38.0_R_x86_64-pc-linux-gnu.tar.gz

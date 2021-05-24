@@ -1,7 +1,8 @@
 apiVersion: apps/v1
-kind: ReplicaSet
+kind: Deployment
 metadata:
   name: workcluster
+  namespace: {{ .Values.clusterNamespace }}
   labels:
     tier: workcluster
 spec:
@@ -20,17 +21,19 @@ spec:
         imagePullPolicy: {{ .Values.pullPolicy }}
         resources:
           requests:
-            memory: 2Gi
-            cpu: 500m
+            memory: 1Gi
+            cpu: 700m
           limits:
-            memory: 3Gi
-            cpu: 1
+            memory: 4Gi
+            cpu: 1.2
         volumeMounts:
-         - mountPath: {{ .Values.volumeMountPath }}
-           name: {{ .Values.volumeMountName }}
+         - name: {{ .Values.volumeMountName }}
+           mountPath: {{ .Values.volumeMountPath }}
         command: ["R"]
         args: ["-f", "/home/docker/worker.R"]
       volumes:
-      - name: {{ .Values.volumeMountName }}
-        persistentVolumeClaim:
-          claimName: nfs
+      - name: {{ .Values.volumeMountName}}
+        azureFile:
+          secretName: {{ .Values.azFileShareSecret.secretName }}
+          shareName: {{ .Values.azFileShareSecret.shareName }}
+          readOnly: false

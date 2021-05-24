@@ -1,10 +1,13 @@
 # Default values for k8s-redis-bioc-chart. This is a YAML-formatted
 # file. Declare variables to be passed into your templates.
 
+version: 3.13.1
+
 #
 # user-oriented configuration
 #
 
+clusterNamespace: release
 workerPoolSize: 50              # Number of workers in the cluster
 dockerImageName: 'bioconductor_docker'  # Image name for which binaries are created
 biocVersion: '3.12'
@@ -12,22 +15,26 @@ workerImageTag: RELEASE_3_12    # Needs to match the biocVersion
 
 # Manager image
 managerImage: bioconductor/bioc-redis
-managerImageTag: manager
+managerImageTag: az-manager
 
 # Worker image
 workerImage: bioconductor/bioc-redis
 
-# Volume mount
-volumeMountName: bioc-nfs-mount
+# Volume mount    
+volumeMountName: azure ## azure
 volumeMountPath: /host
-volumeMountSize: 200Gi
+volumeMountSize: 100Gi
 
 # service key name
-serviceKey: bioc-binaries.json
+azFileShareSecret:
+  secretName: azure-secret
+  shareName: biocbinaries
+
 
 # RStudio access
-rstudioPort: 30001            # Port for user connection; must be >= 30000
-rstudioPassword: bioc         # RStudio password on manager
+rstudioIngress:
+  nodePort: 30001            # Port for user connection; must be >= 30000
+  Password: bioc         # RStudio password on manager
 
 #
 # internal settings
