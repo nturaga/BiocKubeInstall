@@ -222,9 +222,8 @@ kube_install <-
 #' @export
 kube_run <-
     function(version, image_name, worker_pool_size,
-             exclude_pkgs = c('AllelicImbalance', 'canceR',
-                              'diffuStats', 'flowWorkspace',
-                              'gpuMagic', 'sf', 'ChemmineOB', 'DESeq'))
+             exclude_pkgs = c('canceR','flowWorkspace',
+                              'gpuMagic', 'ChemmineOB'))
 {
     workers <- as.integer(worker_pool_size)
 
