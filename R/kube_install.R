@@ -31,7 +31,8 @@ kube_install_single_package <-
 {
     .libPaths(c(lib_path, .libPaths()))
 
-    flog.appender(appender.tee('kube_install.log'), name = 'kube_install')
+    log_file <- file.path('/host/logs', 'kube_install.log')
+    flog.appender(appender.tee(log_file), name = 'kube_install')
     flog.info("building binary for package: %s", pkg, name = 'kube_install')
     cwd <- setwd(bin_path)
     warn_opt <- options(warn = 2)
@@ -39,12 +40,16 @@ kube_install_single_package <-
         options(warn_opt)
         setwd(cwd)
     })
-    BiocManager::install(
-                     pkg,
-                     INSTALL_opts = "--build",
-                     update=FALSE,
-                     quiet=TRUE
-                 )
+    suppressMessages(
+        BiocManager::install(
+                         pkg,
+                         INSTALL_opts = "--build",
+                         update=FALSE,
+                         quiet=TRUE,
+                         force=TRUE,
+                         keep_outputs=TRUE
+                     )
+    )
     Sys.info()[["nodename"]]
 }
 
@@ -169,7 +174,8 @@ kube_install <-
     }
 
     ## Logging
-    flog.appender(appender.tee('kube_install.log'), name = 'kube_install')
+    log_file <- file.path('/host/logs', 'kube_install.log')
+    flog.appender(appender.tee(log_file), name = 'kube_install')
 
     ## Create library_path and binary_path
     .create_library_paths(lib_path, bin_path)
@@ -266,6 +272,8 @@ kube_run <-
     BiocKubeInstall::gcloud_binary_sync(bin_path = bin_path,
                                         bucket = cran_repo,
                                         secret = secret_path)
+
+
 
     ## ## Step 5: check if all workers were used
     check <- table(unlist(res))
