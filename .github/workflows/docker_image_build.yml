@@ -21,8 +21,8 @@ jobs:
         id: docker_build_manager
         uses: docker/build-push-action@v2
         with:
-          file: inst/docker/Dockerfile.manager
-          context: /
+          file: Dockerfile.manager
+          context: inst/docker
           push: true
           tags: bioconductor/bioc-redis:manager
       
@@ -30,8 +30,8 @@ jobs:
         id: docker_build_release
         uses: docker/build-push-action@v2
         with:
-          file: inst/docker/Dockerfile.worker.RELEASE_3_13
-          context: /
+          file: Dockerfile.worker.RELEASE_3_13
+          context: inst/docker
           push: true
           tags: bioconductor/bioc-redis:RELEASE_3_13
 
