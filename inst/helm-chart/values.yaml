@@ -4,7 +4,7 @@
 #
 # user-oriented configuration
 #
-
+clusterNamespace: release
 workerPoolSize: 50              # Number of workers in the cluster
 dockerImageName: 'bioconductor_docker'  # Image name for which binaries are created
 biocVersion: '3.13'

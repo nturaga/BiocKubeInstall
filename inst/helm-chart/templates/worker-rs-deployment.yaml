@@ -1,7 +1,8 @@
 apiVersion: apps/v1
-kind: ReplicaSet
+kind: Deployment
 metadata:
   name: workcluster
+  namespace: {{ .Values.clusterNamespace}}
   labels:
     tier: workcluster
 spec:
