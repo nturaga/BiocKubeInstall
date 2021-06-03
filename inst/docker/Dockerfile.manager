@@ -13,6 +13,13 @@ RUN echo "deb [signed-by=/usr/share/keyrings/cloud.google.gpg] http://packages.c
 	&& apt-get -y --no-install-recommends install google-cloud-sdk \
 	&& rm -rf /var/lib/apt/lists/*
 
+## Install azure CLI and azcopy / download and cleanup
+RUN curl -sL https://aka.ms/InstallAzureCLIDeb | sudo bash \
+    && wget -O /tmp/azcopy.tar.gz  https://aka.ms/downloadazcopy-v10-linux \
+    && tar -xf /tmp/azcopy.tar.gz -C /tmp/ \
+    && mv /tmp/azcopy_linux_amd64_10.10.0/azcopy /usr/local/bin \
+    && rm -rf /tmp/azcopy.tar.gz /tmp/azcopy_linux_amd64_10.10.0
+
 RUN R -e 'BiocManager::install(c("mtmorgan/RedisParam", "Bioconductor/BiocKubeInstall"))'
 
 COPY manager_demo.R /home/rstudio/manager_demo.R
