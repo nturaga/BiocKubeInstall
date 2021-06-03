@@ -18,7 +18,7 @@ jobs:
           password: ${{ secrets.DOCKERHUB_TOKEN }}
       
       - name: Build and push manager
-        id: docker_build
+        id: docker_build_manager
         uses: docker/build-push-action@v2
         with:
           file: inst/docker/Dockerfile.manager
@@ -27,7 +27,7 @@ jobs:
           tags: bioconductor/bioc-redis:manager
       
       - name: Build and push release
-        id: docker_build
+        id: docker_build_release
         uses: docker/build-push-action@v2
         with:
           file: inst/docker/Dockerfile.worker.RELEASE_3_13
