@@ -182,33 +182,34 @@ gcloud_create_cran_bucket <-
 #'
 #' @seealso `BiocKuberInstall::gcloud_create_cran_bucket()`
 #'
-#' @param bin_path character(1) path to the directory where binaries
-#'     are stored.
+#' @param src_path character(1) path to the directory where source
+#'     information are stored.
 #'
 #' @param bucket character(1) bucket name for the google storage
 #'     bucket, it must include the FULL path of the CRAN style repo.
 #'
-#' @param secret character(1) path to the location of the secret key
-#'     for the service account.
-#'
-#' @return `gcloud_binary_sync()` return invisibly, but a message is
+#' @return `gcloud_sync_to_bucket()` return invisibly, but a message is
 #'     shown on screen on successfully tranferred files.
 #'
 #' @examples
 #' \dontrun{
 #'
-#' gcloud_binary_sync(
-#'     bin_path = "/host/binaries",
-#'     bucket = "bioconductor_docker/packages/3.12/bioc/src/contrib/",
-#'     secret = "/home/rstudio/key.json"
+#' gcloud_sync_to_bucket(
+#'     src_path = "/host/binaries",
+#'     bucket = "bioconductor_docker/packages/3.12/bioc/src/contrib/"
+#' )
+#'
+#' gcloud_sync_to_bucket(
+#'     src_path = "/host/logs",
+#'     bucket = "bioconductor_docker/packages/3.13/bioc/src/package_logs/"
 #' )
 #' }
 #'
 #' @importFrom AnVIL gsutil_rsync gsutil_exists
 #'
 #' @export
-gcloud_binary_sync <-
-    function(bin_path, bucket, secret = "/home/rstudio/key.json")
+gcloud_sync_to_bucket <-
+    function(src_path, bucket)
 {
     if(!grepl("^gs://", bucket)) {
         bucket <- paste0("gs://", bucket)
@@ -216,13 +217,31 @@ gcloud_binary_sync <-
 
     ## Validity checks
     stopifnot(
-        .is_scalar_character(bin_path), .gsutil_is_uri(bucket),
+        .is_scalar_character(src_path), .gsutil_is_uri(bucket),
         .is_scalar_character(secret), file.exists(secret),
         gsutil_exists(bucket)
     )
+    ## Transfer to gcloud
+    gsutil_rsync(source = src_path, destination = bucket, dry = FALSE)
+}
 
+
+#'
+#' @export
+sync_artifacts <-
+    function(secret, artifacts, repos)
+{
     ## authenticate with secret
     .gcloud_service_account_auth(secret = secret)
-    ## Transfer to gcloud
-    gsutil_rsync(source = bin_path, destination = bucket, dry=FALSE)
+
+    ## Sync binaries from /host/binary_3_13 to /src/contrib/
+    gcloud_sync_to_bucket(src_path = artifacts$bin_path, bucket = repos$cran)
+
+    ## Sync logs from /host/logs_3_13 to /src/package_logs
+    ## Sync outputs from /host/binary_3_13/*.out to /src/package_logs
+    gcloud_sync_to_bucket(src_path = artifacts$logs_path, bucket = repos$logs)
+    gcloud_sync_to_bucket(
+        src_path = paste0(artifacts$bin_path, '/', '*.out'),
+        bucket = repos$logs
+    )
 }

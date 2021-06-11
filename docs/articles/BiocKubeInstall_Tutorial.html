@@ -69,7 +69,7 @@
 
       
 
-      </header><script src="BiocKubeInstall_Tutorial_files/header-attrs-2.6/header-attrs.js"></script><div class="row">
+      </header><script src="BiocKubeInstall_Tutorial_files/header-attrs-2.8/header-attrs.js"></script><div class="row">
   <div class="col-md-9 contents">
     <div class="page-header toc-ignore">
       <h1 data-toc-skip>BiocKubeInstall Usage</h1>
@@ -237,18 +237,20 @@ AnVIL::install('BiocParallel')</a></code></pre>
 ##     intersect, setdiff, setequal, union</code></pre>
 <div class="sourceCode" id="cb19"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="fu">BiocManager</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/BiocManager/man/install.html">install</a></span><span class="op">(</span><span class="st">'Bioconductor/AnVIL'</span><span class="op">)</span></code></pre></div>
-<pre><code>## Bioconductor version 3.13 (BiocManager 1.30.10), R Under development (unstable)
-##   (2021-02-05 r79947)</code></pre>
+<pre><code>## 'getOption("repos")' replaces Bioconductor standard repositories, see
+## '?repositories' for details
+## 
+## replacement repositories:
+##     CRAN: https://cran.rstudio.com/</code></pre>
+<pre><code>## Bioconductor version 3.13 (BiocManager 1.30.15), R 4.1.0 Patched (2021-05-18
+##   r80324)</code></pre>
 <pre><code>## Installing github package(s) 'Bioconductor/AnVIL'</code></pre>
 <pre><code>## Downloading GitHub repo Bioconductor/AnVIL@HEAD</code></pre>
-<pre><code>## lifecycle (0.2.0 -&gt; 1.0.0) [CRAN]
-## mime      (0.9   -&gt; 0.10 ) [CRAN]
-## pillar    (1.4.7 -&gt; 1.5.0) [CRAN]</code></pre>
-<pre><code>## Installing 3 packages: lifecycle, mime, pillar</code></pre>
-<pre><code>##   
-   checking for file ‘/private/var/folders/1w/xf7rrsr1483d4rg7vwbkdy780000gp/T/RtmpQoADLC/remotesf9672d80ba2/Bioconductor-AnVIL-a5f989c/DESCRIPTION’ ...
+<pre><code>## 
+##   
+   checking for file ‘/private/var/folders/1w/xf7rrsr1483d4rg7vwbkdy780000gp/T/Rtmpd1AELO/remotes53ff648338c7/Bioconductor-AnVIL-5689b87/DESCRIPTION’ ...
   
-✔  checking for file ‘/private/var/folders/1w/xf7rrsr1483d4rg7vwbkdy780000gp/T/RtmpQoADLC/remotesf9672d80ba2/Bioconductor-AnVIL-a5f989c/DESCRIPTION’
+✓  checking for file ‘/private/var/folders/1w/xf7rrsr1483d4rg7vwbkdy780000gp/T/Rtmpd1AELO/remotes53ff648338c7/Bioconductor-AnVIL-5689b87/DESCRIPTION’
 ## 
   
 ─  preparing ‘AnVIL’:
@@ -256,7 +258,7 @@ AnVIL::install('BiocParallel')</a></code></pre>
   
    checking DESCRIPTION meta-information ...
   
-✔  checking DESCRIPTION meta-information
+✓  checking DESCRIPTION meta-information
 ## 
   
 ─  checking for LF line-endings in source and make files and shell scripts
@@ -265,33 +267,37 @@ AnVIL::install('BiocParallel')</a></code></pre>
 ─  checking for empty or unneeded directories
 ## 
   
-─  building ‘AnVIL_1.3.22.tar.gz’
+─  looking to see if a ‘data/datalist’ file should be added
+## 
+  
+─  building ‘AnVIL_1.5.0.tar.gz’
 ## 
   
    
 ## </code></pre>
-<pre><code>## Old packages: 'AnVIL', 'boot', 'broom', 'cachem', 'cluster', 'data.table',
-##   'DelayedArray', 'deldir', 'edgeR', 'gert', 'lifecycle', 'limma', 'MASS',
-##   'MetaboCoreUtils', 'mgcv', 'mime', 'pillar', 'promises', 'ProtGenerics',
-##   'ragg', 'RcppArmadillo', 'rmarkdown', 'rstatix', 'scater', 'scuttle',
-##   'SingleCellExperiment', 'SparseM', 'spatstat.data', 'systemfonts',
-##   'testthat', 'textshaping', 'usethis', 'waldo', 'xfun'</code></pre>
-<div class="sourceCode" id="cb27"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb25"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="fu">AnVIL</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/AnVIL/man/localize.html">install</a></span><span class="op">(</span><span class="st">'&lt;package_name&gt;'</span><span class="op">)</span></code></pre></div>
+<pre><code>## 'getOption("repos")' replaces Bioconductor standard repositories, see
+## '?repositories' for details
+## 
+## replacement repositories:
+##     CRAN: https://cran.rstudio.com/</code></pre>
 <pre><code>## Warning: package '&lt;package_name&gt;' is not available for this version of R
 ## 
 ## A version of this package for your version of R might be available elsewhere,
 ## see the ideas at
-## https://cran.r-project.org/doc/manuals/r-devel/R-admin.html#Installing-packages</code></pre>
+## https://cran.r-project.org/doc/manuals/r-patched/R-admin.html#Installing-packages</code></pre>
+<pre><code>## Warning: unable to access index for repository https://storage.googleapis.com/bioconductor_docker/packages/3.13/bioc/bin/macosx/contrib/4.1:
+##   cannot open URL 'https://storage.googleapis.com/bioconductor_docker/packages/3.13/bioc/bin/macosx/contrib/4.1/PACKAGES'</code></pre>
 <div class="sourceCode" id="cb29"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="fu"><a href="https://rdrr.io/r/utils/sessionInfo.html">sessionInfo</a></span><span class="op">(</span><span class="op">)</span></code></pre></div>
-<pre><code>## R Under development (unstable) (2021-02-05 r79947)
-## Platform: x86_64-apple-darwin19.6.0 (64-bit)
-## Running under: macOS Catalina 10.15.7
+<pre><code>## R version 4.1.0 Patched (2021-05-18 r80324)
+## Platform: x86_64-apple-darwin17.0 (64-bit)
+## Running under: macOS Big Sur 10.16
 ## 
 ## Matrix products: default
-## BLAS:   /Users/nitesh/R-stuff/bin/R-devel/lib/libRblas.dylib
-## LAPACK: /Users/nitesh/R-stuff/bin/R-devel/lib/libRlapack.dylib
+## BLAS:   /Library/Frameworks/R.framework/Versions/4.1/Resources/lib/libRblas.dylib
+## LAPACK: /Library/Frameworks/R.framework/Versions/4.1/Resources/lib/libRlapack.dylib
 ## 
 ## locale:
 ## [1] en_US.UTF-8/en_US.UTF-8/en_US.UTF-8/C/en_US.UTF-8/en_US.UTF-8
@@ -300,28 +306,30 @@ AnVIL::install('BiocParallel')</a></code></pre>
 ## [1] stats     graphics  grDevices utils     datasets  methods   base     
 ## 
 ## other attached packages:
-## [1] AnVIL_1.3.18     dplyr_1.0.4      BiocStyle_2.19.1
+## [1] AnVIL_1.4.0      dplyr_1.0.6      BiocStyle_2.20.0
 ## 
 ## loaded via a namespace (and not attached):
-##  [1] formatR_1.7          compiler_4.1.0       pillar_1.4.7        
-##  [4] BiocManager_1.30.10  futile.logger_1.4.3  prettyunits_1.1.1   
-##  [7] remotes_2.2.0        futile.options_1.0.1 tools_4.1.0         
-## [10] pkgbuild_1.2.0       digest_0.6.27        jsonlite_1.7.2      
-## [13] evaluate_0.14        memoise_2.0.0        lifecycle_0.2.0     
-## [16] tibble_3.0.6         pkgconfig_2.0.3      rlang_0.4.10        
-## [19] cli_2.3.0            DBI_1.1.1            curl_4.3            
-## [22] yaml_2.2.1           pkgdown_1.6.1        xfun_0.20           
-## [25] fastmap_1.1.0        withr_2.4.1          httr_1.4.2          
-## [28] stringr_1.4.0        knitr_1.31           desc_1.2.0          
-## [31] generics_0.1.0       fs_1.5.0             vctrs_0.3.6         
-## [34] systemfonts_1.0.0    rprojroot_2.0.2      tidyselect_1.1.0    
-## [37] glue_1.4.2           R6_2.5.0             textshaping_0.2.1   
-## [40] processx_3.4.5       rmarkdown_2.6        bookdown_0.21       
-## [43] callr_3.5.1          purrr_0.3.4          lambda.r_1.2.4      
-## [46] magrittr_2.0.1       ps_1.5.0             htmltools_0.5.1.1   
-## [49] ellipsis_0.3.1       rapiclient_0.1.3     assertthat_0.2.1    
-## [52] ragg_0.4.1           stringi_1.5.3        cachem_1.0.3        
-## [55] crayon_1.4.1</code></pre>
+##  [1] tidyselect_1.1.1     xfun_0.23            bslib_0.2.5.1       
+##  [4] remotes_2.4.0        purrr_0.3.4          vctrs_0.3.8         
+##  [7] generics_0.1.0       htmltools_0.5.1.1    yaml_2.2.1          
+## [10] pkgbuild_1.2.0       utf8_1.2.1           rlang_0.4.11        
+## [13] pkgdown_1.6.1        jquerylib_0.1.4      pillar_1.6.1        
+## [16] withr_2.4.2          rapiclient_0.1.3     glue_1.4.2          
+## [19] DBI_1.1.1            lambda.r_1.2.4       lifecycle_1.0.0     
+## [22] stringr_1.4.0        futile.logger_1.4.3  ragg_1.1.3          
+## [25] memoise_2.0.0        evaluate_0.14        knitr_1.33          
+## [28] callr_3.7.0          fastmap_1.1.0        ps_1.6.0            
+## [31] curl_4.3.1           fansi_0.5.0          BiocManager_1.30.15 
+## [34] formatR_1.11         cachem_1.0.5         desc_1.3.0          
+## [37] jsonlite_1.7.2       systemfonts_1.0.2    fs_1.5.0            
+## [40] textshaping_0.3.5    digest_0.6.27        stringi_1.6.2       
+## [43] bookdown_0.22        processx_3.5.2       rprojroot_2.0.2     
+## [46] cli_2.5.0            tools_4.1.0          magrittr_2.0.1      
+## [49] sass_0.4.0           tibble_3.1.2         futile.options_1.0.1
+## [52] crayon_1.4.1         tidyr_1.1.3          pkgconfig_2.0.3     
+## [55] ellipsis_0.3.2       prettyunits_1.1.1    rstudioapi_0.13     
+## [58] assertthat_0.2.1     rmarkdown_2.8        httr_1.4.2          
+## [61] R6_2.5.0             compiler_4.1.0</code></pre>
 </div>
 </div>
   </div>

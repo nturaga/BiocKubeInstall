@@ -4,7 +4,13 @@
 \alias{kube_run}
 \title{Run builder on k8s}
 \usage{
-kube_run(version, image_name, worker_pool_size)
+kube_run(
+  version,
+  image_name,
+  workers,
+  volume_mount_path = "/host/",
+  exclude_pkgs = c("canceR", "flowWorkspace", "gpuMagic", "ChemmineOB")
+)
 }
 \arguments{
 \item{version}{character(), bioconductor version number, e.g 3.12

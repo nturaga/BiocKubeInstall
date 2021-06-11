@@ -27,12 +27,13 @@
 #'
 #' @export
 kube_install_single_package <-
-    function(pkg, lib_path, bin_path)
+    function(pkg, lib_path, bin_path, logs_path)
 {
     .libPaths(c(lib_path, .libPaths()))
 
-    log_file <- file.path('/host/logs', 'kube_install.log')
+    log_file <- file.path(logs_path, 'kube_install.log')
     flog.appender(appender.tee(log_file), name = 'kube_install')
+
     flog.info("building binary for package: %s", pkg, name = 'kube_install')
     cwd <- setwd(bin_path)
     warn_opt <- options(warn = 2)
@@ -44,10 +45,10 @@ kube_install_single_package <-
         BiocManager::install(
                          pkg,
                          INSTALL_opts = "--build",
-                         update=FALSE,
-                         quiet=TRUE,
-                         force=TRUE,
-                         keep_outputs=TRUE
+                         update = FALSE,
+                         quiet = TRUE,
+                         force = TRUE,
+                         keep_outputs = TRUE
                      )
     )
     Sys.info()[["nodename"]]
@@ -77,7 +78,7 @@ kube_wait <-
 
     redis <- redux::hiredis()
     ## Wait for workers to be ready
-    repeat{
+    repeat {
         len_workers <- length(
             grep("flags=b", strsplit(redis$CLIENT_LIST(), "\n")[[1]])
         )
@@ -157,7 +158,7 @@ kube_wait <-
 #'
 #' @export
 kube_install <-
-    function(workers, lib_path, bin_path, deps, BPPARAM = NULL)
+    function(workers, lib_path, bin_path, logs_path, deps, BPPARAM = NULL)
 {
     stopifnot(
         is.integer(workers),
@@ -174,17 +175,15 @@ kube_install <-
     }
 
     ## Logging
-    log_file <- file.path('/host/logs', 'kube_install.log')
+    log_file <- file.path(logs_path, 'kube_install.log')
     flog.appender(appender.tee(log_file), name = 'kube_install')
-
-    ## Create library_path and binary_path
-    .create_library_paths(lib_path, bin_path)
 
     result <- .depends_apply(
         deps,
         kube_install_single_package,
         lib_path = lib_path,
         bin_path = bin_path,
+        logs_path = logs_path,
         BPPARAM = BPPARAM
     )
 
@@ -197,7 +196,7 @@ kube_install <-
     )
 
     ## Create PACKAGES, PACKAGES.gz, PACAKGES.rds
-    tools::write_PACKAGES(bin_path, addFiles=TRUE, verbose = TRUE)
+    tools::write_PACKAGES(bin_path, addFiles = TRUE, verbose = TRUE)
 
     result
 }
@@ -227,31 +226,25 @@ kube_install <-
 #'
 #' @export
 kube_run <-
-    function(version, image_name, worker_pool_size,
+    function(version, image_name, workers,
+             volume_mount_path = '/host/',
              exclude_pkgs = c('canceR','flowWorkspace',
                               'gpuMagic', 'ChemmineOB'))
 {
-    workers <- as.integer(worker_pool_size)
-
-    ver <- gsub(".", "_", version, fixed = TRUE)
-    lib_path <- paste0('/host/library_', ver)
-    bin_path <- paste0('/host/binary_', ver)
+    workers <- as.integer(workers)
+    artifacts <- .get_artifact_paths(version, volume_mount_path)
+    repos <- .repos(version, image_name)
 
     Sys.setenv(REDIS_HOST = Sys.getenv("REDIS_SERVICE_HOST"))
     Sys.setenv(REDIS_PORT = Sys.getenv("REDIS_SERVICE_PORT"))
 
-    ## Secret key to access S3 bucket on google
-    secret_path <- "/home/rstudio/key.json"
-
-    ## 'binary_repo' is where the existing binaries are located.
-    ## 'cran_bucket' is where packages are uploaded on a google bucket
-    binary_repo <- paste0(image_name, "/packages/", version, "/bioc/")
-    cran_repo <- paste0(binary_repo, "src/contrib/")
+    ## Secret key to access bucket on google
+    secret <- "/home/rstudio/key.json"
 
     ## Step 0: Create a bucket if you need to
     gcloud_create_cran_bucket(bucket = image_name,
                               bioc_version = version,
-                              secret = secret_path, public = TRUE)
+                              secret = secret, public = TRUE)
 
     ## Step 1:  Wait till all the worker pods are up and running
     BiocKubeInstall::kube_wait(workers = workers)
@@ -259,21 +252,18 @@ kube_run <-
     ## Step. 2 : Load deps and installed packages
     deps <- BiocKubeInstall::pkg_dependencies(version,
                                               build = "_software",
-                                              binary_repo = binary_repo,
+                                              binary_repo = repos$binary,
                                               exclude = exclude_pkgs)
 
     ## Step 3: Run kube_install so package binaries are built
     res <- BiocKubeInstall::kube_install(workers = workers,
-                                         lib_path = lib_path,
-                                         bin_path = bin_path,
+                                         lib_path = artifacts$lib_path,
+                                         bin_path = artifacts$bin_path,
+                                         logs_path = artifacts$logs_path,
                                          deps = deps)
 
-    ## Step 4: Run sync to google bucket
-    BiocKubeInstall::gcloud_binary_sync(bin_path = bin_path,
-                                        bucket = cran_repo,
-                                        secret = secret_path)
-
-
+    ##  Step 4: Sync all artifacts produced, binaries, logs
+    sync_artifacts(secret = secret, artifacts = artifacts,repos = repos)
 
     ## ## Step 5: check if all workers were used
     check <- table(unlist(res))

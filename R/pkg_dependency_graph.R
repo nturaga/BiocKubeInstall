@@ -46,7 +46,7 @@ NULL
     }
 
     ## all software packages
-    deps0 <- package_dependencies(software_pkgs, db, recursive=TRUE)
+    deps0 <- package_dependencies(software_pkgs, db, recursive = TRUE)
 
     ## FULL dependency graph of non-software dependencies
     other <- setdiff(unlist(deps0, use.names = FALSE), names(deps0))
@@ -246,29 +246,6 @@ pkg_dependencies <-
     deps
 }
 
-
-#' @keywords internal
-#'
-#' @title Create host directories if they don't exist already
-.create_library_paths <-
-    function(library_path, binary_path)
-{
-    if (!file.exists(library_path)) {
-        dir.create(library_path, recursive = TRUE)
-        flog.info(
-            'created library_path: %s', library_path,
-            name = "kube_install"
-        )
-    }
-
-    if (!file.exists(binary_path)) {
-        dir.create(binary_path, recursive = TRUE)
-        flog.info(
-            'created binary_path: %s', binary_path,
-            name = "kube_install"
-        )
-    }
-}
 
 .worker_repositories <- function(version) {
     repos <- BiocManager::repositories()

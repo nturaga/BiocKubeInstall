@@ -88,7 +88,7 @@
 <div id="author" class="section level2">
 <h2 class="hasAnchor">
 <a href="#author" class="anchor"></a>Author</h2>
-<p>Nitesh Turaga: nturaga.bioc at gmail dot com</p>
+<p>Nitesh Turaga - <a href="mailto:nturaga.bioc@gmail.com" class="email">nturaga.bioc@gmail.com</a></p>
 <p>Martin Morgan</p>
 </div>
 <div id="links" class="section level2">
@@ -96,6 +96,26 @@
 <a href="#links" class="anchor"></a>Links</h2>
 <p><strong>k8sredis</strong>: www.github.com/Bioconductor/k8sredis</p>
 <p><strong>Vignette</strong>: <a href="https://bioconductor.github.io/BiocKubeInstall/articles/BiocKubeInstall_Tutorial.html">BiocKubeInstall_Tutorial</a></p>
+</div>
+<div id="components" class="section level2">
+<h2 class="hasAnchor">
+<a href="#components" class="anchor"></a>Components</h2>
+<ol>
+<li><p>inst/helm-chart : helm chart for k8s app</p></li>
+<li><p>inst/docker : docker images used inside the k8s application</p></li>
+<li><p>BiocKubeInstall R/ : Code which runs on the manager and worker replica sets.</p></li>
+<li><p>Github Actions: Start cluster and deploy to cluster, delete cluster, and test binary package installs 3 times a week.</p></li>
+</ol>
+</div>
+<div id="usage-for-anvil-platform-and-all-bioconductor_docker-inherited-images" class="section level2">
+<h2 class="hasAnchor">
+<a href="#usage-for-anvil-platform-and-all-bioconductor_docker-inherited-images" class="anchor"></a>Usage for AnVIL platform and all bioconductor_docker inherited images</h2>
+<pre><code><a href="https://rdrr.io/pkg/BiocManager/man/install.html">BiocManager::install('Bioconductor/AnVIL')
+
+## Should show the Google storage api as the top result
+AnVIL::repositories()
+
+AnVIL::install('Rhtslib')</a></code></pre>
 </div>
 </div>
   </div>

@@ -5,7 +5,7 @@
 \title{Install and create binaries for packages parallely using a
 kubernetes cluster.}
 \usage{
-kube_install(workers, lib_path, bin_path, deps, BPPARAM = NULL)
+kube_install(workers, lib_path, bin_path, logs_path, deps, BPPARAM = NULL)
 }
 \arguments{
 \item{workers}{numeric() number of workers in the kubernetes

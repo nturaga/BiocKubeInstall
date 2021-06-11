@@ -6,7 +6,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=edge">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<title>Create a dependency graph for all Bioconductor packages. — pkg_dependencies • BiocKubeInstall</title>
+<title>Sync binaries with Google bucket. — gcloud_sync_to_bucket • BiocKubeInstall</title>
 
 
 <!-- jquery -->
@@ -39,15 +39,8 @@
 
 
 
-<meta property="og:title" content="Create a dependency graph for all Bioconductor packages. — pkg_dependencies" />
-<meta property="og:description" content="The function takes in a 'binary_repo' which is a CRAN
-    style google bucket. It creates a package dependency graph in
-    the form of a 'list()' while excluding R 'base' packages. The
-    'binary_repo' needs to be a public google bucket. If you need
-    to create a new google bucket in a CRAN style structure, see
-    'gcloud_create_cran_bucket()'. If a newly created bucket is
-    passed into the function, it will create a full package
-    dependency structure for all Biconductor packages." />
+<meta property="og:title" content="Sync binaries with Google bucket. — gcloud_sync_to_bucket" />
+<meta property="og:description" content="Sync binaries with Google bucket." />
 
 
 
@@ -122,74 +115,57 @@
 <div class="row">
   <div class="col-md-9 contents">
     <div class="page-header">
-    <h1>Create a dependency graph for all Bioconductor packages.</h1>
+    <h1>Sync binaries with Google bucket.</h1>
     
-    <div class="hidden name"><code>pkg_dependencies.Rd</code></div>
+    <div class="hidden name"><code>gcloud_sync_to_bucket.Rd</code></div>
     </div>
 
     <div class="ref-description">
-    <p>The function takes in a 'binary_repo' which is a CRAN
-    style google bucket. It creates a package dependency graph in
-    the form of a 'list()' while excluding R 'base' packages. The
-    'binary_repo' needs to be a public google bucket. If you need
-    to create a new google bucket in a CRAN style structure, see
-    'gcloud_create_cran_bucket()'. If a newly created bucket is
-    passed into the function, it will create a full package
-    dependency structure for all Biconductor packages.</p>
+    <p>Sync binaries with Google bucket.</p>
     </div>
 
-    <pre class="usage"><span class='fu'>pkg_dependencies</span><span class='op'>(</span>
-  <span class='va'>version</span>,
-  build <span class='op'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/c.html'>c</a></span><span class='op'>(</span><span class='st'>"_software"</span>, <span class='st'>"_update"</span><span class='op'>)</span>,
-  binary_repo <span class='op'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/character.html'>character</a></span><span class='op'>(</span><span class='op'>)</span>,
-  exclude <span class='op'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/character.html'>character</a></span><span class='op'>(</span><span class='op'>)</span>
-<span class='op'>)</span></pre>
+    <pre class="usage"><span class='fu'>gcloud_sync_to_bucket</span><span class='op'>(</span><span class='va'>src_path</span>, <span class='va'>bucket</span><span class='op'>)</span></pre>
 
     <h2 class="hasAnchor" id="arguments"><a class="anchor" href="#arguments"></a>Arguments</h2>
     <table class="ref-arguments">
     <colgroup><col class="name" /><col class="desc" /></colgroup>
     <tr>
-      <th>build</th>
-      <td><p>character() One of '_software' (rebuild all packages
-in the 'BioCsoft' repository) or '_update' (existing binary
-packages in `binary_repo` for which newer versions are
-available in 'BioCsoft', and packages in 'BioCsoft' that are
-not available in `binary_repo`).</p></td>
+      <th>src_path</th>
+      <td><p>character(1) path to the directory where source
+information are stored.</p></td>
     </tr>
     <tr>
-      <th>binary_repo</th>
-      <td><p>character() vector of the binary repository in
-the form eg. "anvil-rstudio-bioconductor/0.99/3.11"</p></td>
+      <th>bucket</th>
+      <td><p>character(1) bucket name for the google storage
+bucket, it must include the FULL path of the CRAN style repo.</p></td>
     </tr>
     </table>
 
     <h2 class="hasAnchor" id="value"><a class="anchor" href="#value"></a>Value</h2>
 
-    <p>'pkg_dependencies()' returns a list of Bioconductor
-    packages with the dependencies of the package. If the
-    'binary_repo' given has a pre-populated set of packages then
-    only the packages that need to updated are in the list.</p>
+    <p>`gcloud_sync_to_bucket()` return invisibly, but a message is
+    shown on screen on successfully tranferred files.</p>
+    <h2 class="hasAnchor" id="details"><a class="anchor" href="#details"></a>Details</h2>
+
+    <p>Sync binaries created by the `kube_install()` function
+    into the Google bucket which is provided. The google bucket
+    should be appropriately created in a CRAN style manner with the
+    correct public permissions.</p>
     <h2 class="hasAnchor" id="see-also"><a class="anchor" href="#see-also"></a>See also</h2>
 
-    <div class='dont-index'><p>'gcloud_create_cran_bucket'</p></div>
+    <div class='dont-index'><p>`BiocKuberInstall::gcloud_create_cran_bucket()`</p></div>
 
     <h2 class="hasAnchor" id="examples"><a class="anchor" href="#examples"></a>Examples</h2>
     <pre class="examples"><div class='input'><span class='kw'>if</span> <span class='op'>(</span><span class='cn'>FALSE</span><span class='op'>)</span> <span class='op'>{</span>
-<span class='co'>## First way, give it a pre-existing binary repository</span>
-<span class='co'>## hosted as a google bucket.</span>
-<span class='va'>deps</span> <span class='op'>&lt;-</span> <span class='fu'>pkg_dependencies</span><span class='op'>(</span>
-    binary_repo <span class='op'>=</span> <span class='st'>"anvil-rstudio-bioconductor/0.99/3.11"</span>
+
+<span class='fu'>gcloud_sync_to_bucket</span><span class='op'>(</span>
+    src_path <span class='op'>=</span> <span class='st'>"/host/binaries"</span>,
+    bucket <span class='op'>=</span> <span class='st'>"bioconductor_docker/packages/3.12/bioc/src/contrib/"</span>
 <span class='op'>)</span>
 
-<span class='co'>## Second way, create a new bucket with no packages in it.</span>
-<span class='fu'><a href='gcloud_create_cran_bucket.html'>gcloud_create_cran_bucket</a></span><span class='op'>(</span>
-    <span class='st'>"gs://my-new-binary-bucket"</span>, <span class='st'>"1.0"</span>,
-    <span class='st'>"3.11"</span>, secret <span class='op'>=</span> <span class='st'>"/home/mysecret.json"</span>,
-     public <span class='op'>=</span> <span class='cn'>TRUE</span>
-<span class='op'>)</span>
-<span class='va'>deps_new</span> <span class='op'>&lt;-</span> <span class='fu'>pkg_dependencies</span><span class='op'>(</span>
-    <span class='st'>"_software"</span>,
-    binary_repo <span class='op'>=</span> <span class='st'>"my-new-binary-bucket/1.0/3.11"</span>
+<span class='fu'>gcloud_sync_to_bucket</span><span class='op'>(</span>
+    src_path <span class='op'>=</span> <span class='st'>"/host/logs"</span>,
+    bucket <span class='op'>=</span> <span class='st'>"bioconductor_docker/packages/3.13/bioc/src/package_logs/"</span>
 <span class='op'>)</span>
 <span class='op'>}</span>
 

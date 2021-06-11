@@ -124,7 +124,13 @@
     <p>Run binary installation on k8s cluster</p>
     </div>
 
-    <pre class="usage"><span class='fu'>kube_run</span><span class='op'>(</span><span class='va'>version</span>, <span class='va'>image_name</span>, <span class='va'>worker_pool_size</span><span class='op'>)</span></pre>
+    <pre class="usage"><span class='fu'>kube_run</span><span class='op'>(</span>
+  <span class='va'>version</span>,
+  <span class='va'>image_name</span>,
+  <span class='va'>workers</span>,
+  volume_mount_path <span class='op'>=</span> <span class='st'>"/host/"</span>,
+  exclude_pkgs <span class='op'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/c.html'>c</a></span><span class='op'>(</span><span class='st'>"canceR"</span>, <span class='st'>"flowWorkspace"</span>, <span class='st'>"gpuMagic"</span>, <span class='st'>"ChemmineOB"</span><span class='op'>)</span>
+<span class='op'>)</span></pre>
 
     <h2 class="hasAnchor" id="arguments"><a class="anchor" href="#arguments"></a>Arguments</h2>
     <table class="ref-arguments">

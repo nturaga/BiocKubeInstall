@@ -4,7 +4,7 @@
 \alias{kube_install_single_package}
 \title{Install and create binaries for R packages.}
 \usage{
-kube_install_single_package(pkg, lib_path, bin_path)
+kube_install_single_package(pkg, lib_path, bin_path, logs_path)
 }
 \arguments{
 \item{pkg}{character() name of R or Bioconductor package.}
