@@ -240,8 +240,6 @@ sync_artifacts <-
     ## Sync logs from /host/logs_3_13 to /src/package_logs
     ## Sync outputs from /host/binary_3_13/*.out to /src/package_logs
     gcloud_sync_to_bucket(src_path = artifacts$logs_path, bucket = repos$logs)
-    gcloud_sync_to_bucket(
-        src_path = paste0(artifacts$bin_path, '/', '*.out'),
-        bucket = repos$logs
-    )
+    AnVIL:::gsutil_rm(paste0('gs://',repos$cran, '*.out'))
+    AnVIL:::gsutil_cp(paste0(artifacts$bin_path, '/', '*.out'), paste0('gs://', repos$logs))
 }

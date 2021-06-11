@@ -4,7 +4,7 @@ name: start k8s cluster and deploy binary build
 on: 
   workflow_dispatch:
   schedule:
-    - cron:  '0 12 * * *'
+    - cron:  '0 12 * * 4'
 
 env:
   GKE_CLUSTER: biock8sredis
