@@ -17,8 +17,8 @@ RUN echo "deb [signed-by=/usr/share/keyrings/cloud.google.gpg] http://packages.c
 RUN curl -sL https://aka.ms/InstallAzureCLIDeb | sudo bash \
     && wget -O /tmp/azcopy.tar.gz  https://aka.ms/downloadazcopy-v10-linux \
     && tar -xf /tmp/azcopy.tar.gz -C /tmp/ \
-    && mv /tmp/azcopy_linux_amd64_10.10.0/azcopy /usr/local/bin \
-    && rm -rf /tmp/azcopy.tar.gz /tmp/azcopy_linux_amd64_10.10.0
+    && mv /tmp/azcopy_linux_amd64*/azcopy /usr/local/bin \
+    && rm -rf /tmp/azcopy.tar.gz /tmp/azcopy_linux_amd64*
 
 RUN R -e 'BiocManager::install("Bioconductor/BiocKubeInstall")'
 
