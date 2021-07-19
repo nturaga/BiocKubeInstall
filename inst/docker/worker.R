@@ -4,8 +4,8 @@ port = as.integer(Sys.getenv("REDIS_SERVICE_PORT"))
 Sys.unsetenv("REDIS_PORT")
 
 p <- RedisParam(
-    jobname = "demo", is.worker = TRUE,
-    manager.hostname = hostname, manager.port = port
+    jobname = "binarybuild", is.worker = TRUE,
+    redis.hostname = hostname, redis.port = port
 )
 
 bpstart(p)

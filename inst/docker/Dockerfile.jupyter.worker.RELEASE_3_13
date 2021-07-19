@@ -1,0 +1,12 @@
+FROM us.gcr.io/broad-dsp-gcr-public/terra-jupyter-r:1.0.15
+USER root
+
+RUN apt-get update && \
+    apt-get install -y --no-install-recommends libhiredis-dev && \
+    rm -rf /var/lib/apt/lists/*
+
+RUN R -e 'BiocManager::install("Bioconductor/BiocKubeInstall")'
+
+COPY worker.R /home/docker/
+
+USER $USER

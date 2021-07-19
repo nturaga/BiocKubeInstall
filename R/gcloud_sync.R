@@ -127,7 +127,7 @@ gcloud_create_cran_bucket <-
              bioc_version = as.character(BiocManager::version()),
              secret, public = TRUE)
 {
-    if(!grepl("^gs://", bucket)) {
+    if (!grepl("^gs://", bucket)) {
         bucket <- paste0("gs://", bucket)
     }
 
@@ -144,19 +144,19 @@ gcloud_create_cran_bucket <-
     }
 
     ## create CRAN style directory structure
-    res <- file.create("PACKAGES")
+    place_holder <- '.cran_dir'
+    res <- file.create(place_holder)
     if (res) {
-        source <- "PACKAGES"
         ## destination is CRAN style
         destination <- paste(
             bucket,'packages', bioc_version, 'bioc',
-            "src/contrib/PACKAGES",
+            "src/contrib/", place_holder,
             sep = "/"
         )
 
-        ## Copy PACKAGES folder into CRAN style repo
+        ## Copy placeholder file folder into CRAN style repo
         gsutil_cp(
-            source = source, destination = destination,
+            source = place_holder, destination = destination,
             recursive = FALSE, parallel = FALSE
         )
     }
@@ -172,74 +172,36 @@ gcloud_create_cran_bucket <-
 }
 
 
-
-#' Sync binaries with Google bucket.
-#'
-#' @details Sync binaries created by the `kube_install()` function
-#'     into the Google bucket which is provided. The google bucket
-#'     should be appropriately created in a CRAN style manner with the
-#'     correct public permissions.
-#'
-#' @seealso `BiocKuberInstall::gcloud_create_cran_bucket()`
-#'
-#' @param src_path character(1) path to the directory where source
-#'     information are stored.
-#'
-#' @param bucket character(1) bucket name for the google storage
-#'     bucket, it must include the FULL path of the CRAN style repo.
-#'
-#' @return `gcloud_sync_to_bucket()` return invisibly, but a message is
-#'     shown on screen on successfully tranferred files.
-#'
-#' @examples
-#' \dontrun{
-#'
-#' gcloud_sync_to_bucket(
-#'     src_path = "/host/binaries",
-#'     bucket = "bioconductor_docker/packages/3.12/bioc/src/contrib/"
-#' )
-#'
-#' gcloud_sync_to_bucket(
-#'     src_path = "/host/logs",
-#'     bucket = "bioconductor_docker/packages/3.13/bioc/src/package_logs/"
-#' )
-#' }
+## TODO: make it smarter and log statements
 #'
 #' @importFrom AnVIL gsutil_rsync gsutil_exists
 #'
 #' @export
-gcloud_sync_to_bucket <-
-    function(src_path, bucket)
-{
-    if(!grepl("^gs://", bucket)) {
-        bucket <- paste0("gs://", bucket)
-    }
-
-    ## Validity checks
-    stopifnot(
-        .is_scalar_character(src_path), .gsutil_is_uri(bucket),
-        .is_scalar_character(secret), file.exists(secret),
-        gsutil_exists(bucket)
-    )
-    ## Transfer to gcloud
-    gsutil_rsync(source = src_path, destination = bucket, dry = FALSE)
-}
-
-
-#'
-#' @export
-sync_artifacts <-
+cloud_sync_artifacts <-
     function(secret, artifacts, repos)
 {
+    log_file <- file.path(artifacts$logs_path, 'kube_install.log')
+    flog.appender(appender.tee(log_file), name = 'kube_install')
+
     ## authenticate with secret
-    .gcloud_service_account_auth(secret = secret)
+    BiocKubeInstall:::.gcloud_service_account_auth(secret = secret)
+    flog.info('Authenticated with object storage')
 
     ## Sync binaries from /host/binary_3_13 to /src/contrib/
-    gcloud_sync_to_bucket(src_path = artifacts$bin_path, bucket = repos$cran)
+    ## rsync with .gz (gsutil_rsync exclude option)
+    AnVIL::gsutil_rsync(
+               source = artifacts$bin_path,
+               destination = repos$cran,
+               dry = FALSE,
+               exclude = ".*out$"
+           )
 
     ## Sync logs from /host/logs_3_13 to /src/package_logs
     ## Sync outputs from /host/binary_3_13/*.out to /src/package_logs
-    gcloud_sync_to_bucket(src_path = artifacts$logs_path, bucket = repos$logs)
-    AnVIL:::gsutil_rm(paste0('gs://',repos$cran, '*.out'))
-    AnVIL:::gsutil_cp(paste0(artifacts$bin_path, '/', '*.out'), paste0('gs://', repos$logs))
+    AnVIL::gsutil_rsync(
+               source = artifacts$logs_path,
+               destination = repos$logs,
+               dry = FALSE,
+               exclude = "*.tar.gz"
+           )
 }

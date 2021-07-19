@@ -1,6 +1,6 @@
 library(RedisParam)
 
-p <- RedisParam(workers = 5, jobname = "demo", is.worker = FALSE)
+p <- RedisParam(workers = 5, jobname = "binarybuild", is.worker = FALSE)
 
 fun <- function(i) {
     Sys.sleep(1)

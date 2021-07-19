@@ -168,7 +168,7 @@ kube_install <-
 
     if (is.null(BPPARAM)) {
         BPPARAM <- RedisParam(
-            workers = workers, jobname = "demo",
+            workers = workers, jobname = "binarybuild",
             is.worker = FALSE,
             progressbar = TRUE, stop.on.error = FALSE
         )
@@ -197,6 +197,7 @@ kube_install <-
 
     ## Create PACKAGES, PACKAGES.gz, PACAKGES.rds
     tools::write_PACKAGES(bin_path, addFiles = TRUE, verbose = TRUE)
+    flog.info("PACKAGES files created", name = "kube_install")
 
     result
 }
@@ -232,8 +233,12 @@ kube_run <-
                               'gpuMagic', 'ChemmineOB'))
 {
     workers <- as.integer(workers)
-    artifacts <- .get_artifact_paths(version, volume_mount_path)
-    repos <- .repos(version, image_name)
+    artifacts <- BiocKubeInstall:::.get_artifact_paths(
+        version,
+        volume_mount_path
+    )
+    repos <- BiocKubeInstall:::.repos(version, image_name,
+                                      cloud_id = 'google')
 
     Sys.setenv(REDIS_HOST = Sys.getenv("REDIS_SERVICE_HOST"))
     Sys.setenv(REDIS_PORT = Sys.getenv("REDIS_SERVICE_PORT"))
@@ -263,7 +268,11 @@ kube_run <-
                                          deps = deps)
 
     ##  Step 4: Sync all artifacts produced, binaries, logs
-    sync_artifacts(secret = secret, artifacts = artifacts,repos = repos)
+    BiocKubeInstall::cloud_sync_artifacts(
+        secret = secret,
+        artifacts = artifacts,
+        repos = repos
+    )
 
     ## ## Step 5: check if all workers were used
     check <- table(unlist(res))

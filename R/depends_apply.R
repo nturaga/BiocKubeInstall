@@ -94,7 +94,7 @@
             bptasks(BPPARAM) <- length(do)
 
         ## do the work here
-
+        ## how long is the length of "do" and compare to length of "bpnworkers(BPPPRAM)"
         res <- bptry(bplapply(do, FUN, ..., BPPARAM = BPPARAM))
 
         failed_idx <- !bpok(res)
