@@ -27,10 +27,22 @@
     )
 }
 
+
 #' @keywords internal
 .repos <-
-    function(version, image_name)
+    function(version, image_name, cloud_id = c('google', 'azure'))
 {
+
+    cloud <- match.arg(cloud_id)
+
+    if (cloud == "google") {
+        image_name <- paste0('gs://', image_name)
+    }
+
+    if (cloud == "azure") {
+        image_name <- 'https://bioconductordocker.blob.core.windows.net'
+    }
+
     ## 'binary_repo' is where the existing binaries are located.
     ## 'cran_bucket' is where packages are uploaded on a google bucket
     binary_repo <- paste0(image_name, "/packages/", version, "/bioc/")
@@ -38,4 +50,13 @@
     logs_repo <- paste0(binary_repo, "src/package_logs/")
 
     list(cran = cran_repo, binary = binary_repo, logs = logs_repo)
+}
+
+
+.output_file_move <-
+    function(artifacts)
+{
+    src <- list.files(artifacts$bin_path, full.names = TRUE, pattern = "*.out")
+    dest <- paste0(artifacts$logs_path, basename(src))
+    file.rename(src, dest)
 }

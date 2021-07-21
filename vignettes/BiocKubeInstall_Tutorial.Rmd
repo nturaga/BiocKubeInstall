@@ -212,7 +212,7 @@ library(AnVIL)
 
 BiocManager::install('Bioconductor/AnVIL')
 
-AnVIL::install('<package_name>')
+AnVIL::install('Rhtslib')
 ```
 
 
