@@ -27,7 +27,7 @@ Imports:
     futile.logger,
     redux,
     methods
-Remotes: mtmorgan/RedisParam
+Remotes: Jiefei-Wang/RedisParam@lua
 LazyData: true
 VignetteBuilder: knitr
 biocViews: Infrastructure
