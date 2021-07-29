@@ -18,6 +18,9 @@ stored.}
 \item{bin_path}{character() path where R package binaries are
 stored.}
 
+\item{logs_path}{character() path where R package binary build logs
+are stored.}
+
 \item{deps}{package dependecy graph as computed by
 `.pkg_dependecies()`.}
 

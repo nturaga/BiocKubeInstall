@@ -12,6 +12,8 @@ pkg_dependencies(
 )
 }
 \arguments{
+\item{version}{character() Bioconductor version number.}
+
 \item{build}{character() One of '_software' (rebuild all packages
 in the 'BioCsoft' repository) or '_update' (existing binary
 packages in `binary_repo` for which newer versions are
@@ -20,6 +22,8 @@ not available in `binary_repo`).}
 
 \item{binary_repo}{character() vector of the binary repository in
 the form eg. "anvil-rstudio-bioconductor/0.99/3.11"}
+
+\item{exclude}{character() vector of packages to exclude}
 }
 \value{
 'pkg_dependencies()' returns a list of Bioconductor

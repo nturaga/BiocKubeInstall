@@ -19,8 +19,12 @@ or 3.13}
 \item{image_name}{character(), name of the image for which binaries
 are being built}
 
-\item{worker_pool_size}{integer(), number of workers pods in the
+\item{workers}{integer(), number of workers pods in the
 k8s cluster}
+
+\item{volume_mount_path}{character(), path to volume mount}
+
+\item{exclude_pkgs}{character(), list of packages to exclude}
 }
 \description{
 Run binary installation on k8s cluster
@@ -30,7 +34,7 @@ Run binary installation on k8s cluster
 
 kube_run(version = '3.13',
          image_name = 'bioconductor_docker',
-         worker_pool_size = '10')
+         workers = '10', volume_moun_path = '/host/')
 
 }
 

@@ -102,7 +102,7 @@ NULL
     )
 
     ## packages and their dependencies
-    deps0 <- package_dependencies(pkgs, db, recursive=TRUE)
+    deps0 <- package_dependencies(pkgs, db, recursive = TRUE)
 
     ## FULL dependency graph of old dependencies
     other <- setdiff(unlist(deps0, use.names = FALSE), names(deps0))
@@ -122,7 +122,7 @@ NULL
 }
 
 .pkg_dependencies <-
-    function(db, binary_repo_url, pkgs)
+    function(db, binary_repo_url, pkgs, build)
 {
     ## This is surprisingly difficult to do -- the package and its
     ## entire connected component (this is more than just the package
@@ -133,6 +133,8 @@ NULL
 
 #' @rdname pkg_dependencies
 #'
+#' @param version character() Bioconductor version number.
+#'
 #' @param build character() One of '_software' (rebuild all packages
 #'     in the 'BioCsoft' repository) or '_update' (existing binary
 #'     packages in `binary_repo` for which newer versions are
@@ -141,6 +143,8 @@ NULL
 #'
 #' @param binary_repo character() vector of the binary repository in
 #'     the form eg. "anvil-rstudio-bioconductor/0.99/3.11"
+#'
+#' @param exclude character() vector of packages to exclude
 #'
 #' @return 'pkg_dependencies()' returns a list of Bioconductor
 #'     packages with the dependencies of the package. If the

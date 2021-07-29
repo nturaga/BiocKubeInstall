@@ -14,6 +14,9 @@ stored.}
 
 \item{bin_path}{character() path where R package binaries are
 stored.}
+
+\item{logs_path}{character() path where R package binary build logs
+are stored.}
 }
 \value{
 `kube_install_single_package()` returns invisibly.

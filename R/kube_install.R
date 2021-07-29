@@ -12,6 +12,9 @@
 #' @param bin_path character() path where R package binaries are
 #'     stored.
 #'
+#' @param logs_path character() path where R package binary build logs
+#'     are stored.
+#'
 #' @examples
 #' \dontrun{
 #' kube_install_single_package(
@@ -113,6 +116,9 @@ kube_wait <-
 #' @param bin_path character() path where R package binaries are
 #'     stored.
 #'
+#' @param logs_path character() path where R package binary build logs
+#'     are stored.
+#'
 #' @param deps package dependecy graph as computed by
 #'     `.pkg_dependecies()`.
 #'
@@ -213,15 +219,19 @@ kube_install <-
 #' @param image_name character(), name of the image for which binaries
 #'     are being built
 #'
-#' @param worker_pool_size integer(), number of workers pods in the
+#' @param workers integer(), number of workers pods in the
 #'     k8s cluster
+#'
+#' @param volume_mount_path character(), path to volume mount
+#'
+#' @param exclude_pkgs character(), list of packages to exclude
 #'
 #' @examples
 #' \dontrun{
 #'
 #' kube_run(version = '3.13',
 #'          image_name = 'bioconductor_docker',
-#'          worker_pool_size = '10')
+#'          workers = '10', volume_moun_path = '/host/')
 #'
 #' }
 #'
@@ -233,12 +243,8 @@ kube_run <-
                               'gpuMagic', 'ChemmineOB'))
 {
     workers <- as.integer(workers)
-    artifacts <- BiocKubeInstall:::.get_artifact_paths(
-        version,
-        volume_mount_path
-    )
-    repos <- BiocKubeInstall:::.repos(version, image_name,
-                                      cloud_id = 'google')
+    artifacts <- .get_artifact_paths(version, volume_mount_path)
+    repos <- .repos(version, image_name, cloud_id = 'google')
 
     Sys.setenv(REDIS_HOST = Sys.getenv("REDIS_SERVICE_HOST"))
     Sys.setenv(REDIS_PORT = Sys.getenv("REDIS_SERVICE_PORT"))

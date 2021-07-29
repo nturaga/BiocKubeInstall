@@ -172,9 +172,21 @@ gcloud_create_cran_bucket <-
 }
 
 
-## TODO: make it smarter and log statements
+#' Sync all artifacts to cloud
+#'
+#' @details Sync packages, logs to cloud storage based on which cloud
+#'     is used.
 #'
 #' @importFrom AnVIL gsutil_rsync gsutil_exists
+#'
+#' @importFrom futile.logger flog.info flog.appender appender.tee
+#'
+#' @param secret character() path where secret, i.e a service key for
+#'     access to an object store on google or azure.
+#'
+#' @param artifacts list()
+#'
+#' @param repos list()
 #'
 #' @export
 cloud_sync_artifacts <-
@@ -184,13 +196,13 @@ cloud_sync_artifacts <-
     flog.appender(appender.tee(log_file), name = 'kube_install')
 
     ## authenticate with secret
-    BiocKubeInstall:::.gcloud_service_account_auth(secret = secret)
+    .gcloud_service_account_auth(secret = secret)
     flog.info('Authenticated with object storage', name = 'kube_install')
 
     ## Move .out files from bin_path to logs_path
     ## This avoids duplicate copy of PACKAGES* files to contrib(cran path)
     ## and to package_logs
-    BiocKubeInstall:::.output_file_move(artifacts)
+    .output_file_move(artifacts)
     flog.info('Moved .out files to %s: ', artifacts$logs_path,
               name = 'kube_install')
 
@@ -210,7 +222,7 @@ cloud_sync_artifacts <-
                source = artifacts$logs_path,
                destination = repos$logs,
                dry = FALSE,
-               exclude = "*.tar.gz"
+               exclude = ".*tar.gz$"
            )
     flog.info('Finished moving logs to cloud storage: %s',
               artifacts$logs_path, name = 'kube_install')

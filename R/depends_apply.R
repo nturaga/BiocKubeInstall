@@ -48,7 +48,7 @@
 
 #' @importFrom methods is
 #'
-#' @importFrom BiocParallel `bpstopOnError<-` `bptasks<-` bpstart
+#' @importFrom BiocParallel `bpstopOnError<-` `bptasks<-` bpstart bpstopOnError
 #' @importFrom RedisParam bpstopall
 .depends_apply <-
     function(X, FUN, ..., BPPARAM = NULL)
@@ -94,7 +94,7 @@
             bptasks(BPPARAM) <- length(do)
 
         ## do the work here
-        ## how long is the length of "do" and compare to length of "bpnworkers(BPPPRAM)"
+        ## how long is the length of "do" and compare to length of "bpnworkers(BPPARAM)"
         res <- bptry(bplapply(do, FUN, ..., BPPARAM = BPPARAM))
 
         failed_idx <- !bpok(res)
