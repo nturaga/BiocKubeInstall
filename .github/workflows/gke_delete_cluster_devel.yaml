@@ -1,4 +1,4 @@
-name: Delete k8s cluster
+name: devel - Delete k8s cluster
 
 ## Cluster is shut down at 6pm UTC on Monday, Wed, Fri
 ## The k8s cluster has 6 hours to do the job
