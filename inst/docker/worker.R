@@ -4,7 +4,7 @@ port = as.integer(Sys.getenv("REDIS_SERVICE_PORT"))
 Sys.unsetenv("REDIS_PORT")
 
 p <- RedisParam(
-    jobname = "binarybuild", is.worker = TRUE,
+    jobname = "biocredis", is.worker = TRUE,
     redis.hostname = hostname, redis.port = port
 )
 
