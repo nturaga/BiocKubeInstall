@@ -33,7 +33,8 @@ Stop the chart
 
    This should work
 
-        minikube start
+        # example allocation
+        minikube start --cpus 6 --memory 16384
         kubectl cluster-info
 
 
