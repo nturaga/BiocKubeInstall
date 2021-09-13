@@ -22,6 +22,8 @@ RUN curl -sL https://aka.ms/InstallAzureCLIDeb | sudo bash \
 
 RUN R -e 'BiocManager::install("Bioconductor/BiocKubeInstall")'
 
+ENV BIOC_REDIS_JOB_NAME=biocredis
+
 COPY manager_demo.R /home/rstudio/manager_demo.R
 COPY worker.R /home/docker/
 COPY 01-Renviron /etc/cont-init.d/01-Renviron
