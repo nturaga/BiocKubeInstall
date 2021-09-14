@@ -145,3 +145,22 @@ then the bioc-redis application,
 	kubectl create -f k8s/bioc-redis/redis-pod.yaml
 	kubectl create -f k8s/bioc-redis/manager-pod.yaml
 	kubectl create -f k8s/bioc-redis/worker-jobs.yaml
+
+## Azure container registry - August 11th - testing
+
+Add the Docker images to azure container registry
+
+	az acr build \
+		--image bioconductor/bioc-redis:RELEASE_3_14 \
+		--registry bioconductor \
+		--file Dockerfile.RELEASE_3_14 .
+
+	az acr build \
+		--image bioc-redis:RELEASE_3_13 \
+		--registry bioconductor \
+		--file Dockerfile.RELEASE_3_13 .
+
+To test on minikube start a bigger minikube cluster with more mem and
+CPU
+
+	 minikube start --cpus 6 --memory 16384
