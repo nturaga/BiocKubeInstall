@@ -174,7 +174,8 @@ kube_install <-
 
     if (is.null(BPPARAM)) {
         BPPARAM <- RedisParam(
-            workers = workers, jobname = "binarybuild",
+            workers = workers,
+            jobname = Sys.getenv('BIOC_REDIS_JOB_NAME'),
             is.worker = FALSE,
             progressbar = TRUE, stop.on.error = FALSE
         )
@@ -239,12 +240,14 @@ kube_install <-
 kube_run <-
     function(version, image_name, workers,
              volume_mount_path = '/host/',
+             cloud_id = 'azure',
              exclude_pkgs = c('canceR','flowWorkspace',
                               'gpuMagic', 'ChemmineOB'))
+
 {
     workers <- as.integer(workers)
     artifacts <- .get_artifact_paths(version, volume_mount_path)
-    repos <- .repos(version, image_name, cloud_id = 'google')
+    repos <- .repos(version, image_name, cloud_id = cloud_id)
 
     Sys.setenv(REDIS_HOST = Sys.getenv("REDIS_SERVICE_HOST"))
     Sys.setenv(REDIS_PORT = Sys.getenv("REDIS_SERVICE_PORT"))
@@ -252,7 +255,12 @@ kube_run <-
     ## Secret key to access bucket on google
     secret <- "/home/rstudio/key.json"
 
-    ## Step 0: Create a bucket if you need to
+    ## Step 0: Create a bucket / blob storage if you need to
+    cloud_create_object_store(bioc_version = version,
+                              secret = secret,
+                              public = TRUE)
+
+
     gcloud_create_cran_bucket(bucket = image_name,
                               bioc_version = version,
                               secret = secret, public = TRUE)
