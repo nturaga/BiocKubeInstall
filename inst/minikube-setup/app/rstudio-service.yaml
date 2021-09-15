@@ -1,0 +1,15 @@
+# Source: k8s-redis-bioc-chart/templates/rstudio-service.yaml
+apiVersion: v1
+kind: Service
+metadata:
+  name: biock8sredis-rstudio
+  labels:
+    app: rstudio
+spec:
+  type: NodePort
+  ports:
+    - port: 8787
+      nodePort: 30001
+      name: http
+  selector:
+    app: rstudio

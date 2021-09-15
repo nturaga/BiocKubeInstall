@@ -1,0 +1,42 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: manager
+  labels:
+    app: rstudio
+spec:
+  containers:
+    - name: manager
+      image: bioconductor/bioc-redis:manager
+      imagePullPolicy: Always
+      resources:
+        requests:
+          memory: "500Mi"
+          cpu: "500m"
+        limits:
+          memory: "1Gi"
+          cpu: "750m"
+      volumeMounts:
+        - name: bioc-nfs-mount
+          mountPath: /host
+        # - name: service-key
+        #   mountPath: /home/rstudio/key.json
+        #   subPath: bioc-binaries.json
+      env:
+        - name: PASSWORD
+          value: "bioc"
+      ports:
+        - containerPort: 8787
+#      command: ["Rscript"]
+#      args: ["-e", "BiocKubeInstall::kube_run('3.13', image_name = 'bioconductor_docker', workers = 3)"]
+  restartPolicy: "OnFailure"
+  volumes:
+  - name: bioc-nfs-mount
+    persistentVolumeClaim:
+      claimName: nfs
+  # - name: service-key
+  #   secret:
+  #     secretName: bioc-binaries-service-account-auth
+  #     items:
+  #       - key: service_account_key
+  #         path: bioc-binaries.json
