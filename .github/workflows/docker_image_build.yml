@@ -32,19 +32,19 @@ jobs:
         id: docker_build_release
         uses: docker/build-push-action@v2
         with:
-          file: inst/docker/Dockerfile.worker.RELEASE_3_13
+          file: inst/docker/Dockerfile.worker.RELEASE_3_14
           context: ./inst/docker
           push: true
-          tags: bioconductor/bioc-redis:RELEASE_3_13
+          tags: bioconductor/bioc-redis:RELEASE_3_14
 
       - name: Build and push devel
         id: docker_build_devel
         uses: docker/build-push-action@v2
         with:
-          file: inst/docker/Dockerfile.worker.RELEASE_3_14
+          file: inst/docker/Dockerfile.worker.RELEASE_3_15
           context: ./inst/docker
           push: true
-          tags: bioconductor/bioc-redis:RELEASE_3_14
+          tags: bioconductor/bioc-redis:RELEASE_3_15
 
       - name: Image digest
         run: echo ${{ steps.docker_build.outputs.digest }}
