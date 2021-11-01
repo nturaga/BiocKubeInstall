@@ -7,8 +7,8 @@
 # clusterNamespace: release
 workerPoolSize: 50              # Number of workers in the cluster
 dockerImageName: 'bioconductor_docker'  # Image name for which binaries are created
-biocVersion: '3.13'
-workerImageTag: RELEASE_3_13    # Needs to match the biocVersion
+biocVersion: '3.14'
+workerImageTag: RELEASE_3_14    # Needs to match the biocVersion
 
 # Manager image
 managerImage: bioconductor/bioc-redis
