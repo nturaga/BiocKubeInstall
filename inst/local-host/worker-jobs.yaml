@@ -1,0 +1,36 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: workcluster
+  labels:
+    tier: workcluster
+spec:
+  replicas: 4
+  selector:
+    matchLabels:
+      tier: workcluster
+  template:
+    metadata:
+      labels:
+        tier: workcluster
+    spec:
+      containers:
+      - name: worker
+        image: bioconductor/bioc-redis:RELEASE_3_13
+        imagePullPolicy: Always
+        resources:
+          requests:
+            memory: 2Gi
+            cpu: 500m
+          limits:
+            memory: 3Gi
+            cpu: 1
+        volumeMounts:
+         - mountPath: /home/rstudio
+           name: local-provision
+        command: ["R"]
+        args: ["-f", "/home/docker/worker.R"]
+      volumes:
+        - name: local-provision
+          persistentVolumeClaim:
+            claimName: local-pvc-name
