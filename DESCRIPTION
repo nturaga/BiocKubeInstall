@@ -31,7 +31,7 @@ Remotes: nturaga/RedisParam@lua
 LazyData: true
 VignetteBuilder: knitr
 biocViews: Infrastructure
-RoxygenNote: 7.1.1
+RoxygenNote: 7.1.2
 Suggests:
     testthat,
     knitr,

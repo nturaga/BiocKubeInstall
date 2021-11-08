@@ -22,7 +22,7 @@ stored.}
 are stored.}
 
 \item{deps}{package dependecy graph as computed by
-`.pkg_dependecies()`.}
+`.pkg_dependencies()`.}
 
 \item{BPPARAM}{A `BiocParallelParam` object specifying how each
 level of the dependency graph will be parallelized. Use
@@ -44,7 +44,7 @@ Install packages and create binaries using a
 ## Run with a pre-existing bucket with some packages.
 ## This will update only the new packages
 binary_repo <- "anvil-rstudio-bioconductor/0.99/3.11/"
-deps <- pkg_dependecies(binary_repo = binary_repo)
+deps <- pkg_dependencies(binary_repo = binary_repo)
 kube_install(
     workers = 6L,
     lib_path = "/host/library",
