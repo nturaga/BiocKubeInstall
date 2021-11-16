@@ -38,14 +38,6 @@ spec:
             - name: http
               containerPort: {{ .Values.rstudio.port }}
               protocol: TCP
-          livenessProbe:
-            httpGet:
-              path: /
-              port: http
-          readinessProbe:
-            httpGet:
-              path: /
-              port: http
 #          command: ["Rscript"]
 #          args: ["-e", "BiocKubeInstall::kube_run('{{ .Values.biocVersion }}', image_name = '{{ .Values.dockerImageName }}', workers = {{ .Values.workerPoolSize }})"]
       volumes:
