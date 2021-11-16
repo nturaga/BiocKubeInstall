@@ -1,4 +1,4 @@
-FROM bioconductor/bioconductor_docker:RELEASE_3_14
+FROM bioconductor/bioconductor_docker:devel
 
 ## Install Redis and vim
 # Add the Google Cloud SDK distribution URI as a package source
