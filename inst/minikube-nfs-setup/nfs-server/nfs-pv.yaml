@@ -1,0 +1,13 @@
+# Source: k8s-redis-bioc-chart/templates/nfs-pv.yaml
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: nfs
+spec:
+  capacity:
+    storage: 1Mi
+  accessModes:
+    - ReadWriteMany
+  nfs:
+    server: 10.100.32.5
+    path: "/"
