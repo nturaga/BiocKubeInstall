@@ -14,11 +14,10 @@ jobs:
     container: bioconductor/bioconductor_docker:${{ matrix.container-tag }}
 
     steps:
-      - name: test random packages
+      - name: test 5 random packages installation on release and devel
         run: |
           biocsoft <- rownames(available.packages(repos = BiocManager::repositories()[["BioCsoft"]]))
           pkgs <- biocsoft[sample(length(biocsoft), 5)]
-          BiocManager::install('Bioconductor/AnVIL')
           AnVIL::install(pkgs)
           require(pkgs)
         shell: Rscript {0}
