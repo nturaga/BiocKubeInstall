@@ -2,8 +2,8 @@
 # git checkout -b local
 cd ~/bioc/BiocKubeInstall/inst/local-host
 
-minikube start --cpus 6 --memory 16384 \
-    --mount-string="$HOME/bioc/bioconductor_docker/data:/host"
+minikube start --cpus 6 --memory 16384
+# minikube start --cpus 6 --memory 16384 --driver=kvm2
 
 export KUBE_FEATURE_GATES="BlockVolume=true"
 
@@ -38,8 +38,12 @@ kubectl get pv
 ## to delete all persistent volumes or by name
 ## kubectl delete pv --all  # / pv-name
 
-kubectl create -f nfs-pvc.yaml
 kubectl create -f nfs-pv.yaml
+kubectl create -f nfs-pvc.yaml
+
+kubectl delete -f nfs-pvc.yaml
+
+kubectl get all
 
 kubectl get pvc
 kubectl get pv

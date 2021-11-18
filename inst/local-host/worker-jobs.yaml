@@ -20,13 +20,13 @@ spec:
         imagePullPolicy: Always
         resources:
           requests:
-            memory: 2Gi
+            memory: "800Mi"
             cpu: 500m
           limits:
-            memory: 3Gi
+            memory: 1Gi
             cpu: 1
         volumeMounts:
-         - mountPath: /home/rstudio
+         - mountPath: /host
            name: local-provision
         command: ["R"]
         args: ["-f", "/home/docker/worker.R"]

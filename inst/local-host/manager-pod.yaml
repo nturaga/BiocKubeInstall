@@ -11,10 +11,10 @@ spec:
       imagePullPolicy: Always
       resources:
         requests:
-          memory: 1Gi
-          cpu: 1
+          memory: "500Mi"
+          cpu: 500m
         limits:
-          memory: 2Gi
+          memory: 1Gi
           cpu: 1
       volumeMounts:
         - name: local-provision
@@ -24,8 +24,8 @@ spec:
           value: bioc
       ports:
         - containerPort: 8787
-      command: ["Rscript"]
-      args: ["-e", "sessionInfo()"]
+#      command: ["Rscript"]
+#      args: ["-e", "sessionInfo()"]
 #      args: ["-e", "BiocKubeInstall::kube_run('3.13', image_name = 'bioconductor_docker', workers = 4)"]
   restartPolicy: OnFailure
   volumes:
