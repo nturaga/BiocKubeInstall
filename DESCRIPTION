@@ -1,6 +1,6 @@
 Package: BiocKubeInstall
 Title: Build R / Bioconductor package binaries using Kubernetes on a cloud service
-Version: 0.99.2
+Version: 0.99.3
 Authors@R:
     person(given = "Nitesh",
 	   family = "Turaga",
