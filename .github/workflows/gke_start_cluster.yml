@@ -59,8 +59,8 @@ jobs:
     - name: Deploy bioc release helm chart
       run: |
         helm install biock8sredis --set workerPoolSize=50 \
-          --set biocVersion='3.13' \
-          --set workerImageTag='RELEASE_3_13' inst/helm-chart --wait
+          --set biocVersion='3.14' \
+          --set workerImageTag='RELEASE_3_14' inst/helm-chart --wait
 
     - name: check
       run: |
