@@ -30,10 +30,18 @@
 
 #' @keywords internal
 .repos <-
-    function(version, image_name, cloud_id = c('google', 'azure'))
+    function(version, image_name, cloud_id = c('local', 'google', 'azure'))
 {
 
     cloud <- match.arg(cloud_id)
+
+    if (identical(cloud_id, "local")) {
+        # temporary location for testing
+        opt <- Sys.getenv("BIOCONDUCTOR_BINARY_REPOSITORY",
+            Sys.getenv("R_PKG_CACHE_DIR"))
+        opt <- getOption("BIOCONDUCTOR_BINARY_REPOSITORY", opt)
+        image_name <- opt
+    }
 
     if (cloud == "google") {
         image_name <- paste0('gs://', image_name)
@@ -60,3 +68,22 @@
     dest <- paste0(artifacts$logs_path,'/', basename(src))
     file.rename(src, dest)
 }
+
+#' @keywords internal
+local_create_cran_repo <-
+    function(repo, bioc_version = as.character(BiocManager::version()))
+{
+    if (missing(repo)) {
+        repo <- Sys.getenv("BIOCONDUCTOR_BINARY_REPOSITORY",
+            Sys.getenv("R_PKG_CACHE_DIR"))
+        repo <- getOption("BIOCONDUCTOR_BINARY_REPOSITORY", repo)
+    }
+    destination <- paste(
+        repo, 'packages', bioc_version, 'bioc', 'src/contrib',
+    )
+    if (!dir.exists(destination))
+        dir.create(destination)
+
+    destination
+}
+

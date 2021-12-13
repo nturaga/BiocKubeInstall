@@ -231,7 +231,7 @@ kube_install <-
 #'
 #' kube_run(version = '3.13',
 #'          image_name = 'bioconductor_docker',
-#'          workers = '10', volume_moun_path = '/host/')
+#'          workers = '10', volume_mount_path = '/host/')
 #'
 #' }
 #'
@@ -239,23 +239,28 @@ kube_install <-
 kube_run <-
     function(version, image_name, workers,
              volume_mount_path = '/host/',
+             cloud_id = c("local", "google", "azure")
              exclude_pkgs = c('canceR','flowWorkspace',
                               'gpuMagic', 'ChemmineOB'))
 {
     workers <- as.integer(workers)
     artifacts <- .get_artifact_paths(version, volume_mount_path)
-    repos <- .repos(version, image_name, cloud_id = 'google')
+    cloud_id <- match.arg(cloud_id)
+    repos <- .repos(version, image_name, cloud_id = cloud_id)
 
     Sys.setenv(REDIS_HOST = Sys.getenv("REDIS_SERVICE_HOST"))
     Sys.setenv(REDIS_PORT = Sys.getenv("REDIS_SERVICE_PORT"))
 
-    ## Secret key to access bucket on google
-    secret <- "/home/rstudio/key.json"
-
     ## Step 0: Create a bucket if you need to
-    gcloud_create_cran_bucket(bucket = image_name,
-                              bioc_version = version,
-                              secret = secret, public = TRUE)
+    if (identical(cloud_id, "local")) {
+        local_create_cran_repo(bioc_version = version)
+    } else if (identical(cloud_id, "google")) {
+        ## Secret key to access bucket on google
+        secret <- "/home/rstudio/key.json"
+
+        gcloud_create_cran_bucket(bucket = image_name,
+            bioc_version = version, secret = secret, public = TRUE)
+    }
 
     ## Step 1:  Wait till all the worker pods are up and running
     BiocKubeInstall::kube_wait(workers = workers)
