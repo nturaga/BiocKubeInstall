@@ -9,6 +9,7 @@ kube_run(
   image_name,
   workers,
   volume_mount_path = "/host/",
+  cloud_id = c("local", "google", "azure"),
   exclude_pkgs = c("canceR", "flowWorkspace", "gpuMagic", "ChemmineOB")
 )
 }
@@ -34,7 +35,7 @@ Run binary installation on k8s cluster
 
 kube_run(version = '3.13',
          image_name = 'bioconductor_docker',
-         workers = '10', volume_moun_path = '/host/')
+         workers = '10', volume_mount_path = '/host/')
 
 }
 

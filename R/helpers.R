@@ -69,7 +69,23 @@
     file.rename(src, dest)
 }
 
-#' @keywords internal
+#' Create a CRAN style local repository
+#'
+#' @param repo The folder that will contain this repository. Can be set via
+#'     `BIOCONDUCTOR_BINARY_REPOSITORY` environment variable or option.
+#'
+#' @inheritParams gcloud_create_cran_bucket
+#'
+#' @return `local_create_cran_repo` returns a character vector of the path to
+#'     the binary repository.
+#'
+#' @md
+#'
+#' @examples
+#' \dontrun{
+#'     local_create_cran_repo(repo = "~/dockerhome/.cache/R-crancache")
+#' }
+#' @export
 local_create_cran_repo <-
     function(repo, bioc_version = as.character(BiocManager::version()))
 {
