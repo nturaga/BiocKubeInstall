@@ -239,7 +239,7 @@ kube_install <-
 kube_run <-
     function(version, image_name, workers,
              volume_mount_path = '/host/',
-             cloud_id = c("local", "google", "azure")
+             cloud_id = c("local", "google", "azure"),
              exclude_pkgs = c('canceR','flowWorkspace',
                               'gpuMagic', 'ChemmineOB'))
 {
