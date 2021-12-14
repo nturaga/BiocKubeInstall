@@ -5,6 +5,7 @@ metadata:
   labels:
     demo: nfs-pv-provisioning
 spec:
+  storageClassName: sc-pd-delete
   accessModes: [ "ReadWriteOnce" ]
   resources:
     requests:
