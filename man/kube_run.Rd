@@ -10,7 +10,8 @@ kube_run(
   workers,
   volume_mount_path = "/host/",
   cloud_id = c("local", "google", "azure"),
-  exclude_pkgs = c("canceR", "flowWorkspace", "gpuMagic", "ChemmineOB")
+  exclude_pkgs = c("canceR", "flowWorkspace", "gpuMagic", "ChemmineOB"),
+  dry.run = TRUE
 )
 }
 \arguments{
@@ -26,6 +27,9 @@ k8s cluster}
 \item{volume_mount_path}{character(), path to volume mount}
 
 \item{exclude_pkgs}{character(), list of packages to exclude}
+
+\item{dry.run}{logical(1), whether to generate a test run with artificial
+artifacts rather than binaries; should be used with \code{cloud_id = "local"}}
 }
 \description{
 Run binary installation on k8s cluster

@@ -14,6 +14,8 @@
 #'
 #' @param logs_path character() path where R package binary build logs
 #'     are stored.
+#' 
+#' @inheritParams kube_install
 #'
 #' @examples
 #' \dontrun{
@@ -30,7 +32,7 @@
 #'
 #' @export
 kube_install_single_package <-
-    function(pkg, lib_path, bin_path, logs_path)
+    function(pkg, dry.run, lib_path, bin_path, logs_path)
 {
     .libPaths(c(lib_path, .libPaths()))
 
@@ -44,16 +46,20 @@ kube_install_single_package <-
         options(warn_opt)
         setwd(cwd)
     })
-    suppressMessages(
-        BiocManager::install(
-                         pkg,
-                         INSTALL_opts = "--build",
-                         update = FALSE,
-                         quiet = TRUE,
-                         force = TRUE,
-                         keep_outputs = TRUE
-                     )
-    )
+    if (dry.run) {
+        file.create(paste0("test_", pkg))
+    } else {
+        suppressMessages(
+            BiocManager::install(
+                             pkg,
+                             INSTALL_opts = "--build",
+                             update = FALSE,
+                             quiet = TRUE,
+                             force = TRUE,
+                             keep_outputs = TRUE
+                         )
+        )
+    }
     Sys.info()[["nodename"]]
 }
 
@@ -164,12 +170,13 @@ kube_wait <-
 #'
 #' @export
 kube_install <-
-    function(workers, lib_path, bin_path, logs_path, deps, BPPARAM = NULL)
+    function(workers, lib_path, bin_path, logs_path, deps, dry.run, BPPARAM = NULL)
 {
     stopifnot(
         is.integer(workers),
         .is_scalar_character(lib_path),
-        .is_scalar_character(bin_path)
+        .is_scalar_character(bin_path),
+        .is_scalar_logical(dry.run)
     )
 
     if (is.null(BPPARAM)) {
@@ -187,6 +194,7 @@ kube_install <-
     result <- .depends_apply(
         deps,
         kube_install_single_package,
+        dry.run = dry.run,
         lib_path = lib_path,
         bin_path = bin_path,
         logs_path = logs_path,
@@ -226,6 +234,11 @@ kube_install <-
 #'
 #' @param exclude_pkgs character(), list of packages to exclude
 #'
+#' @param dry.run logical(1), whether to generate a test run with artificial
+#'     artifacts rather than binaries; should be used with `cloud_id = "local"`
+#'
+#' @md
+#'
 #' @examples
 #' \dontrun{
 #'
@@ -241,7 +254,7 @@ kube_run <-
              volume_mount_path = '/host/',
              cloud_id = c("local", "google", "azure"),
              exclude_pkgs = c('canceR','flowWorkspace',
-                              'gpuMagic', 'ChemmineOB'))
+                              'gpuMagic', 'ChemmineOB'), dry.run = TRUE)
 {
     workers <- as.integer(workers)
     artifacts <- .get_artifact_paths(version, volume_mount_path)
@@ -276,14 +289,22 @@ kube_run <-
                                          lib_path = artifacts$lib_path,
                                          bin_path = artifacts$bin_path,
                                          logs_path = artifacts$logs_path,
+                                         dry.run = dry.run,
                                          deps = deps)
 
+    if (identical(cloud_id, "local")) {
+        BiocKubeInstall::local_sync_artifacts(
+           artifacts = artifacts,
+           repos = repos
+        ) 
+    } else if (identical(cloud_id, "google")) {
     ##  Step 4: Sync all artifacts produced, binaries, logs
-    BiocKubeInstall::cloud_sync_artifacts(
-        secret = secret,
-        artifacts = artifacts,
-        repos = repos
-    )
+        BiocKubeInstall::cloud_sync_artifacts(
+            secret = secret,
+            artifacts = artifacts,
+            repos = repos
+        )
+    }
 
     ## ## Step 5: check if all workers were used
     check <- table(unlist(res))
