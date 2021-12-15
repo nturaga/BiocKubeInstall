@@ -3,7 +3,7 @@ kind: Pod
 metadata:
   name: manager
   labels:
-    app: rstudio
+    app: jupyter
 spec:
   containers:
     - name: manager
@@ -22,11 +22,6 @@ spec:
         - name: service-key
           mountPath: /home/key.json
           subPath: {{ .Values.serviceKey }}
-      env:
-        - name: PASSWORD
-          value: {{ .Values.rstudioPassword | quote }}
-      ports:
-        - containerPort: 8787
       command: ["Rscript"]
       args: ["-e", "BiocKubeInstall::kube_run('{{ .Values.biocVersion }}', image_name = '{{ .Values.dockerImageName }}', workers = {{ .Values.workerPoolSize }})"]
   restartPolicy: {{ .Values.restartPolicy | quote}}

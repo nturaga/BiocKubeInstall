@@ -1,0 +1,42 @@
+# Default values for k8s-redis-bioc-chart. This is a YAML-formatted
+# file. Declare variables to be passed into your templates.
+
+#
+# user-oriented configuration
+#
+# clusterNamespace: release
+workerPoolSize: 50              # Number of workers in the cluster
+## TODO: this has to change
+dockerImageName: 'anvil-jupyter'  # Image name for which binaries are created
+biocVersion: '3.13'
+#workerImageTag: RELEASE_3_14    # Needs to match the biocVersion
+## Name consistently
+workerImageTag: RELEASE_3_13    # Needs to match the biocVersion
+
+# Manager image
+managerImage: bioconductor/bioc-redis
+managerImageTag: manager
+
+# Worker image
+workerImage: bioconductor/bioc-redis-jupyter
+
+# Volume mount
+volumeMountName: bioc-nfs-mount
+volumeMountPath: /host
+volumeMountSize: 200Gi
+
+# service key name
+serviceKey: bioc-binaries.json
+#
+# internal settings
+#
+
+# image management (manager, worker, redis)
+pullPolicy: Always
+restartPolicy: OnFailure
+
+# internal redis-specific config
+redis:
+  redisImage: redis
+  redisImageTag: '5.0'
+  containerPort: 6379

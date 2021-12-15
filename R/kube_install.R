@@ -250,7 +250,7 @@ kube_run <-
     Sys.setenv(REDIS_PORT = Sys.getenv("REDIS_SERVICE_PORT"))
 
     ## Secret key to access bucket on google
-    secret <- "/home/rstudio/key.json"
+    secret <- "/home/key.json"
 
     ## Step 0: Create a bucket if you need to
     gcloud_create_cran_bucket(bucket = image_name,
