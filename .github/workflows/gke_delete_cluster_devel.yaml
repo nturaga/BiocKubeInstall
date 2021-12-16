@@ -33,6 +33,22 @@ jobs:
         service_account_key: ${{ secrets.GKE_SA_KEY }}
         project_id: ${{ secrets.GKE_PROJECT }}
 
+    # Install helm
+    - name: Install Helm
+      run: |
+        curl https://raw.githubusercontent.com/helm/helm/master/scripts/get-helm-3 | bash
+
+    # Get the GKE credentials so we can delete chart in the cluster
+    - run: |-
+       gcloud container clusters get-credentials "$GKE_CLUSTER" --zone "$GKE_ZONE"
+
+    # Although deleting the cluster is enough for deleting all k8s resources,
+    # deleting the chart is needed for handling the cleanup process of some resources
+    # (eg: having the GCP storage class delete the persistent disk when the PVC is deleted)
+    - name: Delete chart
+      run: |
+        helm delete biock8sredis
+
     # Delete cluster
     - run: |-
         gcloud container clusters delete "$GKE_CLUSTER" --zone "$GKE_ZONE" --quiet
