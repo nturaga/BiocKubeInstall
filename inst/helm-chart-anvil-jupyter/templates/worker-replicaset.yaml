@@ -14,6 +14,8 @@ spec:
       labels:
         tier: workcluster
     spec:
+      securityContext:
+        runAsUser: {{ .Values.uid }}
       containers:
       - name: worker
         image: {{ .Values.workerImage }}:{{ .Values.workerImageTag }}

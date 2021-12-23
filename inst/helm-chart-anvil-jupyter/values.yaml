@@ -8,10 +8,8 @@
 workerPoolSize: 50              # Number of workers in the cluster
 ## TODO: this has to change
 dockerImageName: 'anvil-jupyter'  # Image name for which binaries are created
-biocVersion: '3.13'
-#workerImageTag: RELEASE_3_14    # Needs to match the biocVersion
-## Name consistently
-workerImageTag: RELEASE_3_13    # Needs to match the biocVersion
+biocVersion: '3.14'
+workerImageTag: RELEASE_3_14    # Needs to match the biocVersion
 
 # Manager image
 managerImage: bioconductor/bioc-redis
@@ -19,6 +17,7 @@ managerImageTag: manager
 
 # Worker image
 workerImage: bioconductor/bioc-redis-jupyter
+
 
 # Volume mount
 volumeMountName: bioc-nfs-mount
@@ -30,6 +29,9 @@ serviceKey: bioc-binaries.json
 #
 # internal settings
 #
+
+# This value is set to 0 so that both manager and worker pods enter the image as 'root'
+uid: 0
 
 # image management (manager, worker, redis)
 pullPolicy: Always

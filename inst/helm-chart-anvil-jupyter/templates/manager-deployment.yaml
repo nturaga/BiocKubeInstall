@@ -5,6 +5,8 @@ metadata:
   labels:
     app: jupyter
 spec:
+  securityContext:
+    runAsUser: {{ .Values.uid }}
   containers:
     - name: manager
       image: {{ .Values.managerImage }}:{{ .Values.managerImageTag }}
