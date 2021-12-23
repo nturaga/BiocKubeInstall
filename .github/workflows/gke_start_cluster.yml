@@ -1,4 +1,4 @@
-name: start k8s cluster and deploy binary build
+name: release - start k8s cluster and deploy binary build
 
 ## Cluster starts at 12pm on Tuesday, Thursday and Saturday
 on: 
