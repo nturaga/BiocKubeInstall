@@ -6,8 +6,7 @@
 \usage{
 local_create_cran_repo(
   repo,
-  bioc_version = as.character(BiocManager::version()),
-  volume_mount_path = "/host/"
+  bioc_version = as.character(BiocManager::version())
 )
 }
 \arguments{
