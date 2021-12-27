@@ -14,7 +14,7 @@
 #'
 #' @param logs_path character() path where R package binary build logs
 #'     are stored.
-#' 
+#'
 #' @inheritParams kube_install
 #'
 #' @examples
@@ -250,7 +250,7 @@ kube_install <-
 #'
 #' @export
 kube_run <-
-    function(version, image_name, workers,
+    function(version, image_name, workers, depth0 = FALSE,
              volume_mount_path = '/host/',
              cloud_id = c("local", "google", "azure"),
              exclude_pkgs = c('canceR','flowWorkspace',
@@ -285,7 +285,8 @@ kube_run <-
                                               build = "_software",
                                               binary_repo = repos$binary,
                                               exclude = exclude_pkgs)
-
+    if (depth0)
+        deps <- deps[lengths(deps) == 0L]
     ## Step 3: Run kube_install so package binaries are built
     res <- BiocKubeInstall::kube_install(workers = workers,
                                          lib_path = artifacts$lib_path,
@@ -294,11 +295,11 @@ kube_run <-
                                          dry.run = dry.run,
                                          deps = deps)
 
-    if (identical(cloud_id, "local")) {
+    if (!identical(cloud_id, "local")) {
         BiocKubeInstall::local_sync_artifacts(
            artifacts = artifacts,
            repos = repos
-        ) 
+        )
     } else if (identical(cloud_id, "google")) {
     ##  Step 4: Sync all artifacts produced, binaries, logs
         BiocKubeInstall::cloud_sync_artifacts(
