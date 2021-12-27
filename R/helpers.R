@@ -35,7 +35,7 @@
 
     cloud <- match.arg(cloud_id)
 
-    if (identical(cloud_id, "local")) {
+    if (identical(cloud_id, "local") && missing(image_name)) {
         # temporary location for testing
         opt <- Sys.getenv("BIOCONDUCTOR_BINARY_REPOSITORY",
             Sys.getenv("R_PKG_CACHE_DIR"))
@@ -87,18 +87,20 @@
 #' }
 #' @export
 local_create_cran_repo <-
-    function(repo, bioc_version = as.character(BiocManager::version()),
-        volume_mount_path = "/host/")
+    function(repo, bioc_version = as.character(BiocManager::version()))
 {
     if (missing(repo)) {
         repo <- Sys.getenv("BIOCONDUCTOR_BINARY_REPOSITORY",
             Sys.getenv("R_PKG_CACHE_DIR"))
         repo <- getOption("BIOCONDUCTOR_BINARY_REPOSITORY", repo)
     }
-    if (!nzchar(repo))
-        repo <- volume_mount_path
+    if (!length(repo))
+        stop(
+            "Indicate a 'repo' argument or set the",
+            " 'BIOCONDUCTOR_BINARY_REPOSITORY' environment variable."
+        )
     destination <- paste(
-        repo, 'packages', bioc_version, 'bioc', 'src/contrib',
+        repo, 'packages', bioc_version, 'bioc', 'src/contrib'
     )
     if (!dir.exists(destination))
         dir.create(destination)
