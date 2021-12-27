@@ -7,7 +7,7 @@ metadata:
 spec:
   containers:
     - name: manager
-      image: bioconductor/bioc-redis:manager
+      image: mr148/bioc-redis:manager
       imagePullPolicy: Always
       resources:
         requests:
@@ -24,9 +24,9 @@ spec:
           value: bioc
       ports:
         - containerPort: 8787
-#      command: ["Rscript"]
+      command: ["Rscript"]
 #      args: ["-e", "sessionInfo()"]
-#      args: ["-e", "BiocKubeInstall::kube_run('3.13', image_name = 'bioconductor_docker', workers = 4)"]
+      args: ["-e", "BiocKubeInstall::kube_run('3.14', image_name = '/host', workers = 20, dry.run = FALSE, depth = TRUE)"]
   restartPolicy: OnFailure
   volumes:
     - name: local-provision

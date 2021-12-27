@@ -1,0 +1,10 @@
+FROM bioconductor/bioconductor_docker:RELEASE_3_14
+
+RUN apt-get update && \
+	apt-get install -y --no-install-recommends libhiredis-dev vim && \
+	rm -rf /var/lib/apt/lists/*
+
+RUN R -e 'BiocManager::install("Bioconductor/BiocKubeInstall", ref = "local")'
+
+COPY manager_demo.R /home/rstudio/manager_demo.R
+COPY 01-Renviron /etc/cont-init.d/01-Renviron

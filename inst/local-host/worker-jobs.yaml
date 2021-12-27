@@ -5,7 +5,7 @@ metadata:
   labels:
     tier: workcluster
 spec:
-  replicas: 4
+  replicas: 20
   selector:
     matchLabels:
       tier: workcluster
@@ -16,7 +16,7 @@ spec:
     spec:
       containers:
       - name: worker
-        image: bioconductor/bioc-redis:RELEASE_3_13
+        image: mr148/bioc-redis:RELEASE_3_14
         imagePullPolicy: Always
         resources:
           requests:
