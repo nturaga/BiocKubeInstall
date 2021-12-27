@@ -100,10 +100,10 @@ local_create_cran_repo <-
             " 'BIOCONDUCTOR_BINARY_REPOSITORY' environment variable."
         )
     destination <- paste(
-        repo, 'packages', bioc_version, 'bioc', 'src/contrib'
+        repo, 'packages', bioc_version, 'bioc', 'src/contrib', sep = "/"
     )
     if (!dir.exists(destination))
-        dir.create(destination)
+        dir.create(destination, recursive = TRUE)
 
     destination
 }
