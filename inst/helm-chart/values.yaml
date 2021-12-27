@@ -22,6 +22,9 @@ volumeMountName: bioc-nfs-mount
 volumeMountPath: /host
 volumeMountSize: 200Gi
 
+# GCP Pesristent Disk name
+gcpPdName: "manual-pd"
+
 # service key name
 serviceKey: bioc-binaries.json
 

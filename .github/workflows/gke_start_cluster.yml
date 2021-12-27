@@ -10,13 +10,17 @@ env:
   GKE_CLUSTER: biock8sredis
   GKE_ZONE: us-east1-b
   DEPLOYMENT_NAME: binaryBuilder
+  GCP_PD_SIZE: 200Gi
 
 jobs:
   setup-start-deploy:
     name: Setup, start, Deploy
     runs-on: ubuntu-latest
-
     steps:
+    - name: Set prefix with date
+      id: prefix
+      run: echo "::set-output name=prefix::$(echo $(date +'%m-%d-%H-%M-%S'))"
+
     - name: Checkout
       uses: actions/checkout@v2
 
@@ -33,6 +37,9 @@ jobs:
           --zone "$GKE_ZONE" \
           --num-nodes 10 \
           --machine-type=e2-standard-4 "$GKE_CLUSTER"
+
+    - name: Create GCP Disk
+      run: gcloud compute disks create "biockubeinstall-nfs-pd-${{ steps.prefix.outputs.prefix }}" --size $GCP_PD_SIZE --zone "$GKE_ZONE"
 
     # Get the GKE credentials so we can deploy to the cluster
     - run: |-
@@ -60,7 +67,9 @@ jobs:
       run: |
         helm install biock8sredis --set workerPoolSize=50 \
           --set biocVersion='3.14' \
-          --set workerImageTag='RELEASE_3_14' inst/helm-chart --wait
+          --set workerImageTag='RELEASE_3_14' \
+          --set volumeMountSize=$GCP_PD_SIZE \
+          --set gcpPdName="biockubeinstall-nfs-pd-${{ steps.prefix.outputs.prefix }}" inst/helm-chart --wait
 
     - name: check
       run: |

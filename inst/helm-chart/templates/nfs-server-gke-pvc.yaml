@@ -1,12 +1,31 @@
 apiVersion: v1
 kind: PersistentVolumeClaim
 metadata:
-  name: nfs-pv-provisioning-demo
+  name: nfs-pv-provisioning-demo-pvc
   labels:
-    demo: nfs-pv-provisioning
+    demo: nfs-pvc-provisioning
 spec:
-  storageClassName: sc-pd-delete
+  storageClassName: manual
   accessModes: [ "ReadWriteOnce" ]
   resources:
     requests:
       storage: {{ .Values.volumeMountSize }}
+---
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: nfs-pv-provisioning-demo-pv
+  labels:
+    demo: nfs-pv-provisioning
+spec:
+  storageClassName: manual
+  accessModes: [ "ReadWriteOnce" ]
+  capacity:
+    storage: {{ .Values.volumeMountSize }}
+  claimRef:
+    namespace: {{ .Release.Namespace }}
+    name: nfs-pv-provisioning-demo-pvc
+    gcePersistentDisk:
+      pdName: {{ .Values.gcpPdName }}
+      fsType: ext4
+---
