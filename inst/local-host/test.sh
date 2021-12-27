@@ -2,7 +2,7 @@
 # git checkout -b local
 cd ~/bioc/BiocKubeInstall/inst/local-host
 
-minikube start --cpus 6 --memory 16384
+minikube start --cpus 21 --memory 24384
 
 kubectl get all
 
