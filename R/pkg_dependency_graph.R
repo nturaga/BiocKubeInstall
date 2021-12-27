@@ -174,8 +174,8 @@ NULL
 #' @export
 pkg_dependencies <-
     function(version, build = c("_software", "_update"),
-             binary_repo = character(),
-             exclude = character())
+        binary_repo = character(), exclude = character(),
+        cloud_id = c("local", "google", "azure"))
 {
     build <- match.arg(build)
     stopifnot(
@@ -183,7 +183,12 @@ pkg_dependencies <-
     )
     ## TODO: make sure function is usable for other clouds
     ## pass argument 'cloud = "gcp"'
-    cloud <- "https://storage.googleapis.com"
+    cloud_id <- match.arg(cloud_id)
+    cloud <- switch(cloud_id,
+        google = "https://storage.googleapis.com",
+        local = "file:///host/",
+        azure = "https://bioconductordocker.blob.core.windows.net"
+    )
 
     ## use `sprintf()` to produce a zero-length vector if binary_repo
     ## == character()

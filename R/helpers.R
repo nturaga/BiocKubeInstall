@@ -30,10 +30,18 @@
 
 #' @keywords internal
 .repos <-
-    function(version, image_name, cloud_id = c('google', 'azure'))
+    function(version, image_name, cloud_id = c('local', 'google', 'azure'))
 {
 
     cloud <- match.arg(cloud_id)
+
+    if (identical(cloud_id, "local") && missing(image_name)) {
+        # temporary location for testing
+        opt <- Sys.getenv("BIOCONDUCTOR_BINARY_REPOSITORY",
+            Sys.getenv("R_PKG_CACHE_DIR"))
+        opt <- getOption("BIOCONDUCTOR_BINARY_REPOSITORY", opt)
+        image_name <- opt
+    }
 
     if (cloud == "google") {
         image_name <- paste0('gs://', image_name)
@@ -60,3 +68,43 @@
     dest <- paste0(artifacts$logs_path,'/', basename(src))
     file.rename(src, dest)
 }
+
+#' Create a CRAN style local repository
+#'
+#' @param repo The folder that will contain this repository. Can be set via
+#'     `BIOCONDUCTOR_BINARY_REPOSITORY` environment variable or option.
+#'
+#' @inheritParams gcloud_create_cran_bucket
+#'
+#' @return `local_create_cran_repo` returns a character vector of the path to
+#'     the binary repository.
+#'
+#' @md
+#'
+#' @examples
+#' \dontrun{
+#'     local_create_cran_repo(repo = "~/dockerhome/.cache/R-crancache")
+#' }
+#' @export
+local_create_cran_repo <-
+    function(repo, bioc_version = as.character(BiocManager::version()))
+{
+    if (missing(repo)) {
+        repo <- Sys.getenv("BIOCONDUCTOR_BINARY_REPOSITORY",
+            Sys.getenv("R_PKG_CACHE_DIR"))
+        repo <- getOption("BIOCONDUCTOR_BINARY_REPOSITORY", repo)
+    }
+    if (!length(repo))
+        stop(
+            "Indicate a 'repo' argument or set the",
+            " 'BIOCONDUCTOR_BINARY_REPOSITORY' environment variable."
+        )
+    destination <- paste(
+        repo, 'packages', bioc_version, 'bioc', 'src/contrib', sep = "/"
+    )
+    if (!dir.exists(destination))
+        dir.create(destination, recursive = TRUE)
+
+    destination
+}
+
