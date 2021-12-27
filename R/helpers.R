@@ -87,13 +87,16 @@
 #' }
 #' @export
 local_create_cran_repo <-
-    function(repo, bioc_version = as.character(BiocManager::version()))
+    function(repo, bioc_version = as.character(BiocManager::version()),
+        volume_mount_path = "/host/")
 {
     if (missing(repo)) {
         repo <- Sys.getenv("BIOCONDUCTOR_BINARY_REPOSITORY",
             Sys.getenv("R_PKG_CACHE_DIR"))
         repo <- getOption("BIOCONDUCTOR_BINARY_REPOSITORY", repo)
     }
+    if (!nzchar(repo))
+        repo <- volume_mount_path
     destination <- paste(
         repo, 'packages', bioc_version, 'bioc', 'src/contrib',
     )

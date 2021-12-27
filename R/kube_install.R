@@ -266,7 +266,9 @@ kube_run <-
 
     ## Step 0: Create a bucket if you need to
     if (identical(cloud_id, "local")) {
-        local_create_cran_repo(bioc_version = version)
+        local_create_cran_repo(
+            bioc_version = version, volume_mount_path = volume_mount_path
+        )
     } else if (identical(cloud_id, "google")) {
         ## Secret key to access bucket on google
         secret <- "/home/rstudio/key.json"
