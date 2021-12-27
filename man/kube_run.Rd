@@ -8,6 +8,7 @@ kube_run(
   version,
   image_name,
   workers,
+  depth0 = FALSE,
   volume_mount_path = "/host/",
   cloud_id = c("local", "google", "azure"),
   exclude_pkgs = c("canceR", "flowWorkspace", "gpuMagic", "ChemmineOB"),
