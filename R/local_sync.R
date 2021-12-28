@@ -1,7 +1,8 @@
 .file_move <- function(source, dest, pattern) {
-    bins <- list.files(source, pattern = pattern, full.names = TRUE)
-    destfiles <- file.path(dest, basename(bins))
-    file.rename(bins, destfiles)
+    files <- list.files(source, pattern = pattern, full.names = TRUE)
+    destfiles <- file.path(dest, basename(files))
+    if (length(files))
+        file.rename(files, destfiles)
 }
 
 #' @inheritParams cloud_sync_artifacts
