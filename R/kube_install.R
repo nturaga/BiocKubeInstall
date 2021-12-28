@@ -296,7 +296,7 @@ kube_run <-
                                          dry.run = dry.run,
                                          deps = deps)
 
-    if (!identical(cloud_id, "local")) {
+    if (identical(cloud_id, "local")) {
         BiocKubeInstall::local_sync_artifacts(
            artifacts = artifacts,
            repos = repos
