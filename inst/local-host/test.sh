@@ -5,9 +5,6 @@ cd ~/bioc/BiocKubeInstall/inst/local-host
 minikube start --cpus 21 --memory 24384
 
 kubectl get all
-
-export KUBE_FEATURE_GATES="BlockVolume=true"
-
 kubectl cluster-info
 
 ## running from local checkout out and local cluster
@@ -35,6 +32,8 @@ kubectl create -f persist/local-pv.yaml
 kubectl get pvc
 kubectl get pv
 kubectl describe pvc local-pvc-name
+kubectl describe pv local-path
+kubectl describe pv local-provision
 
 ## to delete all persistent volume claims or by name 
 ## kubectl delete pvc --all # / pvc-name
@@ -66,14 +65,23 @@ kubectl get all
 kubectl describe pod manager
 kubectl describe pods workcluster
 
+## logs
+kubectl logs pod/manager
+kubectl logs pod/workcluster-bd97c44f7-7fzqt
+
 ## kill minikube
 ## minikube stop
 ## minikube delete
 
 ## patch in to the manager pod and run test.R
 kubectl exec -it pod/manager -- bash
+## get a count of packages from inside pod
+## ls /host/binary_3_14/*tar.gz | wc -l
+## more /host/logs_3_14/kube_install.log
 
-kubectl exec -it pod/workcluster-bd97c44f7-6bmrs -- bash
+## patch in to worker when manager completes
+kubectl exec -it pod/workcluster-bd97c44f7-7fzqt -- bash
 
 ## copy contents
-kubectl cp workcluster-bd97c44f7-6bmrs:host/binary_3_14 /media/mr148/1D24A0EA4286043C/kubedisks/
+kubectl cp workcluster-bd97c44f7-2vd48:host/binary_3_14 /home/user/data
+kubectl cp workcluster-bd97c44f7-2vd48:host/logs_3_14/kube_install.log /home/user/data/kube_install.log
