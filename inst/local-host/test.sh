@@ -73,5 +73,7 @@ kubectl describe pods workcluster
 ## patch in to the manager pod and run test.R
 kubectl exec -it pod/manager -- bash
 
-# kubectl exec -it pod/workcluster-846bcbdfb8-gcplf -- bash
+kubectl exec -it pod/workcluster-bd97c44f7-6bmrs -- bash
 
+## copy contents
+kubectl cp workcluster-bd97c44f7-6bmrs:host/binary_3_14 /media/mr148/1D24A0EA4286043C/kubedisks/
