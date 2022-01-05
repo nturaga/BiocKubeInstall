@@ -8,8 +8,11 @@ kube_run(
   version,
   image_name,
   workers,
+  depth0 = FALSE,
   volume_mount_path = "/host/",
-  exclude_pkgs = c("canceR", "flowWorkspace", "gpuMagic", "ChemmineOB")
+  cloud_id = c("local", "google", "azure"),
+  exclude_pkgs = c("canceR", "flowWorkspace", "gpuMagic", "ChemmineOB"),
+  dry.run = TRUE
 )
 }
 \arguments{
@@ -25,6 +28,9 @@ k8s cluster}
 \item{volume_mount_path}{character(), path to volume mount}
 
 \item{exclude_pkgs}{character(), list of packages to exclude}
+
+\item{dry.run}{logical(1), whether to generate a test run with artificial
+artifacts rather than binaries; should be used with \code{cloud_id = "local"}}
 }
 \description{
 Run binary installation on k8s cluster
@@ -34,7 +40,7 @@ Run binary installation on k8s cluster
 
 kube_run(version = '3.13',
          image_name = 'bioconductor_docker',
-         workers = '10', volume_moun_path = '/host/')
+         workers = '10', volume_mount_path = '/host/')
 
 }
 

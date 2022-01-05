@@ -171,7 +171,6 @@ gcloud_create_cran_bucket <-
     return(gsutil_exists(bucket))
 }
 
-
 #' Sync all artifacts to cloud
 #'
 #' @details Sync packages, logs to cloud storage based on which cloud

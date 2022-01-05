@@ -15,6 +15,8 @@
 #' @param logs_path character() path where R package binary build logs
 #'     are stored.
 #'
+#' @inheritParams kube_install
+#'
 #' @examples
 #' \dontrun{
 #' kube_install_single_package(
@@ -30,7 +32,7 @@
 #'
 #' @export
 kube_install_single_package <-
-    function(pkg, lib_path, bin_path, logs_path)
+    function(pkg, dry.run, lib_path, bin_path, logs_path)
 {
     .libPaths(c(lib_path, .libPaths()))
 
@@ -44,16 +46,20 @@ kube_install_single_package <-
         options(warn_opt)
         setwd(cwd)
     })
-    suppressMessages(
-        BiocManager::install(
-                         pkg,
-                         INSTALL_opts = "--build",
-                         update = FALSE,
-                         quiet = TRUE,
-                         force = TRUE,
-                         keep_outputs = TRUE
-                     )
-    )
+    if (dry.run) {
+        file.create(paste0("test_", pkg))
+    } else {
+        suppressMessages(
+            BiocManager::install(
+                             pkg,
+                             INSTALL_opts = "--build",
+                             update = FALSE,
+                             quiet = TRUE,
+                             force = TRUE,
+                             keep_outputs = TRUE
+                         )
+        )
+    }
     Sys.info()[["nodename"]]
 }
 
@@ -164,12 +170,13 @@ kube_wait <-
 #'
 #' @export
 kube_install <-
-    function(workers, lib_path, bin_path, logs_path, deps, BPPARAM = NULL)
+    function(workers, lib_path, bin_path, logs_path, deps, dry.run, BPPARAM = NULL)
 {
     stopifnot(
         is.integer(workers),
         .is_scalar_character(lib_path),
-        .is_scalar_character(bin_path)
+        .is_scalar_character(bin_path),
+        .is_scalar_logical(dry.run)
     )
 
     if (is.null(BPPARAM)) {
@@ -188,6 +195,7 @@ kube_install <-
     result <- .depends_apply(
         deps,
         kube_install_single_package,
+        dry.run = dry.run,
         lib_path = lib_path,
         bin_path = bin_path,
         logs_path = logs_path,
@@ -227,43 +235,49 @@ kube_install <-
 #'
 #' @param exclude_pkgs character(), list of packages to exclude
 #'
+#' @param dry.run logical(1), whether to generate a test run with artificial
+#'     artifacts rather than binaries; should be used with `cloud_id = "local"`
+#'
+#' @md
+#'
 #' @examples
 #' \dontrun{
 #'
 #' kube_run(version = '3.13',
 #'          image_name = 'bioconductor_docker',
-#'          workers = '10', volume_moun_path = '/host/')
+#'          workers = '10', volume_mount_path = '/host/')
 #'
 #' }
 #'
 #' @export
 kube_run <-
-    function(version, image_name, workers,
+    function(version, image_name, workers, depth0 = FALSE,
              volume_mount_path = '/host/',
-             cloud_id = 'azure',
+             cloud_id = c("local", "google", "azure"),
              exclude_pkgs = c('canceR','flowWorkspace',
-                              'gpuMagic', 'ChemmineOB'))
-
+                              'gpuMagic', 'ChemmineOB'), dry.run = TRUE)
 {
     workers <- as.integer(workers)
     artifacts <- .get_artifact_paths(version, volume_mount_path)
+    cloud_id <- match.arg(cloud_id)
     repos <- .repos(version, image_name, cloud_id = cloud_id)
 
     Sys.setenv(REDIS_HOST = Sys.getenv("REDIS_SERVICE_HOST"))
     Sys.setenv(REDIS_PORT = Sys.getenv("REDIS_SERVICE_PORT"))
 
-    ## Secret key to access bucket on google
-    secret <- "/home/rstudio/key.json"
+    ## Step 0: Create a bucket if you need to
+    if (identical(cloud_id, "local")) {
+        local_create_cran_repo(
+            repo = volume_mount_path, 
+            bioc_version = version
+        )
+    } else if (identical(cloud_id, "google")) {
+        ## Secret key to access bucket on google
+        secret <- "/home/rstudio/key.json"
 
-    ## Step 0: Create a bucket / blob storage if you need to
-    cloud_create_object_store(bioc_version = version,
-                              secret = secret,
-                              public = TRUE)
-
-
-    gcloud_create_cran_bucket(bucket = image_name,
-                              bioc_version = version,
-                              secret = secret, public = TRUE)
+        gcloud_create_cran_bucket(bucket = image_name,
+            bioc_version = version, secret = secret, public = TRUE)
+    }
 
     ## Step 1:  Wait till all the worker pods are up and running
     BiocKubeInstall::kube_wait(workers = workers)
@@ -273,20 +287,29 @@ kube_run <-
                                               build = "_software",
                                               binary_repo = repos$binary,
                                               exclude = exclude_pkgs)
-
+    if (depth0)
+        deps <- deps[lengths(deps) == 0L]
     ## Step 3: Run kube_install so package binaries are built
     res <- BiocKubeInstall::kube_install(workers = workers,
                                          lib_path = artifacts$lib_path,
                                          bin_path = artifacts$bin_path,
                                          logs_path = artifacts$logs_path,
+                                         dry.run = dry.run,
                                          deps = deps)
 
+    if (identical(cloud_id, "local")) {
+        BiocKubeInstall::local_sync_artifacts(
+           artifacts = artifacts,
+           repos = repos
+        )
+    } else if (identical(cloud_id, "google")) {
     ##  Step 4: Sync all artifacts produced, binaries, logs
-    BiocKubeInstall::cloud_sync_artifacts(
-        secret = secret,
-        artifacts = artifacts,
-        repos = repos
-    )
+        BiocKubeInstall::cloud_sync_artifacts(
+            secret = secret,
+            artifacts = artifacts,
+            repos = repos
+        )
+    }
 
     ## ## Step 5: check if all workers were used
     check <- table(unlist(res))
