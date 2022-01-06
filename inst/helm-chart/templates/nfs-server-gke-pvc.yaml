@@ -1,7 +1,7 @@
 apiVersion: v1
 kind: PersistentVolumeClaim
 metadata:
-  name: nfs-pv-provisioning-demo-pvc
+  name: nfs-pvc-provisioning-demo
   labels:
     demo: nfs-pvc-provisioning
 spec:
@@ -14,7 +14,7 @@ spec:
 apiVersion: v1
 kind: PersistentVolume
 metadata:
-  name: nfs-pv-provisioning-demo-pv
+  name: nfs-pv-provisioning-demo
   labels:
     demo: nfs-pv-provisioning
 spec:
@@ -24,7 +24,7 @@ spec:
     storage: {{ .Values.volumeMountSize }}
   claimRef:
     namespace: {{ .Release.Namespace }}
-    name: nfs-pv-provisioning-demo-pvc
+    name: nfs-pvc-provisioning-demo
   gcePersistentDisk:
     pdName: {{ .Values.gcpPdName }}
     fsType: ext4
