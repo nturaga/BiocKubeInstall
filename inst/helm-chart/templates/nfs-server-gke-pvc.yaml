@@ -25,7 +25,7 @@ spec:
   claimRef:
     namespace: {{ .Release.Namespace }}
     name: nfs-pv-provisioning-demo-pvc
-    gcePersistentDisk:
-      pdName: {{ .Values.gcpPdName }}
-      fsType: ext4
+  gcePersistentDisk:
+    pdName: {{ .Values.gcpPdName }}
+    fsType: ext4
 ---
