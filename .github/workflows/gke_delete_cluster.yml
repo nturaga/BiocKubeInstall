@@ -53,3 +53,6 @@ jobs:
     - run: |-
         gcloud container clusters delete "$GKE_CLUSTER" --zone "$GKE_ZONE" --quiet
         
+    # Delete pd
+    - run: |-
+        gcloud compute disks delete --zone "$GKE_ZONE" --quiet $(gcloud compute disks list --format="value(name)" --filter='status~READY' --filter='name~biockubeinstall-nfs-pd-*')
