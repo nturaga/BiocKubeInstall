@@ -54,7 +54,7 @@ kube_install_single_package <-
                          keep_outputs = TRUE
                      )
     )
-    Sys.info()[["nodename"]]
+    pkg
 }
 
 
@@ -184,17 +184,39 @@ kube_install <-
     log_file <- file.path(logs_path, 'kube_install.log')
     flog.appender(appender.tee(log_file), name = 'kube_install')
 
-    result <- .depends_apply(
+    ## result <- .depends_apply(
+    ##     deps,
+    ##     kube_install_single_package,
+    ##     lib_path = lib_path,
+    ##     bin_path = bin_path,
+    ##     logs_path = logs_path,
+    ##     BPPARAM = BPPARAM
+    ## )
+
+    iter <- dependency_graph_iterator_factory(
         deps,
         kube_install_single_package,
         lib_path = lib_path,
         bin_path = bin_path,
-        logs_path = logs_path,
-        BPPARAM = BPPARAM
+        logs_path = logs_path
     )
 
+    if (!is.null(BPPARAM))
+        bpstopOnError(BPPARAM) <- FALSE
+
+    ## Start RedisParam
+    bpstart(BPPARAM)
+    
+    result <- bpiterate(
+        iter$ITER, iter$FUN, REDUCE = iter$REDUCE, init = character(),
+        BPPARAM = p
+    )
+
+    ## Stop RedisParam - This should stop all work on workers
+    bpstopall(BPPARAM)
+
     flog.info(
-        "%d built, %d failed, %d excluded [kube_install()]",
+        "%d built, %d failed, %d excluded [kube_install)]",
         sum(result, na.rm = TRUE),
         sum(!result, na.rm = TRUE),
         sum(is.na(result)),
@@ -250,9 +272,12 @@ kube_run <-
     Sys.setenv(REDIS_PORT = Sys.getenv("REDIS_SERVICE_PORT"))
 
     ## Secret key to access bucket on google
+    ## PAIN point 3: Also not needed
     secret <- "/home/key.json"
 
     ## Step 0: Create a bucket if you need to
+    ## PAIN POINT 1: Creation of new buckets
+    ## Do it via github actions
     gcloud_create_cran_bucket(bucket = image_name,
                               bioc_version = version,
                               secret = secret, public = TRUE)
@@ -274,6 +299,7 @@ kube_run <-
                                          deps = deps)
 
     ##  Step 4: Sync all artifacts produced, binaries, logs
+    ## Pain point 2: kubernetes
     BiocKubeInstall::cloud_sync_artifacts(
         secret = secret,
         artifacts = artifacts,

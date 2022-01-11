@@ -77,44 +77,106 @@
     ## Start RedisParam
     bpstart(BPPARAM)
     ## Do work
-    repeat {
-        result[done] <- !done %in% failed
-        if (length(X) == 0L || length(X) == n)
-            break
-
-        do <- names(X)[lengths(X) == 0L]
-        flog.info(
-            "%d packages at depth %s",
-            length(do),
-            if (iter) paste0("n-", iter) else "n",
-            name = "kube_install"
-        )
-
-        if (is(BPPARAM, "RedisParam"))
-            bptasks(BPPARAM) <- length(do)
-
-        ## do the work here
-        ## how long is the length of "do" and compare to length of "bpnworkers(BPPARAM)"
-        res <- bptry(bplapply(do, FUN, ..., BPPARAM = BPPARAM))
-
-        failed_idx <- !bpok(res)
-        done <- do
-        failed <- do[failed_idx]
-
-        ## LOG ERROR
-        err_messages <- vapply(res[failed_idx], conditionMessage, character(1))
-        err_text <- sprintf("Package: %s; error: %s", failed, err_messages)
-        flog.error(err_text, name = "kube_install")
-
-        ## update X
-        n <- length(X)
-        X <- .trim(X, done, failed)
-        iter <- iter + 1L
-    }
+    flog.info(
+        "%d packages at depth %s",
+        length(do),
+        if (iter) paste0("n-", iter) else "n",
+        name = "kube_install"
+    )
+    ## LOG ERROR
+    err_messages <- vapply(res[failed_idx], conditionMessage, character(1))
+    err_text <- sprintf("Package: %s; error: %s", failed, err_messages)
+    flog.error(err_text, name = "kube_install")
+    
     ## Stop RedisParam - This should stop all work on workers
     bpstopall(BPPARAM)
+
     if (length(X))
         flog.error("final dependency graph is is not empty [.depends_apply()]")
 
     result
 }
+
+
+dependency_graph_iterator_factory <-
+  function(deps, FUN = identity)
+  {
+    force(FUN)
+    
+    FUN_ <- function(pkg, ...) {
+        if (identical(pkg, ".WAITING")) {
+            Sys.sleep(1)
+            pkg
+        } else {
+            FUN(pkg, ...)
+        }
+    }
+    
+    ## fast and robust reverse dependencies calculation -- includes
+    ## packages with zero reverse dependencies; 0.05s versus 1.85s for
+    ## iteration.
+    allPackages <- unique(c(unlist(deps, use.names = FALSE), names(deps)))
+    packages <- rep(names(deps), lengths(deps))
+    dependencies <- factor(unlist(deps, use.names = FALSE), levels = allPackages)
+    reverseDependencies <- split(packages, dependencies)
+    
+    ## calculate the dependence number for each package including
+    ## packages with 0 dependencies
+    numberOfDependencies <- integer(length(allPackages))
+    names(numberOfDependencies) <- allPackages
+    numberOfDependencies[names(deps)] <- lengths(deps)
+    
+    ## queues of packages 'ready' for working, and currently in-progress
+    ready <- new.env(parent = emptyenv()) # packages w/ dependencies satisfied
+    working <- new.env(parent = emptyenv()) # packages assigned to workers
+    
+    ## return the next package with all dependencies satisfied,
+    ## '.WAITING' if some packages have unmet dependencies, or NULL if
+    ## all packages have been returned
+    iter <- function() {
+      pkg <- head(names(ready), 1L)
+      if (length(pkg)) {
+        ## remove from the 'ready' queue, add to working, and return
+        rm(list = pkg, envir = ready)
+        assign(pkg, NULL, working)
+        return(pkg)
+      }
+      
+      ## no packages in the 'ready' queue -- recharge
+      pkgs <- setdiff(
+        names(numberOfDependencies)[numberOfDependencies == 0L],
+        names(working)
+      )
+      if (length(pkgs)) {
+        for (pkg in pkgs[-1L]) # add to 'ready' queue
+          assign(pkg, NULL, ready)
+        assign(pkgs[[1]], NULL, working)
+        return(pkgs[[1]])
+      }
+      
+      if (any(numberOfDependencies > 0L)) {
+        ## packages need to have dependencies satisfied, but none ready
+        return(".WAITING")
+      }
+      
+      return (NULL) # complete
+    }
+    
+    reduce <- function(x, y) {
+      if (identical(y, ".WAITING")) {
+        ## no-op
+        x
+      } else {
+        ##OBOB remove 'y' from 'working' queue
+        rm(list = y, envir = working)
+        ## decrement numberOfDependencies for y and all reverse dependencies
+        i <- c(y, reverseDependencies[[y]])
+        numberOfDependencies[i] <<- numberOfDependencies[i] - 1L
+        ## return value
+        c(x, y)
+      }
+    }
+    
+    list(ITER = iter, FUN = FUN_, REDUCE = reduce, this = environment())
+  }
+
