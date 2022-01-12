@@ -15,6 +15,8 @@ env:
   DEVEL_MINOR_VER: 15
   RELEA_MAJOR_VER: 3
   RELEA_MINOR_VER: 14
+  DEVEL_NAMESPACE: devel
+  RELEA_NAMESPACE: release
 
 jobs:
   clusterlaunch:
@@ -49,7 +51,7 @@ jobs:
 
 
   deploydevelchart:
-    name: Deploy helm chart and wait
+    name: Deploy devel helm chart and wait
     runs-on: ubuntu-latest
     needs: clusterlaunch
     steps:
@@ -75,7 +77,8 @@ jobs:
     - name: Create secret for cluster
       run: |-
         echo "$GKE_SA_KEY" > bioc-binaries.json && \
-        kubectl create secret generic bioc-binaries-service-account-auth \
+        kubectl create namespace $DEVEL_NAMESPACE && \
+        kubectl create secret generic -n $DEVEL_NAMESPACE bioc-binaries-service-account-auth \
           --from-file=service_account_key=bioc-binaries.json
       shell: bash
       env:
@@ -83,7 +86,7 @@ jobs:
 
     - name: Deploy bioc release helm chart
       run: |
-        helm install biock8sredis --set workerPoolSize=50 \
+        helm install biock8sredis -n $DEVEL_NAMESPACE --set workerPoolSize=50 \
           --set biocVersion="${DEVEL_MAJOR_VER}.${DEVEL_MINOR_VER}" \
           --set workerImageTag="RELEASE_${DEVEL_MAJOR_VER}_${DEVEL_MINOR_VER}" \
           --set volumeMountSize=$GCP_PD_SIZE \
@@ -91,15 +94,15 @@ jobs:
 
     - name: check
       run: |
-        kubectl get all
+        kubectl -n $DEVEL_NAMESPACE get all
 
     # Requires kubectl client version > 1.23
     - name: Get logs and events
-      run: sh -c "while true; do kubectl logs manager > /tmp/logs && tail /tmp/logs && sleep 5; done" & kubectl wait --for=jsonpath='{.status.phase}'=Succeeded --timeout=18000s pod/manager
+      run: sh -c "while true; do kubectl -n $DEVEL_NAMESPACE logs manager > /tmp/logs && tail /tmp/logs && sleep 5; done" & kubectl -n $DEVEL_NAMESPACE  wait --for=jsonpath='{.status.phase}'=Succeeded --timeout=18000s pod/manager
       continue-on-error: true
 
   deployreleasechart:
-    name: Deploy helm chart and wait
+    name: Deploy release helm chart and wait
     runs-on: ubuntu-latest
     needs: clusterlaunch
     steps:
@@ -130,7 +133,8 @@ jobs:
     - name: Create secret for cluster
       run: |-
         echo "$GKE_SA_KEY" > bioc-binaries.json && \
-        kubectl create secret generic bioc-binaries-service-account-auth \
+        kubectl create namespace $RELEA_NAMESPACE && \
+        kubectl create secret generic -n $RELEA_NAMESPACE bioc-binaries-service-account-auth \
           --from-file=service_account_key=bioc-binaries.json
       shell: bash
       env:
@@ -138,7 +142,7 @@ jobs:
 
     - name: Deploy bioc release helm chart
       run: |
-        helm install biock8sredis --set workerPoolSize=50 \
+        helm install biock8sredis -n $RELEA_NAMESPACE --set workerPoolSize=50 \
           --set biocVersion="${RELEA_MAJOR_VER}.${RELEA_MINOR_VER}" \
           --set workerImageTag="RELEASE_${RELEA_MAJOR_VER}_${RELEA_MINOR_VER}" \
           --set volumeMountSize=$GCP_PD_SIZE \
@@ -146,11 +150,11 @@ jobs:
 
     - name: check
       run: |
-        kubectl get all
+        kubectl -n $RELEA_NAMESPACE get all
 
     # Requires kubectl client version > 1.23
     - name: Get logs and events
-      run: sh -c "while true; do kubectl logs manager > /tmp/logs && tail /tmp/logs && sleep 5; done" & kubectl wait --for=jsonpath='{.status.phase}'=Succeeded --timeout=18000s pod/manager
+      run: sh -c "while true; do kubectl -n $RELEA_NAMESPACE logs manager > /tmp/logs && tail /tmp/logs && sleep 5; done" & kubectl -n $RELEA_NAMESPACE wait --for=jsonpath='{.status.phase}'=Succeeded --timeout=18000s pod/manager
       continue-on-error: true
 
 

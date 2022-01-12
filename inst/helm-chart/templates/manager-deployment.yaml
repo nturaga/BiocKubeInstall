@@ -33,7 +33,7 @@ spec:
   volumes:
   - name: {{ .Values.volumeMountName }}
     persistentVolumeClaim:
-      claimName: nfs
+      claimName: {{.Release.Namespace}}-nfs
   - name: service-key
     secret:
       secretName: bioc-binaries-service-account-auth
