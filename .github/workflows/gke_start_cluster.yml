@@ -7,20 +7,45 @@ on:
     - cron:  '0 12 * * 4'
 
 env:
-  GKE_CLUSTER: biock8sredis
+  CLUSTER_BASE_NAME: biock8sredis
   GKE_ZONE: us-east1-b
   DEPLOYMENT_NAME: binaryBuilder
   GCP_PD_SIZE: 200Gi
 
 jobs:
-  setup-start-deploy:
-    name: Setup, start, Deploy
+  clusterlaunch:
+    name: Start GKE cluster
     runs-on: ubuntu-latest
+    outputs:
+      prefix: ${{ steps.prefix.outputs.prefix }}
     steps:
     - name: Set prefix with date
       id: prefix
       run: echo "::set-output name=prefix::$(echo $(date +'%m-%d-%H-%M-%S'))"
 
+    # Setup gcloud CLI
+    - uses: google-github-actions/setup-gcloud@master
+      with:
+        version: '290.0.1'
+        service_account_key: ${{ secrets.GKE_SA_KEY }}
+        project_id: ${{ secrets.GKE_PROJECT }}
+
+    - name: Create GCP Disk
+      run: gcloud compute disks create "biockubeinstall-nfs-pd-${{ steps.prefix.outputs.prefix }}" --size $GCP_PD_SIZE --zone "$GKE_ZONE"
+
+    # Start cluster
+    - run: |-
+        gcloud container clusters create \
+          --zone "$GKE_ZONE" \
+          --num-nodes 10 \
+          --machine-type=e2-standard-4 "$CLUSTER_BASE_NAME-${{ steps.prefix.outputs.prefix }}"
+
+
+  deploychart:
+    name: Deploy helm chart and wait
+    runs-on: ubuntu-latest
+    needs: clusterlaunch
+    steps:
     - name: Checkout
       uses: actions/checkout@v2
 
@@ -31,19 +56,9 @@ jobs:
         service_account_key: ${{ secrets.GKE_SA_KEY }}
         project_id: ${{ secrets.GKE_PROJECT }}
 
-    # Start cluster
-    - run: |-
-        gcloud container clusters create \
-          --zone "$GKE_ZONE" \
-          --num-nodes 10 \
-          --machine-type=e2-standard-4 "$GKE_CLUSTER"
-
-    - name: Create GCP Disk
-      run: gcloud compute disks create "biockubeinstall-nfs-pd-${{ steps.prefix.outputs.prefix }}" --size $GCP_PD_SIZE --zone "$GKE_ZONE"
-
     # Get the GKE credentials so we can deploy to the cluster
     - run: |-
-       gcloud container clusters get-credentials "$GKE_CLUSTER" --zone "$GKE_ZONE"
+       gcloud container clusters get-credentials "$CLUSTER_BASE_NAME-${{needs.clusterlaunch.outputs.prefix}}" --zone "$GKE_ZONE"
 
     # Install helm
     - name: Install Helm
@@ -59,18 +74,50 @@ jobs:
       env:
         GKE_SA_KEY: ${{secrets.GKE_SA_KEY}}
 
-    - name: Check secret 
-      run: |-
-        kubectl describe secrets/bioc-binaries-service-account-auth
-
     - name: Deploy bioc release helm chart
       run: |
         helm install biock8sredis --set workerPoolSize=50 \
           --set biocVersion='3.14' \
           --set workerImageTag='RELEASE_3_14' \
           --set volumeMountSize=$GCP_PD_SIZE \
-          --set gcpPdName="biockubeinstall-nfs-pd-${{ steps.prefix.outputs.prefix }}" inst/helm-chart --wait
+          --set gcpPdName="biockubeinstall-nfs-pd-${{needs.clusterlaunch.outputs.prefix}}" inst/helm-chart --wait
 
     - name: check
       run: |
         kubectl get all
+
+    # Requires kubectl client version > 1.23
+    - name: Get logs and events
+      run: sh -c "while true; do kubectl logs manager > /tmp/logs && tail /tmp/logs && sleep 5; done" & kubectl wait --for=jsonpath='{.status.phase}'=Succeeded --timeout=18000s pod/manager
+      continue-on-error: true
+
+
+  cleanup:
+    name: Cleanup GKE cluster
+    if: always()
+    needs: [clusterlaunch,deploychart]
+    runs-on: ubuntu-latest
+    steps:
+    - uses: google-github-actions/setup-gcloud@master
+      with:
+        version: '290.0.1'
+        service_account_key: ${{ secrets.GKE_SA_KEY }}
+        project_id: ${{ secrets.GKE_PROJECT }}
+
+    - name: Install Helm
+      run: |
+        curl https://raw.githubusercontent.com/helm/helm/master/scripts/get-helm-3 | bash
+
+    # Set kubeconfig
+    - run: gcloud container clusters get-credentials "$CLUSTER_BASE_NAME-${{needs.clusterlaunch.outputs.prefix}}" --zone "$GKE_ZONE"
+
+    # Let chart do any cleanup if needed
+    - name: Delete chart
+      run: helm delete biock8sredis
+
+    # Delete cluster
+    - run: gcloud container clusters delete "$CLUSTER_BASE_NAME-${{needs.clusterlaunch.outputs.prefix}}" --zone "$GKE_ZONE" --quiet
+
+    # Delete pd
+    - run: gcloud compute disks delete --zone "$GKE_ZONE" --quiet $(gcloud compute disks list --format="value(name)" --filter='status~READY' --filter='name~biockubeinstall-nfs-pd-${{needs.clusterlaunch.outputs.prefix}}')
+
