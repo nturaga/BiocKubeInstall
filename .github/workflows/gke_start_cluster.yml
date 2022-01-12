@@ -110,6 +110,7 @@ jobs:
 
     # Set kubeconfig
     - run: gcloud container clusters get-credentials "$CLUSTER_BASE_NAME-${{needs.clusterlaunch.outputs.prefix}}" --zone "$GKE_ZONE"
+      continue-on-error: true
 
     # Let chart do any cleanup if needed
     - name: Delete chart
@@ -117,6 +118,7 @@ jobs:
 
     # Delete cluster
     - run: gcloud container clusters delete "$CLUSTER_BASE_NAME-${{needs.clusterlaunch.outputs.prefix}}" --zone "$GKE_ZONE" --quiet
+      continue-on-error: true
 
     # Delete pd
     - run: gcloud compute disks delete --zone "$GKE_ZONE" --quiet $(gcloud compute disks list --format="value(name)" --filter='status~READY' --filter='name~biockubeinstall-nfs-pd-${{needs.clusterlaunch.outputs.prefix}}')

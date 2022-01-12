@@ -115,6 +115,7 @@ jobs:
 
     # Delete cluster
     - run: gcloud container clusters delete "$CLUSTER_BASE_NAME-${{needs.clusterlaunch.outputs.prefix}}" --zone "$GKE_ZONE" --quiet
+      continue-on-error: true
 
     # Delete pd
     - run: gcloud compute disks delete --zone "$GKE_ZONE" --quiet $(gcloud compute disks list --format="value(name)" --filter='status~READY' --filter='name~biockubeinstall-nfs-pd-${{needs.clusterlaunch.outputs.prefix}}')
