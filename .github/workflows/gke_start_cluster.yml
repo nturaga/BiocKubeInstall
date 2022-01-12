@@ -11,6 +11,10 @@ env:
   GKE_ZONE: us-east1-b
   DEPLOYMENT_NAME: binaryBuilder
   GCP_PD_SIZE: 200Gi
+  DEVEL_MAJOR_VER: 3
+  DEVEL_MINOR_VER: 15
+  RELEA_MAJOR_VER: 3
+  RELEA_MINOR_VER: 14
 
 jobs:
   clusterlaunch:
@@ -30,9 +34,6 @@ jobs:
         service_account_key: ${{ secrets.GKE_SA_KEY }}
         project_id: ${{ secrets.GKE_PROJECT }}
 
-    - name: Create GCP Disk
-      run: gcloud compute disks create "biockubeinstall-nfs-pd-${{ steps.prefix.outputs.prefix }}" --size $GCP_PD_SIZE --zone "$GKE_ZONE"
-
     # Start cluster
     - run: |-
         gcloud container clusters create \
@@ -40,8 +41,14 @@ jobs:
           --num-nodes 10 \
           --machine-type=e2-standard-4 "$CLUSTER_BASE_NAME-${{ steps.prefix.outputs.prefix }}"
 
+    - name: Create devel GCP Disk
+      run: gcloud compute disks create "biockubeinstall-nfs-pd-${{ steps.prefix.outputs.prefix }}-devel" --size $GCP_PD_SIZE --zone "$GKE_ZONE"
 
-  deploychart:
+    - name: Create release GCP Disk
+      run: gcloud compute disks create "biockubeinstall-nfs-pd-${{ steps.prefix.outputs.prefix }}-release" --size $GCP_PD_SIZE --zone "$GKE_ZONE"
+
+
+  deploydevelchart:
     name: Deploy helm chart and wait
     runs-on: ubuntu-latest
     needs: clusterlaunch
@@ -77,10 +84,65 @@ jobs:
     - name: Deploy bioc release helm chart
       run: |
         helm install biock8sredis --set workerPoolSize=50 \
-          --set biocVersion='3.14' \
-          --set workerImageTag='RELEASE_3_14' \
+          --set biocVersion="${DEVEL_MAJOR_VER}.${DEVEL_MINOR_VER}" \
+          --set workerImageTag="RELEASE_${DEVEL_MAJOR_VER}_${DEVEL_MINOR_VER}" \
           --set volumeMountSize=$GCP_PD_SIZE \
-          --set gcpPdName="biockubeinstall-nfs-pd-${{needs.clusterlaunch.outputs.prefix}}" inst/helm-chart --wait
+          --set gcpPdName="biockubeinstall-nfs-pd-${{needs.clusterlaunch.outputs.prefix}}-devel" inst/helm-chart --wait
+
+    - name: check
+      run: |
+        kubectl get all
+
+    # Requires kubectl client version > 1.23
+    - name: Get logs and events
+      run: sh -c "while true; do kubectl logs manager > /tmp/logs && tail /tmp/logs && sleep 5; done" & kubectl wait --for=jsonpath='{.status.phase}'=Succeeded --timeout=18000s pod/manager
+      continue-on-error: true
+
+  deployreleasechart:
+    name: Deploy helm chart and wait
+    runs-on: ubuntu-latest
+    needs: clusterlaunch
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v2
+
+    # Setup gcloud CLI
+    - uses: google-github-actions/setup-gcloud@master
+      with:
+        version: '290.0.1'
+        service_account_key: ${{ secrets.GKE_SA_KEY }}
+        project_id: ${{ secrets.GKE_PROJECT }}
+
+    # Get the GKE credentials so we can deploy to the cluster
+    - run: |-
+       gcloud container clusters get-credentials "$CLUSTER_BASE_NAME-${{needs.clusterlaunch.outputs.prefix}}" --zone "$GKE_ZONE"
+
+    # Install helm
+    - name: Install Helm
+      run: |
+        curl https://raw.githubusercontent.com/helm/helm/master/scripts/get-helm-3 | bash
+
+    - name: Wait to create a delay in peak load
+      run: for i in {1..30}; do echo "$i x Sleeping 10 seconds"; sleep 10; done
+      continue-on-error: true
+      shell: bash
+
+    - name: Create secret for cluster
+      run: |-
+        echo "$GKE_SA_KEY" > bioc-binaries.json && \
+        kubectl create secret generic bioc-binaries-service-account-auth \
+          --from-file=service_account_key=bioc-binaries.json
+      shell: bash
+      env:
+        GKE_SA_KEY: ${{secrets.GKE_SA_KEY}}
+
+    - name: Deploy bioc release helm chart
+      run: |
+        helm install biock8sredis --set workerPoolSize=50 \
+          --set biocVersion="${RELEA_MAJOR_VER}.${RELEA_MINOR_VER}" \
+          --set workerImageTag="RELEASE_${RELEA_MAJOR_VER}_${RELEA_MINOR_VER}" \
+          --set volumeMountSize=$GCP_PD_SIZE \
+          --set gcpPdName="biockubeinstall-nfs-pd-${{needs.clusterlaunch.outputs.prefix}}-release" inst/helm-chart --wait
 
     - name: check
       run: |
@@ -95,7 +157,7 @@ jobs:
   cleanup:
     name: Cleanup GKE cluster
     if: always()
-    needs: [clusterlaunch,deploychart]
+    needs: [clusterlaunch,deploydevelchart,deployreleasechart]
     runs-on: ubuntu-latest
     steps:
     - uses: google-github-actions/setup-gcloud@master
@@ -120,6 +182,9 @@ jobs:
     - run: gcloud container clusters delete "$CLUSTER_BASE_NAME-${{needs.clusterlaunch.outputs.prefix}}" --zone "$GKE_ZONE" --quiet
       continue-on-error: true
 
-    # Delete pd
-    - run: gcloud compute disks delete --zone "$GKE_ZONE" --quiet $(gcloud compute disks list --format="value(name)" --filter='status~READY' --filter='name~biockubeinstall-nfs-pd-${{needs.clusterlaunch.outputs.prefix}}')
-
+    # Delete devel pd
+    - run: gcloud compute disks delete --zone "$GKE_ZONE" --quiet $(gcloud compute disks list --format="value(name)" --filter='status~READY' --filter='name~biockubeinstall-nfs-pd-${{needs.clusterlaunch.outputs.prefix}}-devel')
+      continue-on-error: true
+    # Delete release pd
+    - run: gcloud compute disks delete --zone "$GKE_ZONE" --quiet $(gcloud compute disks list --format="value(name)" --filter='status~READY' --filter='name~biockubeinstall-nfs-pd-${{needs.clusterlaunch.outputs.prefix}}-release')
+      continue-on-error: true
