@@ -39,7 +39,7 @@ jobs:
         gcloud container clusters create \
           --zone "$GKE_ZONE" \
           --num-nodes 10 \
-          --machine-type=e2-standard-4 "$CLUSTER_BASE_NAME-${{ steps.prefix.outputs.prefix }}"
+          --machine-type=e2-highcpu-4 "$CLUSTER_BASE_NAME-${{ steps.prefix.outputs.prefix }}"
 
     - name: Create devel GCP Disk
       run: gcloud compute disks create "biockubeinstall-nfs-pd-${{ steps.prefix.outputs.prefix }}-devel" --size $GCP_PD_SIZE --zone "$GKE_ZONE"
