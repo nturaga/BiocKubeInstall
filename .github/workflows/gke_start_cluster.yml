@@ -177,6 +177,7 @@ jobs:
     # Let chart do any cleanup if needed
     - name: Delete chart
       run: helm delete biock8sredis
+      continue-on-error: true
 
     # Delete cluster
     - run: gcloud container clusters delete "$CLUSTER_BASE_NAME-${{needs.clusterlaunch.outputs.prefix}}" --zone "$GKE_ZONE" --quiet
@@ -187,4 +188,4 @@ jobs:
       continue-on-error: true
     # Delete release pd
     - run: gcloud compute disks delete --zone "$GKE_ZONE" --quiet $(gcloud compute disks list --format="value(name)" --filter='status~READY' --filter='name~biockubeinstall-nfs-pd-${{needs.clusterlaunch.outputs.prefix}}-release')
-      continue-on-error: true
+
