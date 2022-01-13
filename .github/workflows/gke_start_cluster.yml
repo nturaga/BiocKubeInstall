@@ -126,7 +126,7 @@ jobs:
         curl https://raw.githubusercontent.com/helm/helm/master/scripts/get-helm-3 | bash
 
     - name: Wait to create a delay in peak load
-      run: for i in {1..30}; do echo "$i x Sleeping 10 seconds"; sleep 10; done
+      run: sleep 120 && kubectl wait -n $DEVEL_NAMESPACE --for=jsonpath='{.status.phase}'=Running pod/manager --timeout=18000s && for i in {1..30}; do echo "$i x Sleeping 10 seconds"; sleep 10; done
       continue-on-error: true
       shell: bash
 
