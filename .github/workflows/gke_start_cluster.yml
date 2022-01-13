@@ -98,7 +98,7 @@ jobs:
 
     # Requires kubectl client version > 1.23
     - name: Get logs and events
-      run: sh -c "while true; do kubectl -n $DEVEL_NAMESPACE logs manager > /tmp/logs && tail /tmp/logs && sleep 5; done" & kubectl -n $DEVEL_NAMESPACE  wait --for=jsonpath='{.status.phase}'=Succeeded --timeout=18000s pod/manager
+      run: sh -c "while true; do kubectl -n $DEVEL_NAMESPACE logs manager > /tmp/logs && tail /tmp/logs && sleep 5; done" & kubectl -n $DEVEL_NAMESPACE  wait --for=jsonpath='{.status.phase}'=Succeeded --timeout=36000s pod/manager
       continue-on-error: true
 
   deployreleasechart:
@@ -155,7 +155,7 @@ jobs:
 
     # Requires kubectl client version > 1.23
     - name: Get logs and events
-      run: sh -c "while true; do kubectl -n $RELEA_NAMESPACE logs manager > /tmp/logs && tail /tmp/logs && sleep 5; done" & kubectl -n $RELEA_NAMESPACE wait --for=jsonpath='{.status.phase}'=Succeeded --timeout=18000s pod/manager
+      run: sh -c "while true; do kubectl -n $RELEA_NAMESPACE logs manager > /tmp/logs && tail /tmp/logs && sleep 5; done" & kubectl -n $RELEA_NAMESPACE wait --for=jsonpath='{.status.phase}'=Succeeded --timeout=36000s pod/manager
       continue-on-error: true
 
 
