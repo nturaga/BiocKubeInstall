@@ -24,8 +24,8 @@ spec:
         - name: service-key
           mountPath: /home/key.json
           subPath: {{ .Values.serviceKey }}
-      command: ["Rscript"]
-      args: ["-e", "BiocKubeInstall::kube_run('{{ .Values.biocVersion }}', image_name = '{{ .Values.dockerImageName }}', workers = {{ .Values.workerPoolSize }})"]
+#      command: ["Rscript"]
+#      args: ["-e", "BiocKubeInstall::kube_run('{{ .Values.biocVersion }}', image_name = '{{ .Values.dockerImageName }}', workers = {{ .Values.workerPoolSize }})"]
   restartPolicy: {{ .Values.restartPolicy | quote}}
   volumes:
   - name: {{ .Values.volumeMountName }}

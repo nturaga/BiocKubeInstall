@@ -1,72 +1,48 @@
 # README
 
-## INSTALL helm chart
+## INTRO
 
-Clone and install the helm chart to get going with the Bioc RedisParam on K8s.
+- Make sure BiocParallel Release 3.14 is being used on the manager node to be in sync with versions on the workers.
 
-### Quickstart
+- Manually replace the version using,
 
-Clone the repo
+		BiocManager::install('BiocParallel', ref='RELEASE_3_14')
 
-    git clone https://github.com/mtmorgan/k8s-redis-bioc-example.git
+## Build docker image
 
-Install the helm chart
+	docker build -t bioconductor/bioc-redis-jupyter:RELEASE_3_14 .
 
-    helm install k8s-redis-bioc-example/helm-chart/
+## Manual run of helm chart on GKE
 
-Get list of running helm charts
+Start cluster
 
-    helm list <release name>
+	export GKE_CLUSTER=biocjupyter
+	export GKE_ZONE=us-east1-b
+	export GCP_PD_SIZE=200Gi
 
-Get status of the installed chart
+	gcloud container clusters create \
+		 --zone "$GKE_ZONE" \
+         --num-nodes 10 \
+         --machine-type=e2-standard-4 "$GKE_CLUSTER"
+		 
+	gcloud compute disks create "biockubeinstall-nfs-pd-test" --size $GCP_PD_SIZE --zone "$GKE_ZONE"
 
-    helm status <release name>
+Get creds
 
-Stop the chart
+	gcloud container clusters get-credentials "$GKE_CLUSTER" --zone "$GKE_ZONE"
 
-    helm delete <release name>
+	cd ~/.ssh
+	
+	kubectl create secret generic bioc-binaries-service-account-auth --from-file=service_account_key=bioc-binaries.json
 
-### Requirements
+	cd ~/Documents/bioc/BiocKubeInstall
 
-1. Kubernetes cluster is running, i.e (either minikube on your local
-   machine or a cluster in the cloud)
+Helm install
 
-   This should work
+	helm install biocjupytercluster --set workerPoolSize=10 \
+          --set biocVersion='3.14' \
+          --set workerImageTag='RELEASE_3_14' \
+          --set volumeMountSize=$GCP_PD_SIZE \
+          --set gcpPdName="biockubeinstall-nfs-pd-test" inst/helm-chart-anvil-jupyter --wait
 
-        ## minikube start
-        kubectl cluster-info
 
-
-1. Have helm installed!!
-
-        brew install helm
-
-### Debug or dry run
-
-Very useful options to check how the templates are forming,
-
-`--dry-run` doesn't actually install the chart and run it.
-
-    helm install --dry-run k8s-redis-bioc-example/helm-chart/
-
-`--debug` prints out the templates with the values.yaml embedded in them
-
-    helm install --dry-run --debug k8s-redis-bioc-example/helm-chart/
-
-### User Settings
-
-The defined user settings in the values.yaml file of the helm chart,
-can be changed in two ways,
-
-1. In the values.yaml file directly, where you can modify the Rstudio
-   login password ``rstudioPassword`` and the number of workers you
-   want to deploy `workerPoolSize`
-
-        workerPoolSize: 5             # Number of workers in the cluster
-        ...
-        rstudioPassword: bioc         # RStudio password on manager
-
-1. The other way is while deploying the helm chart,
-
-        helm install k8s-redis-bioc-example/helm-chart/ \
-            --set rstudioPassword=biocuser,workerPoolSize=10
