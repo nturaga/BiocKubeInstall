@@ -50,3 +50,6 @@ redis:
   redisImage: redis
   redisImageTag: '5.0'
   containerPort: 6379
+
+# Inject an `sh` prequel command to run before `RScript -e BiocKubeInstall::kube_run`
+extraManagerCommands: ""
