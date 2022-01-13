@@ -8,7 +8,6 @@ spec:
   type: {{ .Values.rstudio.type }}
   ports:
     - port: {{ .Values.rstudio.port }}
-      nodePort: {{ .Values.rstudioPort }}
       name: {{ .Values.rstudio.protocol }}
   selector:
     app: rstudio

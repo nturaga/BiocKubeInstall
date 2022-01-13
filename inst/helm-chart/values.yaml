@@ -29,7 +29,6 @@ gcpPdName: "manual-pd"
 serviceKey: bioc-binaries.json
 
 # RStudio access
-rstudioPort: 30001            # Port for user connection; must be >= 30000
 rstudioPassword: bioc         # RStudio password on manager
 
 #
