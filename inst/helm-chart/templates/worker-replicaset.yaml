@@ -20,11 +20,11 @@ spec:
         imagePullPolicy: {{ .Values.pullPolicy }}
         resources:
           requests:
-            memory: 150Mi
+            memory: 500Mi
             cpu: 300m
           limits:
-            memory: 1Gi
-            cpu: 1
+            memory: 1500Mi
+            cpu: 800m
         volumeMounts:
          - mountPath: {{ .Values.volumeMountPath }}
            name: {{ .Values.volumeMountName }}
