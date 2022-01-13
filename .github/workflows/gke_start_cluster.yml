@@ -145,6 +145,8 @@ jobs:
       run: |
         helm install biock8sredis -n $RELEA_NAMESPACE --set workerPoolSize=50 \
           --timeout 600s \
+          --set managerImage="almahmoud/bioc-manager" \
+          --set managerImageTag="RELEASE_${RELEA_MAJOR_VER}_${RELEA_MINOR_VER}" \
           --set biocVersion="${RELEA_MAJOR_VER}.${RELEA_MINOR_VER}" \
           --set workerImageTag="RELEASE_${RELEA_MAJOR_VER}_${RELEA_MINOR_VER}" \
           --set volumeMountSize=$GCP_PD_SIZE \
