@@ -101,8 +101,9 @@
 dependency_graph_iterator_factory <-
   function(deps, FUN = identity)
   {
+
     force(FUN)
-    
+      
     FUN_ <- function(pkg, ...) {
         if (identical(pkg, ".WAITING")) {
             Sys.sleep(1)
@@ -167,7 +168,7 @@ dependency_graph_iterator_factory <-
         ## no-op
         x
       } else {
-        ##OBOB remove 'y' from 'working' queue
+        ##OBOB remove 'y' from 'working' queue
         rm(list = y, envir = working)
         ## decrement numberOfDependencies for y and all reverse dependencies
         i <- c(y, reverseDependencies[[y]])

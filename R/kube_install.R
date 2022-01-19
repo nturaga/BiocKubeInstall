@@ -44,15 +44,22 @@ kube_install_single_package <-
         options(warn_opt)
         setwd(cwd)
     })
-    suppressMessages(
-        BiocManager::install(
-                         pkg,
-                         INSTALL_opts = "--build",
-                         update = FALSE,
-                         quiet = TRUE,
-                         force = TRUE,
-                         keep_outputs = TRUE
-                     )
+
+    tryCatch(
+        suppressMessages(
+            BiocManager::install(
+                             pkg,
+                             INSTALL_opts = "--build",
+                             update = FALSE,
+                             quiet = TRUE,
+                             force = TRUE,
+                             keep_outputs = TRUE
+                         )
+        ), 
+        error = function(e) {
+            flog.error("Error: package %s failed", pkg, name = "kube_install")
+            print(conditionMessage(e))
+        }
     )
     pkg
 }
@@ -180,25 +187,26 @@ kube_install <-
         )
     }
 
+    ## testing
+    workers <- 10L
+    BPTESTPARAM <- BiocParallel::SnowParam(workers)                     
+    
     ## Logging
     log_file <- file.path(logs_path, 'kube_install.log')
     flog.appender(appender.tee(log_file), name = 'kube_install')
 
-    ## result <- .depends_apply(
-    ##     deps,
-    ##     kube_install_single_package,
-    ##     lib_path = lib_path,
-    ##     bin_path = bin_path,
-    ##     logs_path = logs_path,
-    ##     BPPARAM = BPPARAM
-    ## )
+    flog.info(
+        "%d packages to process [.depends_apply()]",
+        length(deps),
+        name = "kube_install"
+    )
 
+    ## Testing
+    l <- c(l, list('rawrr' = NULL))
+    
     iter <- dependency_graph_iterator_factory(
-        deps,
-        kube_install_single_package,
-        lib_path = lib_path,
-        bin_path = bin_path,
-        logs_path = logs_path
+        l,
+        kube_install_single_package
     )
 
     if (!is.null(BPPARAM))
@@ -208,8 +216,12 @@ kube_install <-
     bpstart(BPPARAM)
     
     result <- bpiterate(
-        iter$ITER, iter$FUN, REDUCE = iter$REDUCE, init = character(),
-        BPPARAM = p
+        iter$ITER, iter$FUN,
+        lib_path = lib_path,
+        bin_path = bin_path,
+        logs_path = logs_path,
+        REDUCE = iter$REDUCE, init = character(),
+        BPPARAM = BPTESTPARAM
     )
 
     ## Stop RedisParam - This should stop all work on workers
