@@ -104,7 +104,7 @@ fun_factory <- function(FUN, pkg) {
             list(pkg = pkg, status = "success")
         } else {
             value <- FUN(pkg, ...)
-            if (is(value, "error")) {
+            if (is(value, "condition")) {
                 list(pkg = pkg, 
                      status = conditionMessage(value))
             } else {

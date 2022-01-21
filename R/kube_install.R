@@ -55,7 +55,7 @@ kube_install_single_package <-
                              force = TRUE,
                              keep_outputs = TRUE
                          )
-        ), 
+        ),
         error = function(e) {
             flog.error("Error: package %s failed", pkg, name = "kube_install")
             print(conditionMessage(e))
@@ -170,66 +170,50 @@ kube_wait <-
 #'
 #' @export
 kube_install <-
-    function(workers, 
-             lib_path, bin_path, logs_path, 
+    function(lib_path, bin_path, logs_path,
              deps, BPPARAM = NULL)
 {
     stopifnot(
-        is.integer(workers),
         .is_scalar_character(lib_path),
-        .is_scalar_character(bin_path)
+        .is_scalar_character(bin_path),
+        .is_scalar_character(logs_path)
     )
-    
-    ## Do we really need to use RedisParam as the default?
-    ## What if there is no Redis server?
-    ## Alternative: SerialParam, SnowParam?
-    if (is.null(BPPARAM)) {
-        ## RedisParam::rpalive()
-        BPPARAM <- RedisParam(
-            workers = workers, jobname = "binarybuild",
-            is.worker = FALSE,
-            progressbar = TRUE, stop.on.error = FALSE
-        )
-    }
-    bpstopOnError(BPPARAM) <- FALSE
 
-    ## testing
-    # workers <- 10L
-    # BPTESTPARAM <- BiocParallel::SnowParam(workers)                     
-    
+    ## Only if BPPARAM is null, use SnowParam
+    if (is.null(BPPARAM)) {
+        BPPARAM <- BiocParallel::SnowParam()
+    }
+
     ## Logging
     log_file <- file.path(logs_path, 'kube_install.log')
     flog.appender(appender.tee(log_file), name = 'kube_install')
-
     flog.info(
-        "%d packages to process [.depends_apply()]",
+        "%d packages to process ",
         length(deps),
         name = "kube_install"
     )
 
+    ## Iterator function
     iter <- dependency_graph_iterator_factory(
         deps,
         kube_install_single_package
     )
 
-    ## Start RedisParam
-    bpstart(BPPARAM)
-    
     result <- bpiterate(
         iter$ITER, iter$FUN,
         lib_path = lib_path,
         bin_path = bin_path,
         logs_path = logs_path,
-        REDUCE = iter$REDUCE, init = logical(),
+        REDUCE = iter$REDUCE,
+        init = c(), ## need to keep this as initial value for reducer
         BPPARAM = BPPARAM
     )
 
-    ## Stop RedisParam - This should stop all work on workers
-    if (is(BPPARAM, "RedisParam"))
-        bpstopall(BPPARAM)
-
+    ## Logging to document how many packages failed and installed
+    ## TRUE is success, FALSE is fail
+    ## TODO: try to log exluded packages like canceR, and ChemmineOB
     flog.info(
-        "%d built, %d failed, ? excluded [kube_install)]",
+        "%d built, %d failed",
         length(deps),
         length(result),
         name = "kube_install"
@@ -271,10 +255,8 @@ kube_install <-
 #'
 #' @export
 kube_run <-
-    function(version, image_name, workers,
-             volume_mount_path = '/host/',
-             exclude_pkgs = c('canceR','flowWorkspace',
-                              'gpuMagic', 'ChemmineOB'))
+    function(version, image_name,
+             workers, volume_mount_path = '/host/')
 {
     workers <- as.integer(workers)
     artifacts <- .get_artifact_paths(version, volume_mount_path)
@@ -295,6 +277,7 @@ kube_run <-
                               secret = secret, public = TRUE)
 
     ## Step 1:  Wait till all the worker pods are up and running
+    ## TODO: JW will fix in branch --> Jiefei-Wang/RedisParam@revamping
     BiocKubeInstall::kube_wait(workers = workers)
 
     ## Step. 2 : Load deps and installed packages
@@ -304,11 +287,20 @@ kube_run <-
                                               exclude = exclude_pkgs)
 
     ## Step 3: Run kube_install so package binaries are built
-    res <- BiocKubeInstall::kube_install(workers = workers,
-                                         lib_path = artifacts$lib_path,
-                                         bin_path = artifacts$bin_path,
-                                         logs_path = artifacts$logs_path,
-                                         deps = deps)
+    BPPARAM <- RedisParam(
+        jobname = "binarybuild", is.worker = FALSE,
+        progressbar = TRUE, stop.on.error = FALSE
+    )
+
+    res <- BiocKubeInstall::kube_install(
+                                lib_path = artifacts$lib_path,
+                                bin_path = artifacts$bin_path,
+                                logs_path = artifacts$logs_path,
+                                deps = deps,
+                                BPPARAM = BPPARAM
+                            )
+    ## Stop RedisParam - This should stop all work on workers
+    bpstopall(BPPARAM)
 
     ##  Step 4: Sync all artifacts produced, binaries, logs
     ## Pain point 2: kubernetes
