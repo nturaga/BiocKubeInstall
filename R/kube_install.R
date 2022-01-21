@@ -61,7 +61,6 @@ kube_install_single_package <-
             print(conditionMessage(e))
         }
     )
-    pkg
 }
 
 
@@ -171,25 +170,32 @@ kube_wait <-
 #'
 #' @export
 kube_install <-
-    function(workers, lib_path, bin_path, logs_path, deps, BPPARAM = NULL)
+    function(workers, 
+             lib_path, bin_path, logs_path, 
+             deps, BPPARAM = NULL)
 {
     stopifnot(
         is.integer(workers),
         .is_scalar_character(lib_path),
         .is_scalar_character(bin_path)
     )
-
+    
+    ## Do we really need to use RedisParam as the default?
+    ## What if there is no Redis server?
+    ## Alternative: SerialParam, SnowParam?
     if (is.null(BPPARAM)) {
+        ## RedisParam::rpalive()
         BPPARAM <- RedisParam(
             workers = workers, jobname = "binarybuild",
             is.worker = FALSE,
             progressbar = TRUE, stop.on.error = FALSE
         )
     }
+    bpstopOnError(BPPARAM) <- FALSE
 
     ## testing
-    workers <- 10L
-    BPTESTPARAM <- BiocParallel::SnowParam(workers)                     
+    # workers <- 10L
+    # BPTESTPARAM <- BiocParallel::SnowParam(workers)                     
     
     ## Logging
     log_file <- file.path(logs_path, 'kube_install.log')
@@ -201,16 +207,10 @@ kube_install <-
         name = "kube_install"
     )
 
-    ## Testing
-    l <- c(l, list('rawrr' = NULL))
-    
     iter <- dependency_graph_iterator_factory(
-        l,
+        deps,
         kube_install_single_package
     )
-
-    if (!is.null(BPPARAM))
-        bpstopOnError(BPPARAM) <- FALSE
 
     ## Start RedisParam
     bpstart(BPPARAM)
@@ -220,18 +220,18 @@ kube_install <-
         lib_path = lib_path,
         bin_path = bin_path,
         logs_path = logs_path,
-        REDUCE = iter$REDUCE, init = character(),
-        BPPARAM = BPTESTPARAM
+        REDUCE = iter$REDUCE, init = logical(),
+        BPPARAM = BPPARAM
     )
 
     ## Stop RedisParam - This should stop all work on workers
-    bpstopall(BPPARAM)
+    if (is(BPPARAM, "RedisParam"))
+        bpstopall(BPPARAM)
 
     flog.info(
-        "%d built, %d failed, %d excluded [kube_install)]",
-        sum(result, na.rm = TRUE),
-        sum(!result, na.rm = TRUE),
-        sum(is.na(result)),
+        "%d built, %d failed, ? excluded [kube_install)]",
+        length(deps),
+        length(result),
         name = "kube_install"
     )
 

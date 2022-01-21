@@ -97,21 +97,32 @@
     result
 }
 
+fun_factory <- function(FUN, pkg) {
+    function(pkg, ...) {
+        if (identical(pkg, ".WAITING")) {
+            Sys.sleep(1)
+            list(pkg = pkg, status = "success")
+        } else {
+            value <- FUN(pkg, ...)
+            if (is(value, "error")) {
+                list(pkg = pkg, 
+                     status = conditionMessage(value))
+            } else {
+                list(pkg = pkg, status = "success")
+            }
+        }
+    }
+}
+
+
 
 dependency_graph_iterator_factory <-
-  function(deps, FUN = identity)
+  function(deps, FUN)
   {
 
     force(FUN)
       
-    FUN_ <- function(pkg, ...) {
-        if (identical(pkg, ".WAITING")) {
-            Sys.sleep(1)
-            pkg
-        } else {
-            FUN(pkg, ...)
-        }
-    }
+    FUN_ <- fun_factory(FUN, pkg)
     
     ## fast and robust reverse dependencies calculation -- includes
     ## packages with zero reverse dependencies; 0.05s versus 1.85s for
@@ -164,17 +175,24 @@ dependency_graph_iterator_factory <-
     }
     
     reduce <- function(x, y) {
-      if (identical(y, ".WAITING")) {
+      pkg <- y$pkg
+      status <- y$status
+      if (identical(pkg, ".WAITING")) {
         ## no-op
-        x
+        return(x)
+      } 
+      ##OBOB remove 'pkg' from 'working' queue
+      rm(list = pkg, envir = working)
+      ## decrement numberOfDependencies for pkg and all reverse dependencies
+      i <- c(pkg, reverseDependencies[[pkg]])
+      numberOfDependencies[i] <<- numberOfDependencies[i] - 1L
+      ## return the status of the pkg when failed
+      if (!identical(status, "success")) {
+          msg <- list(status)
+          names(msg) <- pkg
+          c(x, msg)
       } else {
-        ##OBOB remove 'y' from 'working' queue
-        rm(list = y, envir = working)
-        ## decrement numberOfDependencies for y and all reverse dependencies
-        i <- c(y, reverseDependencies[[y]])
-        numberOfDependencies[i] <<- numberOfDependencies[i] - 1L
-        ## return value
-        c(x, y)
+          x
       }
     }
     
