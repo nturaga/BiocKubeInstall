@@ -59,6 +59,7 @@ kube_install_single_package <-
         error = function(e) {
             flog.error("Error: package %s failed", pkg, name = "kube_install")
             print(conditionMessage(e))
+            e
         }
     )
 }
@@ -213,8 +214,9 @@ kube_install <-
     ## TRUE is success, FALSE is fail
     ## TODO: try to log exluded packages like canceR, and ChemmineOB
     flog.info(
-        "%d built, %d failed",
+        "%d built, %d succeeded, %d failed",
         length(deps),
+        length(deps) - length(result),
         length(result),
         name = "kube_install"
     )
