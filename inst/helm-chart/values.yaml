@@ -29,7 +29,6 @@ gcpPdName: "manual-pd"
 serviceKey: bioc-binaries.json
 
 # RStudio access
-rstudioPort: 30001            # Port for user connection; must be >= 30000
 rstudioPassword: bioc         # RStudio password on manager
 
 #
@@ -51,3 +50,6 @@ redis:
   redisImage: redis
   redisImageTag: '5.0'
   containerPort: 6379
+
+# Inject an `sh` prequel command to run before `RScript -e BiocKubeInstall::kube_run`
+extraManagerCommands: ""

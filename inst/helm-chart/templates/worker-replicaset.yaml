@@ -20,11 +20,11 @@ spec:
         imagePullPolicy: {{ .Values.pullPolicy }}
         resources:
           requests:
-            memory: 2Gi
-            cpu: 500m
+            memory: 500Mi
+            cpu: 300m
           limits:
-            memory: 3Gi
-            cpu: 1
+            memory: 1500Mi
+            cpu: 800m
         volumeMounts:
          - mountPath: {{ .Values.volumeMountPath }}
            name: {{ .Values.volumeMountName }}
@@ -33,4 +33,4 @@ spec:
       volumes:
       - name: {{ .Values.volumeMountName }}
         persistentVolumeClaim:
-          claimName: nfs
+          claimName: {{.Release.Namespace}}-nfs
