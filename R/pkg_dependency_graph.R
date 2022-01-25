@@ -146,7 +146,7 @@ NULL
     names(rdepsdf) <- c("n_rev_deps", "Package")
     
     revdep_times <- merge(timesdf, rdepsdf)
-    arrange(revdep_times, -n_rev_deps, install_time_sec)
+    revdep_times[with(revdep_times, order(-n_rev_deps, install_time_sec)), ]
 }
 
 .pkg_dependencies <-
