@@ -253,12 +253,14 @@ kube_install <-
 #'
 #' @export
 kube_run <-
-    function(version, image_name, workers, depth0 = FALSE,
+    function(version, image_name, workers,
+             build = c("_software", "_update", "_timings"), depth0 = FALSE,
              volume_mount_path = '/host/',
              cloud_id = c("local", "google", "azure"),
              exclude_pkgs = c('canceR','flowWorkspace',
                               'gpuMagic', 'ChemmineOB'), dry.run = TRUE)
 {
+    build <- match.arg(build)
     workers <- as.integer(workers)
     artifacts <- .get_artifact_paths(version, volume_mount_path)
     cloud_id <- match.arg(cloud_id)
@@ -286,7 +288,7 @@ kube_run <-
 
     ## Step. 2 : Load deps and installed packages
     deps <- BiocKubeInstall::pkg_dependencies(version,
-                                              build = "_software",
+                                              build = build,
                                               binary_repo = repos$binary,
                                               exclude = exclude_pkgs)
     if (depth0)
