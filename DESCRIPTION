@@ -2,10 +2,10 @@ Package: BiocKubeInstall
 Title: Build R / Bioconductor package binaries using Kubernetes on a cloud service
 Version: 0.99.2
 Authors@R:
-    person(given = "Nitesh",
-	   family = "Turaga",
-	   role = c("cre"),
-	   email = "nturaga.bioc@gmail.com")
+    c(person(given = "Nitesh", family = "Turaga",
+	     role = c("aut", "cre"), email = "nturaga.bioc@gmail.com"),
+      person("Martin", "Morgan", role = "aut"),
+      person("Alex", "Mahmoud", role = "aut"))
 Description: Build binaries for packages in R / Bioconductor using a
 	     Kubernetes Cluster. The package is internal to
 	     Bioconductor, and is used to create binaries for Docker
@@ -27,7 +27,7 @@ Imports:
     futile.logger,
     redux,
     methods
-Remotes: nturaga/RedisParam@lua
+Remotes: Jiefei-Wang/RedisParam@revamping
 LazyData: true
 VignetteBuilder: knitr
 biocViews: Infrastructure

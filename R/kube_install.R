@@ -195,7 +195,7 @@ kube_install <-
     )
 
     ## Iterator function
-    iter <- dependency_graph_iterator_factory(
+    iter <- .dependency_graph_iterator_factory(
         deps,
         kube_install_single_package
     )
@@ -233,7 +233,7 @@ kube_install <-
 #'
 #' @description Run binary installation on k8s cluster
 #'
-#' @param version character(), bioconductor version number, e.g 3.12
+#' @param bioc_version character(), bioconductor bioc_version number, e.g 3.12
 #'     or 3.13
 #'
 #' @param image_name character(), name of the image for which binaries
@@ -249,7 +249,7 @@ kube_install <-
 #' @examples
 #' \dontrun{
 #'
-#' kube_run(version = '3.13',
+#' kube_run(bioc_version = '3.13',
 #'          image_name = 'bioconductor_docker',
 #'          workers = '10', volume_moun_path = '/host/')
 #'
@@ -257,12 +257,13 @@ kube_install <-
 #'
 #' @export
 kube_run <-
-    function(version, image_name,
+    function(bioc_version, image_name,
              workers, volume_mount_path = '/host/')
 {
     workers <- as.integer(workers)
-    artifacts <- .get_artifact_paths(version, volume_mount_path)
-    repos <- .repos(version, image_name, cloud_id = 'google')
+    artifacts <- .get_artifact_paths(bioc_version, volume_mount_path)
+    repos <- .repos(version = bioc_version,
+                    image_name, cloud_id = 'google')
 
     Sys.setenv(REDIS_HOST = Sys.getenv("REDIS_SERVICE_HOST"))
     Sys.setenv(REDIS_PORT = Sys.getenv("REDIS_SERVICE_PORT"))
@@ -274,8 +275,8 @@ kube_run <-
     ## Step 0: Create a bucket if you need to
     ## PAIN POINT 1: Creation of new buckets
     ## Do it via github actions
-    gcloud_create_cran_bucket(bucket = image_name,
-                              bioc_version = version,
+    gcloud_create_cran_bucket(folder = image_name,
+                              bioc_version = bioc_version,
                               secret = secret, public = TRUE)
 
     ## Step 1:  Wait till all the worker pods are up and running
@@ -283,7 +284,7 @@ kube_run <-
     BiocKubeInstall::kube_wait(workers = workers)
 
     ## Step. 2 : Load deps and installed packages
-    deps <- BiocKubeInstall::pkg_dependencies(version,
+    deps <- BiocKubeInstall::pkg_dependencies(bioc_version,
                                               build = "_software",
                                               binary_repo = repos$binary,
                                               exclude = exclude_pkgs)

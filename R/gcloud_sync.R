@@ -123,14 +123,15 @@
 #'
 #' @export
 gcloud_create_cran_bucket <-
-    function(bucket,
-             bioc_version = as.character(BiocManager::version()),
-             secret, public = TRUE)
+    function(folder,
+             bioc_version,
+             secret, public = TRUE,
+             bucket = 'bioconductor-packages')
 {
     if (!grepl("^gs://", bucket)) {
         bucket <- paste0("gs://", bucket)
     }
-
+    browser()
     ## Validity checks
     stopifnot(.gsutil_is_uri(bucket), .is_scalar_logical(public),
               .is_scalar_character(secret), file.exists(secret))
@@ -144,13 +145,14 @@ gcloud_create_cran_bucket <-
     }
 
     ## create CRAN style directory structure
-    place_holder <- '.cran_dir'
+    place_holder <- ".cran_dir"
     res <- file.create(place_holder)
+
     if (res) {
         ## destination is CRAN style
         destination <- paste(
-            bucket,'packages', bioc_version, 'bioc',
-            "src/contrib/", place_holder,
+            bucket, bioc_version, "container-binaries", folder,
+            "src/contrib", place_holder,
             sep = "/"
         )
 
