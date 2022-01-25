@@ -1,11 +1,13 @@
 Package: BiocKubeInstall
 Title: Build R / Bioconductor package binaries using Kubernetes on a cloud service
 Version: 0.99.2
-Authors@R:
+Authors@R:c(
     person(given = "Nitesh",
 	   family = "Turaga",
 	   role = c("cre"),
-	   email = "nturaga.bioc@gmail.com")
+	   email = "nturaga.bioc@gmail.com"),
+	person("Jiefei", "Wang", role = "ctb")
+	)
 Description: Build binaries for packages in R / Bioconductor using a
 	     Kubernetes Cluster. The package is internal to
 	     Bioconductor, and is used to create binaries for Docker
