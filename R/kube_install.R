@@ -47,7 +47,10 @@ kube_install_single_package <-
         setwd(cwd)
     })
     if (dry.run) {
-        file.create(paste0("test_", pkg))
+        Sys.sleep(pkg[[install_time_sec]]/1000)
+        filename <- paste0(pkg[["Package"]], "_timing.txt")
+        file.create(filename)
+        writeLines(as.character(Sys.time()), con = file(filename))
     } else {
         suppressMessages(
             BiocManager::install(

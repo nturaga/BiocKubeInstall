@@ -119,6 +119,32 @@ NULL
     )
 
     .exclude(deps, c(.base_packages(), exclude))
+    }
+
+.pkg_dependencies_timings <- function(version, db, exclude_pkgs) {
+# Install times from BBS --------------------------------------------------
+    dev <- BiocPkgTools::biocBuildReport(
+        version = version, stage.timings = TRUE
+    )
+    
+    dev[["elapsed"]] <- as.numeric(
+        vapply(strsplit(dev[["EllapsedTime"]], " "), `[`, character(1L), 1L)
+    )
+    devdf <- with(dev, dev[stage == "install" & node == "merida1", ])
+    times <- devdf[["elapsed"]]
+    names(times) <- devdf[["pkg"]]
+
+# No. of Reverse Dependencies ---------------------------------------------
+    # db <- available.packages(repos = BiocManager::repositories())
+    ldeps <- tools::package_dependencies(
+        names(times), db, reverse=TRUE, recursive = TRUE
+    )
+    revdeps <- lengths(ldeps)
+    rdepsdf <- stack(revdeps)
+    names(rdepsdf) <- c("n_rev_deps", "Package")
+
+    revdep_times <- merge(timesdf, rdepsdf)
+    arrange(revdep_times, -n_rev_deps, install_time_sec)
 }
 
 .pkg_dependencies <-
@@ -173,7 +199,7 @@ NULL
 #'
 #' @export
 pkg_dependencies <-
-    function(version, build = c("_software", "_update"),
+    function(version, build = c("_software", "_update", "_timings"),
         binary_repo = character(), exclude = character(),
         cloud_id = c("local", "google", "azure"))
 {
@@ -207,6 +233,8 @@ pkg_dependencies <-
         deps <- .pkg_dependencies_software(version, db, exclude)
     } else if (identical(build, "_update")) {
         deps <- .pkg_dependencies_update(version, db, binary_repo_url)
+    } else if (identical(build, "_timings")) {
+        deps <- .pkg_dependencies_timings(version, db, exclude) 
     } else {
         ## FIXME: support building arbitrary vector of packages?
         deps <- .pkg_dependencies(version, db, binary_repo_url, build)
