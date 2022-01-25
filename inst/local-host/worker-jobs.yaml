@@ -16,7 +16,7 @@ spec:
     spec:
       containers:
       - name: worker
-        image: mr148/bioc-redis:RELEASE_3_14
+        image: mr148/bioc-redis:RELEASE_3_15
         imagePullPolicy: Always
         resources:
           requests:

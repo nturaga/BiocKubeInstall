@@ -1,4 +1,4 @@
-FROM bioconductor/bioconductor_docker:RELEASE_3_14
+FROM bioconductor/bioconductor_docker:devel
 
 RUN apt-get update && \
 	apt-get install -y --no-install-recommends libhiredis-dev vim && \

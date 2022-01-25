@@ -133,6 +133,8 @@ NULL
     devdf <- with(dev, dev[stage == "install" & node == "merida1", ])
     times <- devdf[["elapsed"]]
     names(times) <- devdf[["pkg"]]
+    timesdf <- stack(times)
+    names(timesdf) <- c("install_time_sec", "Package")
 
 # No. of Reverse Dependencies ---------------------------------------------
     # db <- available.packages(repos = BiocManager::repositories())
@@ -142,7 +144,7 @@ NULL
     revdeps <- lengths(ldeps)
     rdepsdf <- stack(revdeps)
     names(rdepsdf) <- c("n_rev_deps", "Package")
-
+    
     revdep_times <- merge(timesdf, rdepsdf)
     arrange(revdep_times, -n_rev_deps, install_time_sec)
 }
