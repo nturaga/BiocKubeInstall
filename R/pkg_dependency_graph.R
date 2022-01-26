@@ -122,6 +122,38 @@ NULL
     }
 
 .pkg_dependencies_timings <- function(version, db, exclude_pkgs) {
+    contrib_url <- contrib.url(.worker_repositories(version)[["BioCsoft"]])
+    idx <- db[, "Repository"] == contrib_url
+    software_pkgs <- rownames(db)[idx]
+    flog.info(
+        '%d software packages available',
+        length(software_pkgs),
+        name = "kube_install"
+    )
+
+    ## The following exluded packages don't build on
+    ## bioconductor_docker set of images
+    names(exclude_pkgs) <- exclude_pkgs
+    if (length(exclude_pkgs)) {
+        flog.info(
+            '%s software packages manually excluded',
+            paste(exclude_pkgs, collapse = ", ")
+        )
+    }
+
+    ## all software packages
+    deps0 <- package_dependencies(software_pkgs, db, recursive = TRUE)
+
+    ## FULL dependency graph of non-software dependencies
+    other <- setdiff(unlist(deps0, use.names = FALSE), names(deps0))
+    deps1 <- package_dependencies(other, db, recursive = TRUE)
+
+    deps <- c(deps0, deps1)
+    ## exclude base
+    exclude_base <- .exclude(deps, .base_packages())
+
+    ## exclude manually from the argument 'exclude_pkgs'
+    deps <- .exclude(exclude_base, exclude_pkgs)
 # Install times from BBS --------------------------------------------------
     dev <- BiocPkgTools::biocBuildReport(
         version = version, stage.timings = TRUE
@@ -146,7 +178,12 @@ NULL
     names(rdepsdf) <- c("n_rev_deps", "Package")
     
     revdep_times <- merge(timesdf, rdepsdf)
-    revdep_times[with(revdep_times, order(-n_rev_deps, install_time_sec)), ]
+    revdep_times <- revdep_times[with(revdep_times, order(-n_rev_deps, install_time_sec)), ]
+    ## NA values get dropped 
+    ndeps <- deps[match(revdep_times[["Package"]], names(deps))]
+    crans <- deps[setdiff(names(deps), names(ndeps))]
+    crans <- crans[names(sort(lengths(crans)))]
+    c(ndeps, crans)
 }
 
 .pkg_dependencies <-
