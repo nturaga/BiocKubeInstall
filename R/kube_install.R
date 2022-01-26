@@ -47,7 +47,7 @@ kube_install_single_package <-
         setwd(cwd)
     })
     if (dry.run) {
-        filename <- paste0(pkg[["Package"]], "_timing.txt")
+        filename <- paste0(pkg, "_timing.txt")
         file.create(filename)
     } else {
         suppressMessages(
