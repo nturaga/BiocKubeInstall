@@ -5,13 +5,9 @@
 \title{Install and create binaries for packages parallely using a
 kubernetes cluster.}
 \usage{
-kube_install(workers, lib_path, bin_path, logs_path, deps, BPPARAM = NULL)
+kube_install(lib_path, bin_path, logs_path, deps, BPPARAM = NULL)
 }
 \arguments{
-\item{workers}{numeric() number of workers in the kubernetes
-cluster. It should match the `replicas` argument in the
-k8sredis worker-replicaset.yaml file.}
-
 \item{lib_path}{character() path where R package libraries are
 stored.}
 
@@ -31,7 +27,7 @@ kubernetes.}
 }
 \description{
 Install packages and create binaries using a
-    kubernetes cluster for a specific bioconductor docker
+    BiocParallelParam for a specific bioconductor docker
     image. The kube_install function can be scaled to a large
     cluster to reduce times even further (in theory). Please note
     that this command will charge your google billing account,
@@ -46,7 +42,6 @@ Install packages and create binaries using a
 binary_repo <- "anvil-rstudio-bioconductor/0.99/3.11/"
 deps <- pkg_dependencies(binary_repo = binary_repo)
 kube_install(
-    workers = 6L,
     lib_path = "/host/library",
     bin_path = "/host/binaries",
     deps = deps

@@ -131,7 +131,6 @@ gcloud_create_cran_bucket <-
     if (!grepl("^gs://", bucket)) {
         bucket <- paste0("gs://", bucket)
     }
-    browser()
     ## Validity checks
     stopifnot(.gsutil_is_uri(bucket), .is_scalar_logical(public),
               .is_scalar_character(secret), file.exists(secret))

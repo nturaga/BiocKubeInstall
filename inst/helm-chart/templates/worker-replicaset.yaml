@@ -21,10 +21,10 @@ spec:
         resources:
           requests:
             memory: 500Mi
-            cpu: 300m
+            cpu: 500m
           limits:
-            memory: 1500Mi
-            cpu: 800m
+            memory: 2Gi
+            cpu: 1500m
         volumeMounts:
          - mountPath: {{ .Values.volumeMountPath }}
            name: {{ .Values.volumeMountName }}

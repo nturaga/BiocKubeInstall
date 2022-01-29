@@ -1,3 +1,52 @@
+.include <-
+    function(X, include)
+{
+    all <- unique(c(names(X), unlist(X, use.names = FALSE)))
+    n0 <- length(all)
+
+    implicit <- intersect(include, all)
+    ## X[i] depends on include...
+    idx <- unlist(Map(
+        function(x, table) any(x %in% table),
+        X,
+        MoreArgs = list(table = implicit)
+    ))
+
+    ## or X _is_ include
+    X0 <- X[idx]
+    X <- X[idx | names(X) %in% c(names(X0), unlist(X0, use.names = FALSE))]
+
+    flog.info(
+        "%d of %d packages included",
+        length(implicit), n0,
+        name = "kube_install"
+    )
+
+    X
+}
+
+.exclude <-
+    function(X, exclude)
+{
+    all <- unique(c(names(X), unlist(X, use.names = FALSE)))
+    n0 <- length(all)
+
+    implicit <- intersect(exclude, all)
+    ## remove from deps
+    X <- X[!names(X) %in% implicit]
+    ## remove satisfied dependencies
+    X <- Map(setdiff, X, MoreArgs = list(y = implicit))
+
+    flog.info(
+        "%d of %d packages excluded",
+        length(implicit), n0,
+        name = "kube_install"
+    )
+
+    X
+}
+
+
 .fun_factory <- function(FUN, pkg) {
     function(pkg, ...) {
         if (identical(pkg, ".WAITING")) {

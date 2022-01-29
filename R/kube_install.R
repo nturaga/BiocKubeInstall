@@ -53,7 +53,8 @@ kube_install_single_package <-
                              update = FALSE,
                              quiet = TRUE,
                              force = TRUE,
-                             keep_outputs = TRUE
+                             ## TODO: a successful install output isn't useful
+                             keep_outputs = TRUE ## saves successful run
                          )
         ),
         error = function(e) {
@@ -107,15 +108,11 @@ kube_wait <-
 #' kubernetes cluster.
 #'
 #' @description Install packages and create binaries using a
-#'     kubernetes cluster for a specific bioconductor docker
+#'     BiocParallelParam for a specific bioconductor docker
 #'     image. The kube_install function can be scaled to a large
 #'     cluster to reduce times even further (in theory). Please note
 #'     that this command will charge your google billing account,
 #'     beware of the charges.
-#'
-#' @param workers numeric() number of workers in the kubernetes
-#'     cluster. It should match the `replicas` argument in the
-#'     k8sredis worker-replicaset.yaml file.
 #'
 #' @param lib_path character() path where R package libraries are
 #'     stored.
@@ -135,7 +132,7 @@ kube_wait <-
 #'     kubernetes.
 #'
 #' @importFrom RedisParam RedisParam
-#' @importFrom BiocParallel bplapply bptry bpok
+#' @importFrom BiocParallel bpiterate
 #' @importFrom futile.logger flog.error flog.info flog.appender
 #'     appender.file appender.tee
 #'
@@ -148,7 +145,6 @@ kube_wait <-
 #' binary_repo <- "anvil-rstudio-bioconductor/0.99/3.11/"
 #' deps <- pkg_dependencies(binary_repo = binary_repo)
 #' kube_install(
-#'     workers = 6L,
 #'     lib_path = "/host/library",
 #'     bin_path = "/host/binaries",
 #'     deps = deps
@@ -239,55 +235,50 @@ kube_install <-
 #' @param image_name character(), name of the image for which binaries
 #'     are being built
 #'
-#' @param workers integer(), number of workers pods in the
-#'     k8s cluster
-#'
 #' @param volume_mount_path character(), path to volume mount
 #'
 #' @param exclude_pkgs character(), list of packages to exclude
 #'
+#' @importFrom RedisParam RedisParam bpstopall
 #' @examples
 #' \dontrun{
 #'
-#' kube_run(bioc_version = '3.13',
+#' kube_run(bioc_version = '3.14',
 #'          image_name = 'bioconductor_docker',
-#'          workers = '10', volume_moun_path = '/host/')
-#'
+#'          volume_mount_path = '/host/',
+#'          exclude_pkgs = c('canceR'))
 #' }
 #'
 #' @export
 kube_run <-
     function(bioc_version, image_name,
-             workers, volume_mount_path = '/host/')
+             volume_mount_path = '/host/',
+             exclude_pkgs = character())
 {
-    workers <- as.integer(workers)
     artifacts <- .get_artifact_paths(bioc_version, volume_mount_path)
-    repos <- .repos(version = bioc_version,
-                    image_name, cloud_id = 'google')
-
+    repos <- .repos(bioc_version,image_name, cloud_id = 'google')
+    
     Sys.setenv(REDIS_HOST = Sys.getenv("REDIS_SERVICE_HOST"))
     Sys.setenv(REDIS_PORT = Sys.getenv("REDIS_SERVICE_PORT"))
 
     ## Secret key to access bucket on google
-    ## PAIN point 3: Also not needed
+    ## PAIN point 1: Also not needed
     secret <- "/home/key.json"
 
     ## Step 0: Create a bucket if you need to
-    ## PAIN POINT 1: Creation of new buckets
+    ## PAIN POINT 2: Creation of new buckets
     ## Do it via github actions
     gcloud_create_cran_bucket(folder = image_name,
                               bioc_version = bioc_version,
                               secret = secret, public = TRUE)
 
-    ## Step 1:  Wait till all the worker pods are up and running
-    ## TODO: JW will fix in branch --> Jiefei-Wang/RedisParam@revamping
-    BiocKubeInstall::kube_wait(workers = workers)
-
     ## Step. 2 : Load deps and installed packages
-    deps <- BiocKubeInstall::pkg_dependencies(bioc_version,
-                                              build = "_software",
-                                              binary_repo = repos$binary,
-                                              exclude = exclude_pkgs)
+    ## remove exclude packages
+    deps <- pkg_dependencies(
+                bioc_version, build = "_software",
+                binary_repo = repos$binary,
+                exclude = exclude_pkgs
+    )
 
     ## Step 3: Run kube_install so package binaries are built
     BPPARAM <- RedisParam(
@@ -295,18 +286,18 @@ kube_run <-
         progressbar = TRUE, stop.on.error = FALSE
     )
 
-    res <- BiocKubeInstall::kube_install(
-                                lib_path = artifacts$lib_path,
-                                bin_path = artifacts$bin_path,
-                                logs_path = artifacts$logs_path,
-                                deps = deps,
-                                BPPARAM = BPPARAM
-                            )
+    res <- kube_install(
+                lib_path = artifacts$lib_path, 
+                bin_path = artifacts$bin_path,
+                logs_path = artifacts$logs_path,
+                deps = deps, BPPARAM = BPPARAM
+    )
+
     ## Stop RedisParam - This should stop all work on workers
     bpstopall(BPPARAM)
 
     ##  Step 4: Sync all artifacts produced, binaries, logs
-    ## Pain point 2: kubernetes
+    ## PAIN POINT 3: Remove from this function - all sync goes to Github actions
     BiocKubeInstall::cloud_sync_artifacts(
         secret = secret,
         artifacts = artifacts,
