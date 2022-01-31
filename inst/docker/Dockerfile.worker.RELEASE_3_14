@@ -1,3 +1,4 @@
+ARG RELEASE=RELEASE_3_14
 FROM bioconductor/bioconductor_docker:$RELEASE
 
 RUN apt-get update && \
@@ -5,6 +6,6 @@ RUN apt-get update && \
         rm -rf /var/lib/apt/lists/*
 
 RUN R -e 'BiocManager::install("Bioconductor/BiocKubeInstall")'
-RUN R -e 'BiocManager::install("Biocononductor/BiocParallel")'
+RUN R -e 'BiocManager::install("Bioconductor/BiocParallel")'
 
 COPY worker.R /home/docker/
