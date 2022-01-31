@@ -87,7 +87,7 @@ jobs:
 
     - name: Deploy bioc release helm chart
       run: |
-        helm install biock8sredis -n $DEVEL_NAMESPACE --set workerPoolSize=40 \
+        helm install biock8sredis -n $DEVEL_NAMESPACE --set workerPoolSize=50 \
           --timeout 600s \
           --set biocVersion="${DEVEL_MAJOR_VER}.${DEVEL_MINOR_VER}" \
           --set workerImageTag="RELEASE_${DEVEL_MAJOR_VER}_${DEVEL_MINOR_VER}" \
@@ -139,7 +139,7 @@ jobs:
 
     - name: Deploy bioc release helm chart
       run: |
-        helm install biock8sredis -n $RELEA_NAMESPACE --set workerPoolSize=40 \
+        helm install biock8sredis -n $RELEA_NAMESPACE --set workerPoolSize=50 \
           --timeout 600s \
           --set managerImage="almahmoud/bioc-manager" \
           --set managerImageTag="RELEASE_${RELEA_MAJOR_VER}_${RELEA_MINOR_VER}" \
