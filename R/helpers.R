@@ -40,7 +40,10 @@
         opt <- Sys.getenv("BIOCONDUCTOR_BINARY_REPOSITORY",
             Sys.getenv("R_PKG_CACHE_DIR"))
         opt <- getOption("BIOCONDUCTOR_BINARY_REPOSITORY", opt)
-        bucket <- opt
+        if (!nzchar(opt))
+            bucket <- "/host/"
+        else 
+            bucket <- opt
     }
 
     if (cloud == "google") {

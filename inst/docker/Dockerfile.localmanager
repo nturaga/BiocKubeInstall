@@ -5,6 +5,7 @@ RUN apt-get update && \
 	rm -rf /var/lib/apt/lists/*
 
 RUN R -e 'BiocManager::install("Bioconductor/BiocKubeInstall", ref = "local")'
+RUN R -e 'BiocManager::install("Bioconductor/BiocParallel")'
 
 COPY manager_demo.R /home/rstudio/manager_demo.R
 COPY 01-Renviron /etc/cont-init.d/01-Renviron

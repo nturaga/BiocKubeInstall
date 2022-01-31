@@ -5,6 +5,6 @@ RUN apt-get update && \
         rm -rf /var/lib/apt/lists/*
 
 RUN R -e 'BiocManager::install("Bioconductor/BiocKubeInstall", ref = "local")'
-RUN R -e 'BiocManager::install("Biocononductor/BiocParallel")'
+RUN R -e 'BiocManager::install("Bioconductor/BiocParallel")'
 
 COPY worker.R /home/docker/
