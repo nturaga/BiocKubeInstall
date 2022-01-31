@@ -14,7 +14,7 @@ spec:
 apiVersion: v1
 kind: PersistentVolume
 metadata:
-  name: nfs-pv-provisioning-demo
+  name: {{.Release.Namespace}}-nfs-pv-provisioning-demo
   labels:
     demo: nfs-pv-provisioning
 spec:

@@ -9,7 +9,7 @@
     if (!file.exists(artifact_path)) {
         dir.create(artifact_path, recursive = TRUE)
         flog.info(
-            'created path: %s', artifact_path,
+            "created path: %s", artifact_path,
             name = "kube_install"
         )
     }
@@ -36,18 +36,21 @@
     cloud <- match.arg(cloud_id)
 
     if (cloud == "google") {
-        image_name <- paste0('gs://', image_name)
+        bucket <- paste0("gs://", "bioconductor-packages/")
     }
 
     if (cloud == "azure") {
-        image_name <- 'https://bioconductordocker.blob.core.windows.net'
+        bucket <- "https://bioconductordocker.blob.core.windows.net/"
     }
 
     ## 'binary_repo' is where the existing binaries are located.
     ## 'cran_bucket' is where packages are uploaded on a google bucket
-    binary_repo <- paste0(image_name, "/packages/", version, "/bioc/")
-    cran_repo <- paste0(binary_repo, "src/contrib/")
-    logs_repo <- paste0(binary_repo, "src/package_logs/")
+    binary_repo <- paste0(
+        bucket,
+        version, "/container-binaries/", image_name
+    )
+    cran_repo <- paste0(binary_repo, "/src/contrib/")
+    logs_repo <- paste0(binary_repo, "/src/package_logs/")
 
     list(cran = cran_repo, binary = binary_repo, logs = logs_repo)
 }
@@ -57,6 +60,7 @@
     function(artifacts)
 {
     src <- list.files(artifacts$bin_path, full.names = TRUE, pattern = ".out$")
-    dest <- paste0(artifacts$logs_path,'/', basename(src))
+    dest <- paste0(artifacts$logs_path, "/", basename(src))
+
     file.rename(src, dest)
 }

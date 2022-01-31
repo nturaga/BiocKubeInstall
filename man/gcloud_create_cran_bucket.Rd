@@ -5,16 +5,14 @@
 \title{Create a CRAN style google bucket with appropriate ACL}
 \usage{
 gcloud_create_cran_bucket(
-  bucket,
-  bioc_version = as.character(BiocManager::version()),
+  folder,
+  bioc_version,
   secret,
-  public = TRUE
+  public = TRUE,
+  bucket = "bioconductor-packages"
 )
 }
 \arguments{
-\item{bucket}{character(1) bucket name for the google storage
-bucket.}
-
 \item{bioc_version}{character(1) version number for Bioconductor,
 defaults to `BiocManager::version()`.}
 
@@ -24,6 +22,9 @@ for the service account.}
 \item{public}{logical(1) if the bucket should be publicly
 accessible. Defauly is TRUE, if FALSE the bucket is made
 private.}
+
+\item{bucket}{character(1) bucket name for the google storage
+bucket.}
 }
 \value{
 `gcloud_create_cran_bucket()` returns a character vector of

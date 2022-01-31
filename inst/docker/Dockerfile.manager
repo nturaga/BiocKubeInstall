@@ -23,6 +23,7 @@ RUN curl -sL https://aka.ms/InstallAzureCLIDeb | sudo bash \
     && rm -rf /tmp/azcopy.tar.gz /tmp/azcopy_linux_amd64*
 
 RUN R -e 'BiocManager::install("Bioconductor/BiocKubeInstall")'
+RUN R -e 'BiocManager::install("Bioconductor/BiocParallel")'
 
 COPY manager_demo.R /home/rstudio/manager_demo.R
 COPY 01-Renviron /etc/cont-init.d/01-Renviron

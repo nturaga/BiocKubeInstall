@@ -20,17 +20,22 @@ spec:
         imagePullPolicy: {{ .Values.pullPolicy }}
         resources:
           requests:
-            memory: 2Gi
+            memory: 500Mi
             cpu: 500m
           limits:
-            memory: 3Gi
-            cpu: 1
+            memory: 2Gi
+            cpu: 1500m
         volumeMounts:
          - mountPath: {{ .Values.volumeMountPath }}
            name: {{ .Values.volumeMountName }}
-        command: ["R"]
-        args: ["-f", "/home/docker/worker.R"]
+        command: ["sh"]
+        args:
+        - -c
+        - {{ if .Values.extraWorkerCommands -}}
+          {{- tpl .Values.extraWorkerCommands $ }};
+          {{- end -}}
+          R -f /home/docker/worker.R
       volumes:
       - name: {{ .Values.volumeMountName }}
         persistentVolumeClaim:
-          claimName: nfs
+          claimName: {{.Release.Namespace}}-nfs
