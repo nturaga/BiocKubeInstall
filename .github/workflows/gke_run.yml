@@ -146,7 +146,6 @@ jobs:
           --set biocVersion="${RELEA_MAJOR_VER}.${RELEA_MINOR_VER}" \
           --set workerImageTag="RELEASE_${RELEA_MAJOR_VER}_${RELEA_MINOR_VER}" \
           --set volumeMountSize=$GCP_PD_SIZE \
-          --set extraManagerCommands="Rscript -e 'BiocManager::install(\"BiocParallel\"\, ref = \"RELEASE_3_14\"\, force = TRUE)'" \
           --set gcpPdName="biockubeinstall-nfs-pd-${{needs.clusterlaunch.outputs.prefix}}-release" inst/helm-chart --wait
 
     - name: check
