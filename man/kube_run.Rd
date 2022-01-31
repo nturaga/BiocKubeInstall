@@ -7,11 +7,12 @@
 kube_run(
   bioc_version,
   image_name,
-  depth0 = FALSE,
   volume_mount_path = "/host/",
   cloud_id = c("local", "google", "azure"),
-  exclude_pkgs = character(),
-  dry.run = TRUE
+  build = c("_software", "_update", "_timings"),
+  depth0 = FALSE,
+  dry.run = TRUE,
+  exclude_pkgs = character()
 )
 }
 \arguments{
@@ -23,10 +24,13 @@ are being built}
 
 \item{volume_mount_path}{character(), path to volume mount}
 
-\item{exclude_pkgs}{character(), list of packages to exclude}
+\item{depth0}{logical(1), whether to test only the first layer of packages
+with zero dependencies}
 
 \item{dry.run}{logical(1), whether to generate a test run with artificial
 artifacts rather than binaries; should be used with \code{cloud_id = "local"}}
+
+\item{exclude_pkgs}{character(), list of packages to exclude}
 }
 \description{
 Run binary installation on k8s cluster

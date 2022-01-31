@@ -245,6 +245,9 @@ kube_install <-
 #'
 #' @param exclude_pkgs character(), list of packages to exclude
 #'
+#' @param depth0 logical(1), whether to test only the first layer of packages
+#'     with zero dependencies
+#'
 #' @param dry.run logical(1), whether to generate a test run with artificial
 #'     artifacts rather than binaries; should be used with `cloud_id = "local"`
 #'
@@ -266,6 +269,7 @@ kube_run <-
              volume_mount_path = '/host/',
              cloud_id = c("local", "google", "azure"),
              build = c("_software", "_update", "_timings"),
+             depth0 = FALSE, dry.run = TRUE,
              exclude_pkgs = character())
 {
     artifacts <- .get_artifact_paths(bioc_version, volume_mount_path)
@@ -278,7 +282,7 @@ kube_run <-
     if (identical(cloud_id, "local")) {
         local_create_cran_repo(
             repo = volume_mount_path, 
-            bioc_version = version
+            bioc_version = bioc_version
         )
     } else if (identical(cloud_id, "google")) {
         ## Secret key to access bucket on google
@@ -300,6 +304,8 @@ kube_run <-
                 exclude = exclude_pkgs
     )
 
+    if (depth0)
+        deps <- deps[lengths(deps) == 0L]
     ## Step 3: Run kube_install so package binaries are built
     BPPARAM <- RedisParam(
         jobname = "binarybuild", is.worker = FALSE,
@@ -310,6 +316,7 @@ kube_run <-
                 lib_path = artifacts$lib_path, 
                 bin_path = artifacts$bin_path,
                 logs_path = artifacts$logs_path,
+                dry.run = dry.run,
                 deps = deps, BPPARAM = BPPARAM
     )
 

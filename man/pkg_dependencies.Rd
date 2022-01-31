@@ -6,7 +6,7 @@
 \usage{
 pkg_dependencies(
   version,
-  build = c("_software", "_update"),
+  build = c("_software", "_update", "_timings"),
   binary_repo = character(),
   exclude = character(),
   cloud_id = c("local", "google", "azure")
