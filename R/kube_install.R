@@ -204,6 +204,7 @@ kube_install <-
 
     result <- bpiterate(
         iter$ITER, iter$FUN,
+        dry.run = dry.run,
         lib_path = lib_path,
         bin_path = bin_path,
         logs_path = logs_path,

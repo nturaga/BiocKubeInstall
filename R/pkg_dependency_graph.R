@@ -119,7 +119,7 @@ NULL
     )
 
     .exclude(deps, c(.base_packages(), exclude))
-    }
+}
 
 .pkg_dependencies_timings <- function(version, db, exclude_pkgs) {
     contrib_url <- contrib.url(.worker_repositories(version)[["BioCsoft"]])
