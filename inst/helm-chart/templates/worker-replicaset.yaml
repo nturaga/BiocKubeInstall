@@ -28,8 +28,13 @@ spec:
         volumeMounts:
          - mountPath: {{ .Values.volumeMountPath }}
            name: {{ .Values.volumeMountName }}
-        command: ["R"]
-        args: ["-f", "/home/docker/worker.R"]
+        command: ["sh"]
+        args:
+        - -c
+        - {{ if .Values.extraWorkerCommands -}}
+          {{- tpl .Values.extraWorkerCommands $ }};
+          {{- end -}}
+          R -f /home/docker/worker.R
       volumes:
       - name: {{ .Values.volumeMountName }}
         persistentVolumeClaim:

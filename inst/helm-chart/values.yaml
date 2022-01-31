@@ -53,3 +53,5 @@ redis:
 
 # Inject an `sh` prequel command to run before `RScript -e BiocKubeInstall::kube_run`
 extraManagerCommands: ""
+# Inject an `sh` prequel command to run before `R -f /home/docker/worker.R`
+extraWorkerCommands: ""
