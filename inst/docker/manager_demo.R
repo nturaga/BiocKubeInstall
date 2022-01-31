@@ -11,9 +11,9 @@ fun <- function(i) {
 }
 
 ## 13 seconds / 5 workers = 3 seconds
-system.time({ 
+system.time({
     res <- bplapply(1:13, fun, BPPARAM = p)
 })
 
 ## each worker slept 2 or 3 times
-table(unlist(res))                
+table(unlist(res))

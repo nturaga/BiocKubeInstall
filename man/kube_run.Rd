@@ -5,25 +5,21 @@
 \title{Run builder on k8s}
 \usage{
 kube_run(
-  version,
+  bioc_version,
   image_name,
-  workers,
   depth0 = FALSE,
   volume_mount_path = "/host/",
   cloud_id = c("local", "google", "azure"),
-  exclude_pkgs = c("canceR", "flowWorkspace", "gpuMagic", "ChemmineOB"),
+  exclude_pkgs = character(),
   dry.run = TRUE
 )
 }
 \arguments{
-\item{version}{character(), bioconductor version number, e.g 3.12
+\item{bioc_version}{character(), bioconductor bioc_version number, e.g 3.12
 or 3.13}
 
 \item{image_name}{character(), name of the image for which binaries
 are being built}
-
-\item{workers}{integer(), number of workers pods in the
-k8s cluster}
 
 \item{volume_mount_path}{character(), path to volume mount}
 
@@ -38,10 +34,10 @@ Run binary installation on k8s cluster
 \examples{
 \dontrun{
 
-kube_run(version = '3.13',
+kube_run(bioc_version = '3.14',
          image_name = 'bioconductor_docker',
-         workers = '10', volume_mount_path = '/host/')
-
+         volume_mount_path = '/host/',
+         exclude_pkgs = c('canceR'))
 }
 
 }

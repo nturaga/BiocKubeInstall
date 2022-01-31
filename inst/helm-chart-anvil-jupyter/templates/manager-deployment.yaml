@@ -3,16 +3,18 @@ kind: Pod
 metadata:
   name: manager
   labels:
-    app: rstudio
+    app: jupyter
 spec:
+  securityContext:
+    runAsUser: {{ .Values.uid }}
   containers:
     - name: manager
       image: {{ .Values.managerImage }}:{{ .Values.managerImageTag }}
       imagePullPolicy: {{ .Values.pullPolicy }}
       resources:
         requests:
-          memory: 700Mi
-          cpu: 500m
+          memory: 1Gi
+          cpu: 1
         limits:
           memory: 2Gi
           cpu: 1700m
@@ -22,23 +24,13 @@ spec:
         - name: service-key
           mountPath: /home/key.json
           subPath: {{ .Values.serviceKey }}
-      env:
-        - name: PASSWORD
-          value: {{ .Values.rstudioPassword | quote }}
-      ports:
-        - containerPort: 8787
-      command: ["sh"]
-      args:
-        - -c
-        - {{ if .Values.extraManagerCommands -}}
-          {{- tpl .Values.extraManagerCommands $ }};
-          {{- end -}}
-          Rscript -e 'BiocKubeInstall::kube_run("{{ .Values.biocVersion }}", image_name = "{{ .Values.dockerImageName }}")'
+      command: ["Rscript"]
+      args: ["-e", "BiocKubeInstall::kube_run('{{ .Values.biocVersion }}', image_name = '{{ .Values.dockerImageName }}', workers = {{ .Values.workerPoolSize }})"]
   restartPolicy: {{ .Values.restartPolicy | quote}}
   volumes:
   - name: {{ .Values.volumeMountName }}
     persistentVolumeClaim:
-      claimName: {{.Release.Namespace}}-nfs
+      claimName: nfs
   - name: service-key
     secret:
       secretName: bioc-binaries-service-account-auth

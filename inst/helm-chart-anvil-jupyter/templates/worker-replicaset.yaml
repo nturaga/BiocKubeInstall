@@ -14,28 +14,25 @@ spec:
       labels:
         tier: workcluster
     spec:
+      securityContext:
+        runAsUser: {{ .Values.uid }}
       containers:
       - name: worker
         image: {{ .Values.workerImage }}:{{ .Values.workerImageTag }}
         imagePullPolicy: {{ .Values.pullPolicy }}
         resources:
           requests:
-            memory: 500Mi
+            memory: 2Gi
             cpu: 500m
           limits:
-            memory: 2Gi
-            cpu: 1500m
+            memory: 3Gi
+            cpu: 1
         volumeMounts:
          - mountPath: {{ .Values.volumeMountPath }}
            name: {{ .Values.volumeMountName }}
-        command: ["sh"]
-        args:
-        - -c
-        - {{ if .Values.extraWorkerCommands -}}
-          {{- tpl .Values.extraWorkerCommands $ }};
-          {{- end -}}
-          R -f /home/docker/worker.R
+        command: ["R"]
+        args: ["-f", "/home/docker/worker.R"]
       volumes:
       - name: {{ .Values.volumeMountName }}
         persistentVolumeClaim:
-          claimName: {{.Release.Namespace}}-nfs
+          claimName: nfs

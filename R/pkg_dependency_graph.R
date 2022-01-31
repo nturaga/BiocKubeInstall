@@ -291,7 +291,7 @@ pkg_dependencies <-
 #' @importFrom utils installed.packages
 .base_packages <- function() {
     inst <- installed.packages()
-    inst[inst[,"Priority"] %in% "base", "Package"]
+    inst[inst[, "Priority"] %in% "base", "Package"]
 }
 
 #' @keywords internal

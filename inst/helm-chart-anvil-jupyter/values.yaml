@@ -6,7 +6,8 @@
 #
 # clusterNamespace: release
 workerPoolSize: 50              # Number of workers in the cluster
-dockerImageName: 'bioconductor_docker'  # Image name for which binaries are created
+## TODO: this has to change
+dockerImageName: 'anvil-jupyter'  # Image name for which binaries are created
 biocVersion: '3.14'
 workerImageTag: RELEASE_3_14    # Needs to match the biocVersion
 
@@ -15,43 +16,29 @@ managerImage: bioconductor/bioc-redis
 managerImageTag: manager
 
 # Worker image
-workerImage: bioconductor/bioc-redis
+workerImage: bioconductor/bioc-redis-jupyter
+
 
 # Volume mount
 volumeMountName: bioc-nfs-mount
 volumeMountPath: /host
 volumeMountSize: 200Gi
 
-# GCP Pesristent Disk name
-gcpPdName: "manual-pd"
-
 # service key name
 serviceKey: bioc-binaries.json
-
-# RStudio access
-rstudioPassword: bioc         # RStudio password on manager
-
 #
 # internal settings
 #
 
+# This value is set to 0 so that both manager and worker pods enter the image as 'root'
+uid: 0
+
 # image management (manager, worker, redis)
 pullPolicy: Always
 restartPolicy: OnFailure
-
-# internal RStudio-specific config
-rstudio:
-  port: 8787                    # RStudioServer configured to listen here
-  protocol: http
-  type: NodePort
 
 # internal redis-specific config
 redis:
   redisImage: redis
   redisImageTag: '5.0'
   containerPort: 6379
-
-# Inject an `sh` prequel command to run before `RScript -e BiocKubeInstall::kube_run`
-extraManagerCommands: ""
-# Inject an `sh` prequel command to run before `R -f /home/docker/worker.R`
-extraWorkerCommands: ""
