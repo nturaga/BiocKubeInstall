@@ -106,7 +106,7 @@ jobs:
   deployreleasechart:
     name: Deploy release helm chart and wait
     runs-on: ubuntu-latest
-    needs: clusterlaunch,deploydevelchart
+    needs: [clusterlaunch,deploydevelchart]
     steps:
     - name: Checkout
       uses: actions/checkout@v2
