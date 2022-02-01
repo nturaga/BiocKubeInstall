@@ -26,7 +26,7 @@ spec:
         - containerPort: 8787
       command: ["Rscript"]
 #      args: ["-e", "sessionInfo()"]
-      args: ["-e", "BiocKubeInstall::kube_run('3.15', image_name = '/host', build = '_timings', dry.run = TRUE, depth0 = FALSE)"]
+      args: ["-e", "BiocKubeInstall::kube_run('3.15', image_name = 'biconductor_docker', build = '_timings', dry.run = TRUE, depth0 = FALSE)"]
   restartPolicy: OnFailure
   volumes:
     - name: local-provision

@@ -35,7 +35,7 @@
 
     cloud <- match.arg(cloud_id)
 
-    if (identical(cloud_id, "local") && missing(image_name)) {
+    if (identical(cloud_id, "local")) {
         # temporary location for testing
         opt <- Sys.getenv("BIOCONDUCTOR_BINARY_REPOSITORY",
             Sys.getenv("R_PKG_CACHE_DIR"))
