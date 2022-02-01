@@ -7,15 +7,10 @@ metadata:
 spec:
   containers:
     - name: manager
-      image: {{ .Values.managerImage }}:{{ .Values.managerImageTag }}
+      image: {{ .Values.manager.image.repository }}:{{ .Values.manager.image.tag }}
       imagePullPolicy: {{ .Values.pullPolicy }}
       resources:
-        requests:
-          memory: 700Mi
-          cpu: 500m
-        limits:
-          memory: 2Gi
-          cpu: 1700m
+        {{- toYaml .Values.manager.resources | nindent 8 }}
       volumeMounts:
         - name: {{ .Values.volumeMountName }}
           mountPath: {{ .Values.volumeMountPath }}
@@ -30,8 +25,8 @@ spec:
       command: ["sh"]
       args:
         - -c
-        - {{ if .Values.extraManagerCommands -}}
-          {{- tpl .Values.extraManagerCommands $ }};
+        - {{ if .Values.manager.extraCommand -}}
+          {{- tpl .Values.manager.extraCommand $ }};
           {{- end -}}
           Rscript -e 'BiocKubeInstall::kube_run("{{ .Values.biocVersion }}", image_name = "{{ .Values.dockerImageName }}", exclude_pkgs = c("canceR"))'
   restartPolicy: {{ .Values.restartPolicy | quote}}

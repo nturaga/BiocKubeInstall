@@ -5,7 +5,7 @@ metadata:
   labels:
     tier: workcluster
 spec:
-  replicas: {{ .Values.workerPoolSize }}
+  replicas: {{ .Values.workers.poolSize }}
   selector:
     matchLabels:
       tier: workcluster
@@ -16,23 +16,18 @@ spec:
     spec:
       containers:
       - name: worker
-        image: {{ .Values.workerImage }}:{{ .Values.workerImageTag }}
+        image: {{ .Values.workers.image.repository }}:{{ .Values.workers.image.tag }}
         imagePullPolicy: {{ .Values.pullPolicy }}
         resources:
-          requests:
-            memory: 500Mi
-            cpu: 500m
-          limits:
-            memory: 2Gi
-            cpu: 1500m
+          {{- toYaml .Values.workers.resources | nindent 10 }}
         volumeMounts:
          - mountPath: {{ .Values.volumeMountPath }}
            name: {{ .Values.volumeMountName }}
         command: ["sh"]
         args:
         - -c
-        - {{ if .Values.extraWorkerCommands -}}
-          {{- tpl .Values.extraWorkerCommands $ }};
+        - {{ if .Values.workers.extraCommand -}}
+          {{- tpl .Values.workers.extraCommand $ }};
           {{- end -}}
           R -f /home/docker/worker.R
       volumes:

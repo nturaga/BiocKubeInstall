@@ -5,17 +5,39 @@
 # user-oriented configuration
 #
 # clusterNamespace: release
-workerPoolSize: 50              # Number of workers in the cluster
+
 dockerImageName: 'bioconductor_docker'  # Image name for which binaries are created
 biocVersion: '3.14'
-workerImageTag: RELEASE_3_14    # Needs to match the biocVersion
 
-# Manager image
-managerImage: bioconductor/bioc-redis
-managerImageTag: manager
+workers:
+  poolSize: 50              # Number of workers in the cluster
+  image:
+    repository: bioconductor/bioc-redis
+    tag: RELEASE_3_14 # Needs to match the biocVersion
+  # Inject an `sh` prequel command to run before `R -f /home/docker/worker.R`
+  extraCommand: ""
+  resources:
+    requests:
+      memory: 1500Mi
+      cpu: 500m
+    # limits:
+    #   memory: 3500Mi
+    #   cpu: 800m
 
-# Worker image
-workerImage: bioconductor/bioc-redis
+manager:
+  image:
+    repository: bioconductor/bioc-redis
+    tag: manager
+  # Inject an `sh` prequel command to run before `RScript -e BiocKubeInstall::kube_run`
+  extraCommand: ""
+  resources:
+    requests:
+      memory: 700Mi
+      cpu: 500m
+    limits:
+      memory: 2Gi
+      cpu: 1700m
+
 
 # Volume mount
 volumeMountName: bioc-nfs-mount
@@ -50,8 +72,3 @@ redis:
   redisImage: redis
   redisImageTag: '5.0'
   containerPort: 6379
-
-# Inject an `sh` prequel command to run before `RScript -e BiocKubeInstall::kube_run`
-extraManagerCommands: ""
-# Inject an `sh` prequel command to run before `R -f /home/docker/worker.R`
-extraWorkerCommands: ""

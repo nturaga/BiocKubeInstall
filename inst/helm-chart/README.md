@@ -55,18 +55,18 @@ Very useful options to check how the templates are forming,
 
 ### User Settings
 
-The defined user settings in the values.yaml file of the helm chart,
+Any setting in the values.yaml file of the helm chart,
 can be changed in two ways,
 
-1. In the values.yaml file directly, where you can modify the Rstudio
-   login password ``rstudioPassword`` and the number of workers you
-   want to deploy `workerPoolSize`
+1. In the values.yaml file directly, where you can modify, for example,
+   the Rstudio login password ``rstudioPassword`` or the number of 
+   workers you want to deploy `workers.poolSize`
 
-        workerPoolSize: 5             # Number of workers in the cluster
+        workers.poolSize: 5             # Number of workers in the cluster
         ...
         rstudioPassword: bioc         # RStudio password on manager
 
 1. The other way is while deploying the helm chart,
 
         helm install k8s-redis-bioc-example/helm-chart/ \
-            --set rstudioPassword=biocuser,workerPoolSize=10
+            --set rstudioPassword=biocuser,workers.poolSize=10
