@@ -39,13 +39,10 @@ kube_install_single_package <-
 
     flog.info("building binary for package: %s", pkg, name = 'kube_install')
     cwd <- setwd(bin_path)
-    warn_opt <- options(warn = 2)
-    on.exit({
-        options(warn_opt)
-        setwd(cwd)
-    })
-
-    tryCatch(
+    on.exit(setwd(cwd))
+    
+    result <- pkg
+    withCallingHandlers({
         suppressMessages(
             BiocManager::install(
                              pkg,
@@ -54,15 +51,21 @@ kube_install_single_package <-
                              quiet = TRUE,
                              force = TRUE,
                              ## TODO: a successful install output isn't useful
-                             keep_outputs = TRUE ## saves successful run
+                             keep_outputs = TRUE 
                          )
-        ),
+        )
+        },
         error = function(e) {
             flog.error("Error: package %s failed", pkg, name = "kube_install")
             print(conditionMessage(e))
-            e
+            result <<- e
+        },
+        warning = function(e) {
+            result <<- e
+            tryInvokeRestart("muffleWarning")
         }
     )
+    result
 }
 
 
