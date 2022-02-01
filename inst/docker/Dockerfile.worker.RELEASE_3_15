@@ -12,6 +12,6 @@ RUN R -e 'AnVIL::install("Bioconductor/BiocParallel")'
 
 WORKDIR BiocKubeInstall
 RUN git clone https://github.com/Bioconductor/BiocKubeInstall.git . && \
-    git checkout tags/local-v1 && \
+    git checkout tags/local-v2 && \
     R -e 'remotes::install_local(".", repos = AnVIL::repositories())'
 
