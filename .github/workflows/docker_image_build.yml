@@ -40,7 +40,7 @@ jobs:
           push: true
           tags: bioconductor/bioc-redis:${{env.DEVEL_TAG}}
           build-args: |
-            RELEASE=${{env.DEVEL_TAG}}
+            RELEASE=devel
 
       - name: Build and push release worker
         id: docker_build_release
