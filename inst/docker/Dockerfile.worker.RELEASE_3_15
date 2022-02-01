@@ -4,7 +4,14 @@ RUN apt-get update && \
         apt-get install -y --no-install-recommends libhiredis-dev && \
         rm -rf /var/lib/apt/lists/*
 
-RUN R -e 'BiocManager::install("Bioconductor/BiocKubeInstall", ref = "local")'
-RUN R -e 'BiocManager::install("Bioconductor/BiocParallel")'
-
+COPY BiocRprofile /home/rstudio/.Rprofile
 COPY worker.R /home/docker/
+
+RUN R -e 'BiocManager::install("Bioconductor/AnVIL")'
+RUN R -e 'AnVIL::install("Bioconductor/BiocParallel")'
+
+WORKDIR BiocKubeInstall
+RUN git clone https://github.com/Bioconductor/BiocKubeInstall.git . && \
+    git checkout tags/local-v1 && \
+    R -e 'remotes::install_local(".", repos = AnVIL::repositories())'
+

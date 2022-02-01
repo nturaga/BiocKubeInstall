@@ -53,14 +53,14 @@ kube_install_single_package <-
         tryCatch(
             suppressMessages(
                 BiocManager::install(
-                                 pkg,
-                                 INSTALL_opts = "--build",
-                                 update = FALSE,
-                                 quiet = TRUE,
-                                 force = TRUE,
-                                 ## TODO: a successful install output isn't useful
-                                 keep_outputs = TRUE ## saves successful run
-                             )
+                    pkg,
+                    INSTALL_opts = "--build",
+                    update = FALSE,
+                    quiet = TRUE,
+                    force = TRUE,
+                    ## TODO: a successful install output isn't useful
+                    keep_outputs = TRUE ## saves successful run
+                )
             ),
             error = function(e) {
                 flog.error("Error: package %s failed", pkg, name = "kube_install")

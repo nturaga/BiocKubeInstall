@@ -178,9 +178,10 @@ NULL
     names(rdepsdf) <- c("n_rev_deps", "Package")
     
     revdep_times <- merge(timesdf, rdepsdf)
-    revdep_times <- revdep_times[with(revdep_times, order(-n_rev_deps, install_time_sec)), ]
+    revdep_times <-
+        revdep_times[with(revdep_times, order(-n_rev_deps, install_time_sec)), ]
     ## NA values get dropped 
-    ndeps <- deps[match(revdep_times[["Package"]], names(deps))]
+    ndeps <- deps[na.omit(match(revdep_times[["Package"]], names(deps)))]
     crans <- deps[setdiff(names(deps), names(ndeps))]
     crans <- crans[names(sort(lengths(crans)))]
     c(ndeps, crans)
