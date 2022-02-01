@@ -5,6 +5,9 @@ on:
   push:
     branches:
       - 'master'
+env:
+  DEVEL_TAG: RELEASE_3_15
+  RELEASE_TAG: RELEASE_3_14
 
 jobs:
   docker-build-push:
@@ -28,23 +31,27 @@ jobs:
           push: true
           tags: bioconductor/bioc-redis:manager
       
-      - name: Build and push release
-        id: docker_build_release
-        uses: docker/build-push-action@v2
-        with:
-          file: inst/docker/Dockerfile.worker.RELEASE_3_14
-          context: ./inst/docker
-          push: true
-          tags: bioconductor/bioc-redis:RELEASE_3_14
-
-      - name: Build and push devel
+      - name: Build and push devel worker
         id: docker_build_devel
         uses: docker/build-push-action@v2
         with:
-          file: inst/docker/Dockerfile.worker.RELEASE_3_15
+          file: inst/docker/Dockerfile.worker
           context: ./inst/docker
           push: true
-          tags: bioconductor/bioc-redis:RELEASE_3_15
+          tags: bioconductor/bioc-redis:${{env.DEVEL_TAG}}
+          build-args: |
+            RELEASE=${{env.DEVEL_TAG}}
+
+      - name: Build and push release worker
+        id: docker_build_release
+        uses: docker/build-push-action@v2
+        with:
+          file: inst/docker/Dockerfile.worker
+          context: ./inst/docker
+          push: true
+          tags: bioconductor/bioc-redis:${{env.RELEASE_TAG}}
+          build-args: |
+            RELEASE=${{env.RELEASE_TAG}}
 
       - name: Image digest
         run: echo ${{ steps.docker_build.outputs.digest }}
