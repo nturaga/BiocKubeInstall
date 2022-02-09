@@ -10,7 +10,8 @@ env:
   CLUSTER_BASE_NAME: biock8sredis
   GKE_ZONE: us-east1-b
   DEPLOYMENT_NAME: binaryBuilder
-  GCP_PD_SIZE: 200Gi
+  NFS_PD_SIZE: 100Gi
+  NODE_DISK_SIZE: 30Gi
   DEVEL_MAJOR_VER: 3
   DEVEL_MINOR_VER: 15
   RELEA_MAJOR_VER: 3
@@ -42,13 +43,14 @@ jobs:
         gcloud container clusters create \
           --zone "$GKE_ZONE" \
           --num-nodes 10 \
+          --disk-size="$NODE_DISK_SIZE" \
           --machine-type="$NODE_TYPE" "$CLUSTER_BASE_NAME-${{ steps.prefix.outputs.prefix }}"
 
     - name: Create devel GCP Disk
-      run: gcloud compute disks create "biockubeinstall-nfs-pd-${{ steps.prefix.outputs.prefix }}-devel" --size $GCP_PD_SIZE --zone "$GKE_ZONE"
+      run: gcloud compute disks create "biockubeinstall-nfs-pd-${{ steps.prefix.outputs.prefix }}-devel" --size $NFS_PD_SIZE --zone "$GKE_ZONE"
 
     - name: Create release GCP Disk
-      run: gcloud compute disks create "biockubeinstall-nfs-pd-${{ steps.prefix.outputs.prefix }}-release" --size $GCP_PD_SIZE --zone "$GKE_ZONE"
+      run: gcloud compute disks create "biockubeinstall-nfs-pd-${{ steps.prefix.outputs.prefix }}-release" --size $NFS_PD_SIZE --zone "$GKE_ZONE"
 
 
   deploydevelchart:
@@ -91,7 +93,7 @@ jobs:
           --timeout 600s \
           --set biocVersion="${DEVEL_MAJOR_VER}.${DEVEL_MINOR_VER}" \
           --set workers.image.tag="RELEASE_${DEVEL_MAJOR_VER}_${DEVEL_MINOR_VER}" \
-          --set volumeMountSize=$GCP_PD_SIZE \
+          --set volumeMountSize=$NFS_PD_SIZE \
           --set gcpPdName="biockubeinstall-nfs-pd-${{needs.clusterlaunch.outputs.prefix}}-devel" inst/helm-chart --wait
 
     - name: check
@@ -106,6 +108,11 @@ jobs:
     - name: Helm delete the release
       run: helm delete biock8sredis -n $DEVEL_NAMESPACE
       continue-on-error: true
+
+    # Delete devel pd
+    - run: gcloud compute disks delete --zone "$GKE_ZONE" --quiet $(gcloud compute disks list --format="value(name)" --filter='status~READY' --filter='name~biockubeinstall-nfs-pd-${{needs.clusterlaunch.outputs.prefix}}-devel')
+      continue-on-error: true
+
 
   deployreleasechart:
     name: Deploy release helm chart and wait
@@ -147,7 +154,7 @@ jobs:
           --timeout 600s \
           --set biocVersion="${RELEA_MAJOR_VER}.${RELEA_MINOR_VER}" \
           --set workers.image.tag="RELEASE_${RELEA_MAJOR_VER}_${RELEA_MINOR_VER}" \
-          --set volumeMountSize=$GCP_PD_SIZE \
+          --set volumeMountSize=$NFS_PD_SIZE \
           --set gcpPdName="biockubeinstall-nfs-pd-${{needs.clusterlaunch.outputs.prefix}}-release" inst/helm-chart --wait
 
     - name: check
@@ -162,6 +169,10 @@ jobs:
     # Let chart do any cleanup if needed
     - name: Delete chart
       run: helm delete biock8sredis -n $RELEA_NAMESPACE
+      continue-on-error: true
+
+    # Delete release pd
+    - run: gcloud compute disks delete --zone "$GKE_ZONE" --quiet $(gcloud compute disks list --format="value(name)" --filter='status~READY' --filter='name~biockubeinstall-nfs-pd-${{needs.clusterlaunch.outputs.prefix}}-release')
       continue-on-error: true
 
   cleanup:
