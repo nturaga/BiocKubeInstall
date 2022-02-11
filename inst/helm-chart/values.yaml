@@ -39,13 +39,13 @@ manager:
       cpu: 1700m
 
 
-# Volume mount
-volumeMountName: bioc-nfs-mount
-volumeMountPath: /host
-volumeMountSize: 200Gi
+# Persistence settings for base NFS disk
+persistence:
+  mountPath: /host
+  size: 200Gi
+  storageClass: manual
+  #gcpPdName: manual-pd
 
-# GCP Pesristent Disk name
-gcpPdName: "manual-pd"
 
 # service key name
 serviceKey: bioc-binaries.json

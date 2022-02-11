@@ -21,8 +21,8 @@ spec:
         resources:
           {{- toYaml .Values.workers.resources | nindent 10 }}
         volumeMounts:
-         - mountPath: {{ .Values.volumeMountPath }}
-           name: {{ .Values.volumeMountName }}
+         - mountPath: {{ .Values.persistence.mountPath }}
+           name: nfs-data
         command: ["sh"]
         args:
         - -c
@@ -31,6 +31,6 @@ spec:
           {{- end -}}
           R -f /home/docker/worker.R
       volumes:
-      - name: {{ .Values.volumeMountName }}
+      - name: nfs-data
         persistentVolumeClaim:
           claimName: {{.Release.Namespace}}-nfs

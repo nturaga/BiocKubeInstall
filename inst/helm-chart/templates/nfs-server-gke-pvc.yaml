@@ -5,12 +5,13 @@ metadata:
   labels:
     demo: nfs-pvc-provisioning
 spec:
-  storageClassName: manual
+  storageClassName: {{ .Values.persistence.storageClass }}
   accessModes: [ "ReadWriteOnce" ]
   resources:
     requests:
-      storage: {{ .Values.volumeMountSize }}
+      storage: {{ .Values.persistence.size }}
 ---
+{{ if .Values.persistence.gcpPdName }}
 apiVersion: v1
 kind: PersistentVolume
 metadata:
@@ -18,14 +19,15 @@ metadata:
   labels:
     demo: nfs-pv-provisioning
 spec:
-  storageClassName: manual
+  storageClassName: {{ .Values.persistence.storageClass }}
   accessModes: [ "ReadWriteOnce" ]
   capacity:
-    storage: {{ .Values.volumeMountSize }}
+    storage: {{ .Values.persistence.size }}
   claimRef:
     namespace: {{ .Release.Namespace }}
     name: nfs-pvc-provisioning-demo
   gcePersistentDisk:
-    pdName: {{ .Values.gcpPdName }}
+    pdName: {{ .Values.persistence.gcpPdName }}
     fsType: ext4
 ---
+{{ end }}

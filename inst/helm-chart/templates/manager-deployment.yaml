@@ -12,8 +12,8 @@ spec:
       resources:
         {{- toYaml .Values.manager.resources | nindent 8 }}
       volumeMounts:
-        - name: {{ .Values.volumeMountName }}
-          mountPath: {{ .Values.volumeMountPath }}
+        - name: nfs-data
+          mountPath: {{ .Values.persistence.mountPath }}
         - name: service-key
           mountPath: /home/key.json
           subPath: {{ .Values.serviceKey }}
@@ -31,7 +31,7 @@ spec:
           Rscript -e 'BiocKubeInstall::kube_run("{{ .Values.biocVersion }}", image_name = "{{ .Values.dockerImageName }}", exclude_pkgs = c("canceR"))'
   restartPolicy: {{ .Values.restartPolicy | quote}}
   volumes:
-  - name: {{ .Values.volumeMountName }}
+  - name: nfs-data
     persistentVolumeClaim:
       claimName: {{.Release.Namespace}}-nfs
   - name: service-key
