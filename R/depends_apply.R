@@ -46,20 +46,58 @@
     X
 }
 
+## Propagate the error to the packages which depend on pkg
+.failure_propagation <- function(pkg, failed, reverse_deps, source_pkg = NULL) {
+    affected_pkg <- pkg
+    ## If source is NULL, pkg is the source of the error
+    if (is.null(source_pkg))
+        source_pkg <- pkg
+    ## recursively propagate the error through the reverse dependances
+    if (!exists(pkg, envir = failed, inherits = FALSE)) {
+        if (!identical(pkg, source_pkg))
+            failed[[pkg]] <- paste0(
+                "Unable to build the package due to the dependence failure: ",
+                source_pkg
+            )
+        deps <- reverse_deps[[pkg]]
+        for (i in deps) {
+            affected_pkg <- append(
+                affected_pkg, 
+                .failure_propagation(i, failed, reverse_deps, source_pkg = source_pkg)
+            )
+        }
+    }
+    affected_pkg
+}
+
+.reverse_deps <- function(deps) {
+    ## fast and robust reverse dependencies calculation -- includes
+    ## packages with zero reverse dependencies; 0.05s versus 1.85s for
+    ## iteration.
+    all_packages <- unique(c(unlist(deps, use.names = FALSE), names(deps)))
+    packages <- rep(names(deps), lengths(deps))
+    dependencies <- factor(
+        unlist(deps, use.names = FALSE),
+        levels = all_packages
+    )
+    split(packages, dependencies)
+}
+
 
 .fun_factory <- function(FUN, pkg) {
     function(pkg, ...) {
         if (identical(pkg, ".WAITING")) {
-            Sys.sleep(1)
-            list(pkg = pkg, status = "success")
+            Sys.sleep(5)
+            value <- pkg
         } else {
             value <- FUN(pkg, ...)
-            if (is(value, "condition")) {
-                list(pkg = pkg,
-                     status = conditionMessage(value))
-            } else {
-                list(pkg = pkg, status = "success")
-            }
+        }
+        
+        if (is(value, "condition")) {
+            list(pkg = pkg,
+                 status = conditionMessage(value))
+        } else {
+            list(pkg = pkg, status = "success")
         }
     }
 }
@@ -71,19 +109,11 @@
 
     FUN_ <- .fun_factory(FUN, pkg)
 
-    ## fast and robust reverse dependencies calculation -- includes
-    ## packages with zero reverse dependencies; 0.05s versus 1.85s for
-    ## iteration.
-    all_packages <- unique(c(unlist(deps, use.names = FALSE), names(deps)))
-    packages <- rep(names(deps), lengths(deps))
-    dependencies <- factor(
-        unlist(deps, use.names = FALSE),
-        levels = all_packages
-    )
-    reverse_deps <- split(packages, dependencies)
+    reverse_deps <- .reverse_deps(deps)
 
     ## calculate the dependence number for each package including
     ## packages with 0 dependencies
+    all_packages <- unique(c(unlist(deps, use.names = FALSE), names(deps)))
     number_of_deps <- integer(length(all_packages))
     names(number_of_deps) <- all_packages
     number_of_deps[names(deps)] <- lengths(deps)
@@ -91,6 +121,7 @@
     ## queues of packages 'ready' for working, and currently in-progress
     ready <- new.env(parent = emptyenv()) # packages w/ dependencies satisfied
     working <- new.env(parent = emptyenv()) # packages assigned to workers
+    failed <- new.env(parent = emptyenv()) # failed packages
 
     ## return the next package with all dependencies satisfied,
     ## '.WAITING' if some packages have unmet dependencies, or NULL if
@@ -110,11 +141,11 @@
             names(working)
         )
         if (length(pkgs)) {
-            for (pkg in pkgs[-1L]) { # add to 'ready' queue
+            for (pkg in pkgs) { # add to 'ready' queue
                 assign(pkg, NULL, ready)
             }
-            assign(pkgs[[1]], NULL, working)
-            return(pkgs[[1]])
+            ## call iter again to obtain the next value
+            return(iter())
         }
 
         if (any(number_of_deps > 0L)) {
@@ -135,16 +166,24 @@
         ##OBOB remove 'pkg' from 'working' queue
         rm(list = pkg, envir = working)
         ## decrement numberOfDependencies for pkg and all reverse dependencies
-        i <- c(pkg, reverse_deps[[pkg]])
-        number_of_deps[i] <<- number_of_deps[i] - 1L
-        ## return the status of the pkg when failed
-        if (!identical(status, "success")) {
-            msg <- list(status)
-            names(msg) <- pkg
-            c(x, msg)
+        if (identical(status, "success")) {
+            i <- c(pkg, reverse_deps[[pkg]])
+            number_of_deps[i] <<- number_of_deps[i] - 1L
         } else {
-            x
+            pkgs <- .failure_propagation(pkg, failed, reverse_deps)
+            failed[[pkg]] <- status
+            number_of_deps[pkgs] <<- - 1L
         }
+        ## If the log "kube_progress" is not configured,
+        ## it will just print the message on the screen
+        flog.info(
+            "Total: %d, working: %d, failed/finished: %d",
+            length(number_of_deps),
+            length(working),
+            sum(number_of_deps < 0),
+            name = "kube_progress"
+        )
+        failed
     }
 
     list(ITER = iter, FUN = FUN_, REDUCE = reduce, this = environment())

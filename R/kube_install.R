@@ -41,7 +41,9 @@ kube_install_single_package <-
     cwd <- setwd(bin_path)
     on.exit(setwd(cwd))
     
+    ## The default return value for a success package building
     result <- pkg
+    
     withCallingHandlers({
         suppressMessages(
             BiocManager::install(
@@ -57,10 +59,10 @@ kube_install_single_package <-
         },
         error = function(e) {
             flog.error("Error: package %s failed", pkg, name = "kube_install")
-            print(conditionMessage(e))
             result <<- e
         },
         warning = function(e) {
+            flog.error("Error: package %s failed", pkg, name = "kube_install")
             result <<- e
             tryInvokeRestart("muffleWarning")
         }
@@ -183,7 +185,11 @@ kube_install <-
     if (is.null(BPPARAM)) {
         BPPARAM <- BiocParallel::SnowParam()
     }
-
+    ## disable the default progressbar
+    progressbar_arg <- bpprogressbar(BPPARAM)
+    bpprogressbar(BPPARAM) <- FALSE
+    on.exit(bpprogressbar(BPPARAM) <- progressbar_arg, add = TRUE)
+        
     ## Logging
     log_file <- file.path(logs_path, 'kube_install.log')
     flog.appender(appender.tee(log_file), name = 'kube_install')
@@ -192,7 +198,10 @@ kube_install <-
         length(deps),
         name = "kube_install"
     )
-
+    
+    progress_file <- file.path(logs_path, 'kube_progress.log')
+    flog.appender(appender.tee(progress_file), name = 'kube_progress')
+    
     ## Iterator function
     iter <- .dependency_graph_iterator_factory(
         deps,
@@ -208,7 +217,8 @@ kube_install <-
         init = c(), ## need to keep this as initial value for reducer
         BPPARAM = BPPARAM
     )
-
+    result <- as.list(result)
+    
     ## Logging to document how many packages failed and installed
     ## TRUE is success, FALSE is fail
     ## TODO: try to log exluded packages like canceR, and ChemmineOB
@@ -219,6 +229,14 @@ kube_install <-
         length(result),
         name = "kube_install"
     )
+    
+    if (length(result)) {
+        flog.info(
+            "Failed packages: %s",
+            paste0(names(result), collapse = ", "),
+            name = "kube_install"
+        )
+    }
 
     ## Create PACKAGES, PACKAGES.gz, PACAKGES.rds
     tools::write_PACKAGES(bin_path, addFiles = TRUE, verbose = TRUE)
@@ -286,7 +304,7 @@ kube_run <-
     ## Step 3: Run kube_install so package binaries are built
     BPPARAM <- RedisParam(
         jobname = "binarybuild", is.worker = FALSE,
-        progressbar = TRUE, stop.on.error = FALSE
+        progressbar = FALSE, stop.on.error = FALSE
     )
 
     res <- kube_install(

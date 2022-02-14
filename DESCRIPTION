@@ -7,7 +7,7 @@ Authors@R:
       person("Martin", "Morgan", role = "aut"),
       person("Alex", "Mahmoud", role = "aut"),
       person("Jiefei", "Wang", role = "aut")
-	)
+     )
 Description: Build binaries for packages in R / Bioconductor using a
 	     Kubernetes Cluster. The package is internal to
 	     Bioconductor, and is used to create binaries for Docker
