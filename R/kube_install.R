@@ -40,10 +40,10 @@ kube_install_single_package <-
     flog.info("building binary for package: %s", pkg, name = 'kube_install')
     cwd <- setwd(bin_path)
     on.exit(setwd(cwd))
-    
+
     ## The default return value for a success package building
     result <- pkg
-    
+
     withCallingHandlers({
         suppressMessages(
             BiocManager::install(
@@ -53,7 +53,7 @@ kube_install_single_package <-
                              quiet = TRUE,
                              force = TRUE,
                              ## TODO: a successful install output isn't useful
-                             keep_outputs = TRUE 
+                             keep_outputs = TRUE
                          )
         )
         },
@@ -137,7 +137,8 @@ kube_wait <-
 #'     kubernetes.
 #'
 #' @importFrom RedisParam RedisParam
-#' @importFrom BiocParallel bpiterate
+#' @importFrom BiocParallel bpiterate bpprogressbar SerialParam
+#' @importFrom BiocParallel `bpprogressbar<-` SnowParam
 #' @importFrom futile.logger flog.error flog.info flog.appender
 #'     appender.file appender.tee
 #'
@@ -189,7 +190,7 @@ kube_install <-
     progressbar_arg <- bpprogressbar(BPPARAM)
     bpprogressbar(BPPARAM) <- FALSE
     on.exit(bpprogressbar(BPPARAM) <- progressbar_arg, add = TRUE)
-        
+
     ## Logging
     log_file <- file.path(logs_path, 'kube_install.log')
     flog.appender(appender.tee(log_file), name = 'kube_install')
@@ -198,10 +199,10 @@ kube_install <-
         length(deps),
         name = "kube_install"
     )
-    
+
     progress_file <- file.path(logs_path, 'kube_progress.log')
     flog.appender(appender.tee(progress_file), name = 'kube_progress')
-    
+
     ## Iterator function
     iter <- .dependency_graph_iterator_factory(
         deps,
@@ -218,7 +219,7 @@ kube_install <-
         BPPARAM = BPPARAM
     )
     result <- as.list(result)
-    
+
     ## Logging to document how many packages failed and installed
     ## TRUE is success, FALSE is fail
     ## TODO: try to log exluded packages like canceR, and ChemmineOB
@@ -229,7 +230,7 @@ kube_install <-
         length(result),
         name = "kube_install"
     )
-    
+
     if (length(result)) {
         flog.info(
             "Failed packages: %s",
@@ -278,7 +279,7 @@ kube_run <-
 {
     artifacts <- .get_artifact_paths(bioc_version, volume_mount_path)
     repos <- .repos(bioc_version,image_name, cloud_id = 'google')
-    
+
     Sys.setenv(REDIS_HOST = Sys.getenv("REDIS_SERVICE_HOST"))
     Sys.setenv(REDIS_PORT = Sys.getenv("REDIS_SERVICE_PORT"))
 
@@ -308,7 +309,7 @@ kube_run <-
     )
 
     res <- kube_install(
-                lib_path = artifacts$lib_path, 
+                lib_path = artifacts$lib_path,
                 bin_path = artifacts$bin_path,
                 logs_path = artifacts$logs_path,
                 deps = deps, BPPARAM = BPPARAM

@@ -1,4 +1,4 @@
-# k8sredis - Kubernetes application to create Bioconductor package binaries
+# BiocKubeInstall - Kubernetes application to create Bioconductor package binaries
 
 Author:
 
