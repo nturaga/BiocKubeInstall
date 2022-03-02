@@ -46,12 +46,6 @@ jobs:
           --disk-size="$NODE_DISK_SIZE" \
           --machine-type="$NODE_TYPE" "$CLUSTER_BASE_NAME-${{ steps.prefix.outputs.prefix }}"
 
-    - name: Create devel GCP Disk
-      run: gcloud compute disks create "biockubeinstall-nfs-pd-${{ steps.prefix.outputs.prefix }}-devel" --size $NFS_PD_SIZE --zone "$GKE_ZONE"
-
-    - name: Create release GCP Disk
-      run: gcloud compute disks create "biockubeinstall-nfs-pd-${{ steps.prefix.outputs.prefix }}-release" --size $NFS_PD_SIZE --zone "$GKE_ZONE"
-
 
   deploydevelchart:
     name: Deploy devel helm chart and wait
@@ -67,6 +61,9 @@ jobs:
         version: '290.0.1'
         service_account_key: ${{ secrets.GKE_SA_KEY }}
         project_id: ${{ secrets.GKE_PROJECT }}
+
+    - name: Create devel GCP Disk
+      run: gcloud compute disks create "biockubeinstall-nfs-pd-${{ steps.prefix.outputs.prefix }}-devel" --size $NFS_PD_SIZE --zone "$GKE_ZONE"
 
     # Get the GKE credentials so we can deploy to the cluster
     - run: |-
@@ -128,6 +125,9 @@ jobs:
         version: '290.0.1'
         service_account_key: ${{ secrets.GKE_SA_KEY }}
         project_id: ${{ secrets.GKE_PROJECT }}
+
+    - name: Create release GCP Disk
+      run: gcloud compute disks create "biockubeinstall-nfs-pd-${{ steps.prefix.outputs.prefix }}-release" --size $NFS_PD_SIZE --zone "$GKE_ZONE"
 
     # Get the GKE credentials so we can deploy to the cluster
     - run: |-
