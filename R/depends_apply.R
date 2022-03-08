@@ -177,10 +177,11 @@
         ## If the log "kube_progress" is not configured,
         ## it will just print the message on the screen
         flog.info(
-            "Total: %d, working: %d, failed/finished: %d",
+            "Total: %d, working: %d, failed:%d, success: %d",
             length(number_of_deps),
             length(working),
-            sum(number_of_deps < 0),
+            length(failed),
+            sum(number_of_deps < 0) - length(failed),
             name = "kube_progress"
         )
         failed

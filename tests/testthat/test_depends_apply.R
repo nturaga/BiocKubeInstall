@@ -1,5 +1,6 @@
 futile.logger::flog.threshold("FATAL", name = "kube_install")
 futile.logger::flog.threshold("FATAL", name = "kube_progress")
+futile.logger::flog.threshold("FATAL", name = "kube_errors")
 
 test_that("reverse dependences", {
     deps <- list(
@@ -129,3 +130,4 @@ test_that("package iterator", {
 
 futile.logger::flog.threshold("INFO", name = "kube_install")
 futile.logger::flog.threshold("INFO", name = "kube_progress")
+futile.logger::flog.threshold("INFO", name = "kube_errors")

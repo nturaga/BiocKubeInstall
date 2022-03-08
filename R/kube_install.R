@@ -199,6 +199,9 @@ kube_install <-
         length(deps),
         name = "kube_install"
     )
+    
+    error_file <- file.path(logs_path, 'kube_errors.log')
+    flog.appender(appender.tee(error_file), name = 'kube_errors')
 
     progress_file <- file.path(logs_path, 'kube_progress.log')
     flog.appender(appender.tee(progress_file), name = 'kube_progress')
@@ -238,7 +241,15 @@ kube_install <-
             name = "kube_install"
         )
     }
-
+    
+    if (length(iter$this$failed)) {
+        pkgs <- as.list(iter$this$failed)
+        msg <- paste0(names(pkgs), 
+                      " failed for the reason: ",
+                      as.character(pkgs))
+       flog.error(msg, name = "kube_errors") 
+    }
+    
     ## Create PACKAGES, PACKAGES.gz, PACAKGES.rds
     tools::write_PACKAGES(bin_path, addFiles = TRUE, verbose = TRUE)
     flog.info("PACKAGES files created", name = "kube_install")

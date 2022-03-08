@@ -1,5 +1,6 @@
 futile.logger::flog.threshold("FATAL", name = "kube_install")
 futile.logger::flog.threshold("FATAL", name = "kube_progress")
+futile.logger::flog.threshold("FATAL", name = "kube_errors")
 
 test_that("build dummy pkgs", {
     deps <- list(
@@ -83,3 +84,4 @@ test_that("build pkgs", {
 
 futile.logger::flog.threshold("INFO", name = "kube_install")
 futile.logger::flog.threshold("INFO", name = "kube_progress")
+futile.logger::flog.threshold("INFO", name = "kube_errors")
