@@ -28,7 +28,7 @@ spec:
         - {{ if .Values.manager.extraCommand -}}
           {{- tpl .Values.manager.extraCommand $ }};
           {{- end -}}
-          Rscript -e 'BiocKubeInstall::kube_run("{{ .Values.biocVersion }}", image_name = "{{ .Values.dockerImageName }}", exclude_pkgs = c("canceR"))'
+          {{ .Values.manager.defaultCommand }}
   restartPolicy: {{ .Values.restartPolicy | quote}}
   volumes:
   - name: nfs-data
