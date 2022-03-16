@@ -4,7 +4,7 @@ name: Start GKE cluster and build devel then release
 on: 
   workflow_dispatch:
   schedule:
-    - cron:  '0 12 * * 1'
+    - cron:  '0 16 * * 1'
 
 env:
   CLUSTER_BASE_NAME: biock8sredis
