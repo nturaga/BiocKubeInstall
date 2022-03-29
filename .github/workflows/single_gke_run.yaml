@@ -1,4 +1,4 @@
-name: Start GKE cluster and build devel then release
+name: Single - Start GKE cluster and build
 
 ## Cluster starts at 12pm on Tuesday, Thursday and Saturday
 on: 
