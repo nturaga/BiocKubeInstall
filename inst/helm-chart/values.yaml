@@ -45,8 +45,9 @@ manager:
 persistence:
   mountPath: /host
   size: 200Gi
-  storageClass: manual
+  storageClass: managed-csi
   #gcpPdName: manual-pd
+  #azurePdHandle: manual-pd
 
 
 # service key name

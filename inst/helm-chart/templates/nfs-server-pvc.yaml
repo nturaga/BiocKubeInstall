@@ -11,7 +11,7 @@ spec:
     requests:
       storage: {{ .Values.persistence.size }}
 ---
-{{ if .Values.persistence.gcpPdName }}
+{{ if (or .Values.persistence.gcpPdName .Values.persistence.azurePdHandle) }}
 apiVersion: v1
 kind: PersistentVolume
 metadata:
@@ -26,8 +26,6 @@ spec:
   claimRef:
     namespace: {{ .Release.Namespace }}
     name: nfs-pvc-provisioning-demo
-  gcePersistentDisk:
-    pdName: {{ .Values.persistence.gcpPdName }}
-    fsType: ext4
+  {{- include "biockubeinstall.manualDiskBlock" . | nindent 2 }}
 ---
 {{ end }}
