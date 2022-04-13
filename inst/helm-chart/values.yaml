@@ -28,6 +28,8 @@ manager:
   image:
     repository: bioconductor/bioc-redis
     tag: manager
+  defaultCommand: |-
+    Rscript -e 'BiocKubeInstall::kube_run("{{ .Values.biocVersion }}", image_name = "{{ .Values.dockerImageName }}", exclude_pkgs = c("canceR"))'
   # Inject an `sh` prequel command to run before `RScript -e BiocKubeInstall::kube_run`
   extraCommand: ""
   resources:
