@@ -67,7 +67,7 @@ restartPolicy: OnFailure
 rstudio:
   port: 8787                    # RStudioServer configured to listen here
   protocol: http
-  type: LoadBalancer
+  type: NodePort
 
 # internal redis-specific config
 redis:
