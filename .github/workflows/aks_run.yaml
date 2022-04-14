@@ -1,0 +1,245 @@
+name: Start AKS cluster and build devel then release
+
+## Cluster starts at 12pm on Tuesday, Thursday and Saturday
+on: 
+  workflow_dispatch:
+  schedule:
+    - cron:  '0 16 * * 1'
+
+env:
+  CLUSTER_BASE_NAME: biock8sredis
+  AKS_ZONE: 1
+  AKS_RESOURCE_GROUP: bioconductor
+  DEPLOYMENT_NAME: binaryBuilder
+  NFS_PD_SIZE: 100Gi
+  NODE_DISK_SIZE: 30Gi
+  RELEA_MAJOR_VER: 3
+  RELEA_MINOR_VER: 15
+  RELEA_MAJOR_VER: 3
+  RELEA_MINOR_VER: 14
+  RELEA_NAMESPACE: devel
+  RELEA_NAMESPACE: release
+  NODE_TYPE: Standard_D3 # 4 CPU, 14 GiB RAM
+
+jobs:
+  clusterlaunch:
+    name: Start AKS cluster
+    runs-on: ubuntu-latest
+    outputs:
+      prefix: ${{ steps.prefix.outputs.prefix }}
+    steps:
+    - name: Set prefix with date
+      id: prefix
+      run: echo "::set-output name=prefix::$(echo $(date +'%m-%d-%H-%M-%S'))"
+
+    - name: Azure Login
+      uses: azure/login@v1
+      with:
+        creds: ${{ secrets.AZURE_CREDENTIALS }}
+
+    - name: Create aks cluster
+      uses: azure/CLI@v1
+      with:
+        azcliversion: 2.30.0
+        inlineScript: |
+          az aks create \
+            --name "$CLUSTER_BASE_NAME-${{ steps.prefix.outputs.prefix }}" \
+            --resource-group "$AKS_RESOURCE_GROUP" \
+            --node-zones "$AKS_ZONE" \
+            --node-count 10 \
+            --node-osdisk-size="$NODE_DISK_SIZE" \
+            --node-vm-size="$NODE_TYPE"
+
+  deploydevelchart:
+    name: Deploy devel helm chart and wait
+    runs-on: ubuntu-latest
+    needs: clusterlaunch
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v2
+ 
+    - name: Azure Login
+      uses: azure/login@v1
+      with:
+        creds: ${{ secrets.AZURE_CREDENTIALS }}
+
+    - uses: azure/aks-set-context@v1
+      with:
+        creds: '${{ secrets.AZURE_CREDENTIALS }}'
+        cluster-name: ${{ env.CLUSTER_BASE_NAME }}-${{needs.clusterlaunch.outputs.prefix}}
+        resource-group: ${{ env.AKS_RESOURCE_GROUP }}
+
+    - name: Create devel disk
+      id: disk
+      uses: azure/CLI@v1
+      with:
+        azcliversion: 2.30.0
+        inlineScript: |
+          echo "::set-output name=json::$(az disk create \
+            --resource-group $AKS_RESOURCE_GROUP \
+            --name biockubeinstall-nfs-pd-${{needs.clusterlaunch.outputs.prefix}}-devel \
+            --size-gb $NFS_PD_SIZE \
+            --zone $AKS_ZONE)"
+
+    # Setup kubectl
+    - uses: azure/setup-kubectl@v2.0
+      id: install
+
+    - name: Install Helm
+      run: |
+        curl https://raw.githubusercontent.com/helm/helm/master/scripts/get-helm-3 | bash
+
+    - name: Deploy bioc release helm chart
+      run: |
+        helm install biock8sredis -n $RELEA_NAMESPACE --set workers.poolSize=50 \
+          --timeout 600s \
+          --set biocVersion="${RELEA_MAJOR_VER}.${RELEA_MINOR_VER}" \
+          --set workers.image.tag="RELEASE_${RELEA_MAJOR_VER}_${RELEA_MINOR_VER}" \
+          --set persistence.size=$NFS_PD_SIZE \
+          --set persistence.azurePdHandle="${{fromJson(steps.disk.outputs.json).id}}" inst/helm-chart --wait
+
+    - name: check
+      run: |
+        kubectl -n $RELEA_NAMESPACE get all
+
+    # Requires kubectl client version > 1.23
+    - name: Get logs and events
+      run: sh -c "while true; do kubectl -n $RELEA_NAMESPACE logs manager > /tmp/logs && echo 'Tail of logs:' && tail /tmp/logs && echo 'GREP of errors:' && grep -i 'error: package' /tmp/logs && sleep 5; done" & kubectl -n $RELEA_NAMESPACE  wait --for=jsonpath='{.status.phase}'=Succeeded --timeout=36000s pod/manager
+      continue-on-error: true
+
+    - name: Helm delete the release
+      run: helm delete biock8sredis -n $RELEA_NAMESPACE
+      continue-on-error: true
+
+    - name: Delete devel disk
+      id: disk
+      uses: azure/CLI@v1
+      with:
+        azcliversion: 2.30.0
+        inlineScript: |
+          az disk delete \
+            --resource-group $AKS_RESOURCE_GROUP \
+            --name biockubeinstall-nfs-pd-${{needs.clusterlaunch.outputs.prefix}}-devel -y
+
+  deployreleasechart:
+    name: Deploy release helm chart and wait
+    runs-on: ubuntu-latest
+    needs: clusterlaunch
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v2
+ 
+    - name: Azure Login
+      uses: azure/login@v1
+      with:
+        creds: ${{ secrets.AZURE_CREDENTIALS }}
+
+    - uses: azure/aks-set-context@v1
+      with:
+        creds: '${{ secrets.AZURE_CREDENTIALS }}'
+        cluster-name: ${{ env.CLUSTER_BASE_NAME }}-${{needs.clusterlaunch.outputs.prefix}}
+        resource-group: ${{ env.AKS_RESOURCE_GROUP }}
+
+    - name: Create release disk
+      id: disk
+      uses: azure/CLI@v1
+      with:
+        azcliversion: 2.30.0
+        inlineScript: |
+          echo "::set-output name=json::$(az disk create \
+            --resource-group $AKS_RESOURCE_GROUP \
+            --name biockubeinstall-nfs-pd-${{needs.clusterlaunch.outputs.prefix}}-release \
+            --size-gb $NFS_PD_SIZE \
+            --zone $AKS_ZONE)"
+
+    # Setup kubectl
+    - uses: azure/setup-kubectl@v2.0
+      id: install
+
+    - name: Install Helm
+      run: |
+        curl https://raw.githubusercontent.com/helm/helm/master/scripts/get-helm-3 | bash
+
+    - name: Deploy bioc release helm chart
+      run: |
+        helm install biock8sredis -n $RELEA_NAMESPACE --set workers.poolSize=50 \
+          --timeout 600s \
+          --set biocVersion="${RELEA_MAJOR_VER}.${RELEA_MINOR_VER}" \
+          --set workers.image.tag="RELEASE_${RELEA_MAJOR_VER}_${RELEA_MINOR_VER}" \
+          --set persistence.size=$NFS_PD_SIZE \
+          --set persistence.azurePdHandle="${{fromJson(steps.disk.outputs.json).id}}" inst/helm-chart --wait
+
+    - name: check
+      run: |
+        kubectl -n $RELEA_NAMESPACE get all
+
+    # Requires kubectl client version > 1.23
+    - name: Get logs and events
+      run: sh -c "while true; do kubectl -n $RELEA_NAMESPACE logs manager > /tmp/logs && echo 'Tail of logs:' && tail /tmp/logs && echo 'GREP of errors:' && grep -i 'error: package' /tmp/logs && sleep 5; done" & kubectl -n $RELEA_NAMESPACE  wait --for=jsonpath='{.status.phase}'=Succeeded --timeout=36000s pod/manager
+      continue-on-error: true
+
+    - name: Helm delete the release
+      run: helm delete biock8sredis -n $RELEA_NAMESPACE
+      continue-on-error: true
+
+    - name: Delete release disk
+      id: disk
+      uses: azure/CLI@v1
+      with:
+        azcliversion: 2.30.0
+        inlineScript: |
+          az disk delete \
+            --resource-group $AKS_RESOURCE_GROUP \
+            --name biockubeinstall-nfs-pd-${{needs.clusterlaunch.outputs.prefix}}-release -y
+
+  cleanup:
+    name: Cleanup AKS cluster
+    if: always()
+    needs: [clusterlaunch,deploydevelchart,deployreleasechart]
+    runs-on: ubuntu-latest
+    steps:
+    - name: Azure Login
+      uses: azure/login@v1
+      with:
+        creds: ${{ secrets.AZURE_CREDENTIALS }}
+
+    - uses: azure/aks-set-context@v1
+      with:
+        creds: '${{ secrets.AZURE_CREDENTIALS }}'
+        cluster-name: ${{ env.CLUSTER_BASE_NAME }}-${{needs.clusterlaunch.outputs.prefix}}
+        resource-group: ${{ env.AKS_RESOURCE_GROUP }}
+      continue-on-error: true
+
+    - name: Delete aks cluster
+      uses: azure/CLI@v1
+      with:
+        azcliversion: 2.30.0
+        inlineScript: |
+          az aks delete \
+            --name "$CLUSTER_BASE_NAME-${{ steps.prefix.outputs.prefix }}" \
+            --resource-group "$AKS_RESOURCE_GROUP" -y
+
+    # Delete devel pd
+    - run: gcloud compute disks delete --zone "$GKE_ZONE" --quiet $(gcloud compute disks list --format="value(name)" --filter='status~READY' --filter='name~biockubeinstall-nfs-pd-${{needs.clusterlaunch.outputs.prefix}}-devel')
+      continue-on-error: true
+
+    - name: Delete devel disk
+      id: disk
+      uses: azure/CLI@v1
+      with:
+        azcliversion: 2.30.0
+        inlineScript: |
+          az disk delete \
+            --resource-group $AKS_RESOURCE_GROUP \
+            --name biockubeinstall-nfs-pd-${{needs.clusterlaunch.outputs.prefix}}-devel -y
+
+    - name: Delete release disk
+      id: disk
+      uses: azure/CLI@v1
+      with:
+        azcliversion: 2.30.0
+        inlineScript: |
+          az disk delete \
+            --resource-group $AKS_RESOURCE_GROUP \
+            --name biockubeinstall-nfs-pd-${{needs.clusterlaunch.outputs.prefix}}-release -y
+
