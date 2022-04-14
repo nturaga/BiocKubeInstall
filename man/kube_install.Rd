@@ -49,8 +49,6 @@ kube_install(
 
 ## Second method:
 ## Create a new google CRAN style bucket and populate with binaries.
-gcloud_create_cran_bucket("gs://my-new-binary-bucket",
-    "1.0", "3.11", secret = "/home/mysecret.json", public = TRUE)
 
 deps_new <- pkg_dependencies(binary_repo = "my-new-binary-bucket/1.0/3.11")
 

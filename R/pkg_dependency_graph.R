@@ -181,13 +181,6 @@ pkg_dependencies <-
     stopifnot(
         .is_character(binary_repo)
     )
-    ## TODO: make sure function is usable for other clouds
-    ## pass argument 'cloud = "gcp"'
-    cloud <- "https://storage.googleapis.com"
-
-    ## use `sprintf()` to produce a zero-length vector if binary_repo
-    ## == character()
-    binary_repo_url <- sprintf("%s/%s", cloud, binary_repo)
 
     repos <- .worker_repositories(version)
     db <- available.packages(repos = repos)
@@ -200,7 +193,13 @@ pkg_dependencies <-
 
     if (identical(build, "_software")) {
         deps <- .pkg_dependencies_software(version, db, exclude)
-    } else if (identical(build, "_update")) {
+    }
+    ## TODO: The _update function is still not working as expected.
+    ## investigate update_PACAKGES() function
+    else if (identical(build, "_update")) {
+        if (missing(binary_repo)) {
+            binary_repo_url <- sprintf("%s/", binary_repo)
+        }
         deps <- .pkg_dependencies_update(version, db, binary_repo_url)
     } else {
         ## FIXME: support building arbitrary vector of packages?

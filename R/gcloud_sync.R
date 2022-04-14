@@ -121,7 +121,6 @@
 #'
 #' @importFrom AnVIL gsutil_cp gsutil_exists
 #'
-#' @export
 gcloud_create_cran_bucket <-
     function(folder,
              bioc_version,
@@ -189,7 +188,6 @@ gcloud_create_cran_bucket <-
 #'
 #' @param repos list()
 #'
-#' @export
 cloud_sync_artifacts <-
     function(secret, artifacts, repos)
 {
@@ -228,3 +226,5 @@ cloud_sync_artifacts <-
     flog.info('Finished moving logs to cloud storage: %s',
               artifacts$logs_path, name = 'kube_install')
 }
+
+

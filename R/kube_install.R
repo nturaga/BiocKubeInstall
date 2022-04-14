@@ -86,8 +86,7 @@ kube_install_single_package <-
 #' }
 #'
 #' @importFrom redux hiredis
-#' @export
-kube_wait <-
+.kube_wait <-
     function(workers = as.integer(1))
 {
     stopifnot(is.integer(workers))
@@ -158,8 +157,6 @@ kube_wait <-
 #'
 #' ## Second method:
 #' ## Create a new google CRAN style bucket and populate with binaries.
-#' gcloud_create_cran_bucket("gs://my-new-binary-bucket",
-#'     "1.0", "3.11", secret = "/home/mysecret.json", public = TRUE)
 #'
 #' deps_new <- pkg_dependencies(binary_repo = "my-new-binary-bucket/1.0/3.11")
 #'
@@ -289,21 +286,9 @@ kube_run <-
              exclude_pkgs = character())
 {
     artifacts <- .get_artifact_paths(bioc_version, volume_mount_path)
-    repos <- .repos(bioc_version,image_name, cloud_id = 'google')
-
+    
     Sys.setenv(REDIS_HOST = Sys.getenv("REDIS_SERVICE_HOST"))
     Sys.setenv(REDIS_PORT = Sys.getenv("REDIS_SERVICE_PORT"))
-
-    ## Secret key to access bucket on google
-    ## PAIN point 1: Also not needed
-    secret <- "/home/key.json"
-
-    ## Step 0: Create a bucket if you need to
-    ## PAIN POINT 2: Creation of new buckets
-    ## Do it via github actions
-    gcloud_create_cran_bucket(folder = image_name,
-                              bioc_version = bioc_version,
-                              secret = secret, public = TRUE)
 
     ## Step. 2 : Load deps and installed packages
     ## remove exclude packages
@@ -329,14 +314,9 @@ kube_run <-
     ## Stop RedisParam - This should stop all work on workers
     bpstopall(BPPARAM)
 
-    ##  Step 4: Sync all artifacts produced, binaries, logs
-    ## PAIN POINT 3: Remove from this function - all sync goes to Github actions
-    BiocKubeInstall::cloud_sync_artifacts(
-        secret = secret,
-        artifacts = artifacts,
-        repos = repos
-    )
-
+    ## Move .out files from bin_path to logs_path
+    .output_file_move(artifacts)
+    
     ## ## Step 5: check if all workers were used
     check <- table(unlist(res))
 
