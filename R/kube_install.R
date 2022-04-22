@@ -44,6 +44,9 @@ kube_install_single_package <-
     ## The default return value for a success package building
     result <- pkg
 
+    Sys.setenv(BIOCONDUCTOR_USE_CONTAINER_REPOSITORY=FALSE)
+    on.exit(Sys.setenv(BIOCONDUCTOR_USE_CONTAINER_REPOSITORY=TRUE)
+        
     withCallingHandlers({
         suppressMessages(
             BiocManager::install(
